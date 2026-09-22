@@ -1,0 +1,168 @@
+[
+  {
+    "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+    "started_at": "2026-09-22T06:22:01.448129+00:00",
+    "baseline_targets": [
+      "models/lfm2.5-8b-a1b",
+      "tts.server",
+      "asr.server/qwen"
+    ],
+    "stopped": [
+      "models/lfm2.5-8b-a1b",
+      "tts.server"
+    ],
+    "restored": [
+      "tts.server",
+      "models/lfm2.5-8b-a1b"
+    ],
+    "free_before_mib": 555,
+    "timeout_seconds": 28800,
+    "free_after_stops_mib": 15825,
+    "child_pid": 3404617,
+    "child_exit_code": 0,
+    "health_after": {
+      "models/lfm2.5-8b-a1b": true,
+      "tts.server": true,
+      "asr.server/qwen": true
+    },
+    "restore_errors": [],
+    "finished_at": "2026-09-22T06:32:11.239746+00:00",
+    "free_after_mib": 677,
+    "gpu_processes_before": [
+      {
+        "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+        "pid": "1204446",
+        "process_name": ".venv/bin/python",
+        "used_gpu_memory [MiB]": "1708 MiB"
+      },
+      {
+        "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+        "pid": "1204474",
+        "process_name": "/home/francip/src/tts.server/.venv/bin/python3",
+        "used_gpu_memory [MiB]": "5024 MiB"
+      },
+      {
+        "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+        "pid": "1204522",
+        "process_name": "/home/francip/src/asr.server/.venv/bin/python3",
+        "used_gpu_memory [MiB]": "5022 MiB"
+      },
+      {
+        "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+        "pid": "2594218",
+        "process_name": "llama-server",
+        "used_gpu_memory [MiB]": "10236 MiB"
+      }
+    ],
+    "gpu_processes_after": [
+      {
+        "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+        "pid": "1204446",
+        "process_name": ".venv/bin/python",
+        "used_gpu_memory [MiB]": "1708 MiB"
+      },
+      {
+        "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+        "pid": "1204522",
+        "process_name": "/home/francip/src/asr.server/.venv/bin/python3",
+        "used_gpu_memory [MiB]": "5022 MiB"
+      },
+      {
+        "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+        "pid": "3434187",
+        "process_name": "/home/francip/src/tts.server/.venv/bin/python3",
+        "used_gpu_memory [MiB]": "4928 MiB"
+      },
+      {
+        "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+        "pid": "3434530",
+        "process_name": "llama-server",
+        "used_gpu_memory [MiB]": "10210 MiB"
+      }
+    ],
+    "name": "4090-block-v1"
+  },
+  {
+    "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+    "started_at": "2026-09-22T06:32:45.814098+00:00",
+    "baseline_targets": [
+      "models/lfm2.5-8b-a1b",
+      "tts.server",
+      "asr.server/qwen"
+    ],
+    "stopped": [
+      "models/lfm2.5-8b-a1b",
+      "tts.server"
+    ],
+    "restored": [
+      "tts.server",
+      "models/lfm2.5-8b-a1b"
+    ],
+    "free_before_mib": 677,
+    "timeout_seconds": 28800,
+    "free_after_stops_mib": 15825,
+    "child_pid": 3440180,
+    "child_exit_code": 0,
+    "health_after": {
+      "models/lfm2.5-8b-a1b": true,
+      "tts.server": true,
+      "asr.server/qwen": true
+    },
+    "restore_errors": [],
+    "finished_at": "2026-09-22T06:33:37.306406+00:00",
+    "free_after_mib": 677,
+    "gpu_processes_before": [
+      {
+        "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+        "pid": "1204446",
+        "process_name": ".venv/bin/python",
+        "used_gpu_memory [MiB]": "1708 MiB"
+      },
+      {
+        "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+        "pid": "1204522",
+        "process_name": "/home/francip/src/asr.server/.venv/bin/python3",
+        "used_gpu_memory [MiB]": "5022 MiB"
+      },
+      {
+        "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+        "pid": "3434187",
+        "process_name": "/home/francip/src/tts.server/.venv/bin/python3",
+        "used_gpu_memory [MiB]": "4928 MiB"
+      },
+      {
+        "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+        "pid": "3434530",
+        "process_name": "llama-server",
+        "used_gpu_memory [MiB]": "10210 MiB"
+      }
+    ],
+    "gpu_processes_after": [
+      {
+        "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+        "pid": "1204446",
+        "process_name": ".venv/bin/python",
+        "used_gpu_memory [MiB]": "1708 MiB"
+      },
+      {
+        "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+        "pid": "1204522",
+        "process_name": "/home/francip/src/asr.server/.venv/bin/python3",
+        "used_gpu_memory [MiB]": "5022 MiB"
+      },
+      {
+        "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+        "pid": "3440895",
+        "process_name": "/home/francip/src/tts.server/.venv/bin/python3",
+        "used_gpu_memory [MiB]": "4928 MiB"
+      },
+      {
+        "gpu_uuid": "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010",
+        "pid": "3442221",
+        "process_name": "llama-server",
+        "used_gpu_memory [MiB]": "10210 MiB"
+      }
+    ],
+    "name": "4090-api-v1"
+  }
+]
