@@ -26,8 +26,8 @@ static std::vector<llama_token> tokenize(const llama_vocab *vocab, const std::st
 }
 
 int main(int argc, char **argv) {
-    if (argc != 3) {
-        std::cerr << "usage: readout MODEL.gguf CONTEXT_TOKENS\n";
+    if (argc != 3 && argc != 4) {
+        std::cerr << "usage: readout MODEL.gguf CONTEXT_TOKENS [ADAPTER.gguf]\n";
         return 2;
     }
     const char *gpu = std::getenv("CUDA_VISIBLE_DEVICES");
@@ -56,10 +56,17 @@ int main(int argc, char **argv) {
     cp.n_threads = 12;
     cp.n_threads_batch = 12;
     cp.flash_attn_type = LLAMA_FLASH_ATTN_TYPE_ENABLED;
-    cp.type_k = GGML_TYPE_Q8_0;
-    cp.type_v = GGML_TYPE_Q8_0;
+    bool fp16_kv = std::getenv("SHINGI_KV_F16") != nullptr;
+    cp.type_k = fp16_kv ? GGML_TYPE_F16 : GGML_TYPE_Q8_0;
+    cp.type_v = fp16_kv ? GGML_TYPE_F16 : GGML_TYPE_Q8_0;
     auto *ctx = llama_init_from_model(model, cp);
     if (!ctx) { llama_model_free(model); return 1; }
+    llama_adapter_lora *adapter = nullptr;
+    if (argc == 4) {
+        adapter = llama_adapter_lora_init(model, argv[3]);
+        float scale = 1.0f;
+        if (!adapter || llama_set_adapters_lora(ctx, &adapter, 1, &scale) != 0) return 1;
+    }
     const auto *vocab = llama_model_get_vocab(model);
     std::cout << json({{"ready", true}, {"context_tokens", llama_n_ctx(ctx)},
                        {"vocab_size", llama_vocab_n_tokens(vocab)}}).dump() << std::endl;
@@ -81,7 +88,7 @@ int main(int argc, char **argv) {
             }
             if (ids.empty() || ids.size() > 255) throw std::runtime_error("invalid candidate count");
             if (request.value("tokenize_only", false)) {
-                std::cout << json({{"input_tokens", tokens.size()}, {"candidate_ids", ids}}).dump() << std::endl;
+                std::cout << json({{"input_tokens", tokens.size()}, {"candidate_ids", ids}, {"input_ids", tokens}}).dump() << std::endl;
                 continue;
             }
             llama_memory_clear(llama_get_memory(ctx), true);
@@ -106,6 +113,7 @@ int main(int argc, char **argv) {
         }
     }
     llama_free(ctx);
+    if (adapter) llama_adapter_lora_free(adapter);
     llama_model_free(model);
     llama_backend_free();
 }

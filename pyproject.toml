@@ -5,8 +5,11 @@ description = "Experimental Bonsai decision readout with a System One API"
 requires-python = ">=3.11"
 dependencies = ["fastapi>=0.115,<1", "uvicorn>=0.34,<1", "httpx>=0.28,<1"]
 
+[project.optional-dependencies]
+training = ["torch==2.13.0", "transformers==5.15.1", "numpy>=2,<3", "safetensors>=0.6,<1"]
+
 [dependency-groups]
-dev = ["pytest>=8,<10", "typesafe-sdk"]
+dev = ["pytest>=8,<10", "typesafe-sdk", "numpy>=2,<3"]
 
 [build-system]
 requires = ["hatchling"]

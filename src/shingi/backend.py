@@ -30,14 +30,17 @@ def gpu_free_mib():
 
 
 class NativeReadout:
-    def __init__(self, executable, model, context_tokens=16384):
+    def __init__(self, executable, model, context_tokens=16384, *, adapter=None):
         self.lock = threading.Lock()
         gpu, preload, self.headroom = gpu_profile()
         if gpu == GPU_4090 and context_tokens > 16384:
             raise ValueError("4090 investigation context is capped at 16,384 tokens")
         if gpu_free_mib() < preload:
             raise RuntimeError(f"native canary requires at least {preload} MiB free before loading")
-        self.process = subprocess.Popen([str(executable), str(model), str(context_tokens)],
+        command = [str(executable), str(model), str(context_tokens)]
+        if adapter is not None:
+            command.append(str(adapter))
+        self.process = subprocess.Popen(command,
                                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1)
         try:
             self.info = self._read(300)
