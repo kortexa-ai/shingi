@@ -10,8 +10,9 @@ adapter. Publication and repository visibility are the final, separate step.
 1. Remove machine and service dependencies from the public build, runtime and
    research scripts. Add checksum-bound adapter serving and regression tests.
 2. Build the pinned public Prism runtime in an independent checkout. Freeze a
-   fresh evaluation slice excluding every prior experiment split, and retain
-   the existing base and adapter calibration without test-driven fitting.
+   fresh evaluation slice excluding every prior experiment split, and choose
+   key ordering on development data using the preregistered quality gate. Fit
+   each frozen readout on separate calibration data before test inference.
 3. Validate the API, accuracy, option order, context, latency and memory on both
    CUDA targets. Preserve raw evidence and process-owned service restoration.
 4. Produce reproducible charts, the model card, third-party notices, artifact

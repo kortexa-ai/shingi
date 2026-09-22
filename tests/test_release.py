@@ -91,3 +91,34 @@ def test_bundle_verification_rejects_extra_files_and_corruption(tmp_path, monkey
     extra.unlink(); adapter.write_bytes(b'corrupt')
     with pytest.raises(ValueError, match='checksum'):
         package_release.verify_bundle(tmp_path)
+
+
+def test_cross_device_comparison_validates_adaptive_prompt_paths():
+    import hashlib
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
+    from package_release import cross_device_parity
+    row = {'id': 'adaptive', 'input_sha256': 'same-input', 'primitive': 'choice',
+           'state': 'test', 'question': {'type': 'choice', 'instructions': 'choose',
+                                       'criteria': {f'{i:03}': None for i in range(53)}}}
+    class Backend:
+        def __init__(self, perturbation):
+            self.calls = 0; self.perturbation = perturbation
+        def infer(self, prompt, labels):
+            self.calls += 1
+            logits = [-5.] * len(labels)
+            logits[0] = 2.
+            if self.calls == 1:
+                logits[1] = 2. + self.perturbation
+            return {'logits': logits, 'candidate_ids': list(range(len(labels))),
+                    'prompt_sha256': hashlib.sha256(prompt.encode()).hexdigest()}
+    predictions = []
+    for perturbation in (-.001, .001):
+        answer, traces = DecisionEngine(Backend(perturbation)).answer(row['state'], row['question'])
+        predictions.append({'adaptive': {'input_sha256': row['input_sha256'], 'answer': answer, 'traces': traces}})
+    result = cross_device_parity([row], *predictions, Calibration())
+    assert result['adaptive_final_prompt_differences'] == 1
+    predictions[1]['adaptive']['traces'][-1]['prompt_sha256'] = 'not-the-replayed-prompt'
+    with pytest.raises(ValueError, match='prompt differs'):
+        cross_device_parity([row], *predictions, Calibration())

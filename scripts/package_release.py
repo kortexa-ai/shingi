@@ -1,17 +1,20 @@
 """Derive public evidence/charts and assemble an explicit, checksum-verified HF bundle."""
 import argparse
 import csv
+import hashlib
 import json
+import math
 from pathlib import Path
 import shutil
 import subprocess
 import urllib.request
 
-from evaluate_release import ordered_rows, parity
+from evaluate_release import ordered_rows
 from prepare_benchmark import read_jsonl
 from shingi.decision import Calibration
 from shingi.release import sha256, BASE_SHA256, ADAPTER_SHA256, RELEASE_MODEL_ID
-from shingi.metrics import report as quality_report
+from shingi.metrics import report as quality_report, probabilities
+from shingi.calibration import replay
 from summarize_training import paired
 
 HELD = {'ledgar', 'go_emotions', 'mnli', 'sst5', 'fever_evidence', 'sms_spam', 'chaosnli'}
@@ -55,6 +58,51 @@ def load_predictions(path, records):
         if prediction.get('error') or prediction['input_sha256'] != row['input_sha256']:
             raise ValueError('failed or mismatched prediction')
     return predictions
+
+
+def cross_device_parity(records, actual, expected, calibration):
+    """Compare final decisions while validating each adaptive readout path."""
+    if set(actual) != {r['id'] for r in records} or set(actual) != set(expected):
+        raise ValueError('cross-device record inventory differs')
+    differences, agreements, branches = [], [], []
+    for row in records:
+        a, b = actual[row['id']], expected[row['id']]
+        # Replay verifies every prompt hash and candidate count, including the
+        # final comparison constructed from that device's own chunk winners.
+        x = replay(row, a, calibration)
+        y = replay(row, b, calibration)
+        if not replay_matches(x, a['answer']) or not replay_matches(y, b['answer']):
+            raise ValueError('recorded answer differs from trace replay')
+        ta, tb = a['traces'], b['traces']
+        if len(ta) != len(tb) or any(p['candidate_ids'] != q['candidate_ids'] for p,q in zip(ta,tb)):
+            raise ValueError('cross-device candidate token IDs differ')
+        same = [p['prompt_sha256'] == q['prompt_sha256'] for p,q in zip(ta,tb)]
+        if not all(same):
+            if len(same) == 1 or not all(same[:-1]):
+                raise ValueError('static input prompts differ across devices')
+            branches.append(row['id'])
+        px, py = probabilities(row, a['answer']), probabilities(row, b['answer'])
+        differences.append(sum(abs(px[k]-py[k]) for k in px)/2)
+        agreements.append(max(px,key=px.__getitem__) == max(py,key=py.__getitem__))
+    return {'n': len(records), 'argmax_agreement': sum(agreements)/len(records),
+            'argmax_disagreements': len(records)-sum(agreements),
+            'mean_tvd': sum(differences)/len(records), 'max_tvd': max(differences),
+            'max_tvd_id': records[max(range(len(differences)), key=differences.__getitem__)]['id'],
+            'adaptive_final_prompt_differences': len(branches), 'adaptive_difference_ids': branches,
+            'replay_answer_tolerance': 1e-12,
+            'method': 'Identical request and static chunk prompts; each device adaptive trace independently replayed. Saved final decision distributions compared.'}
+
+
+def replay_matches(actual, expected):
+    # Python/libm on different hosts can differ in the last floating-point bit.
+    # Keep selected keys and structure exact; permit only tiny numeric drift.
+    if isinstance(actual, dict) and isinstance(expected, dict):
+        return actual.keys() == expected.keys() and all(replay_matches(actual[k], expected[k]) for k in actual)
+    if isinstance(actual, list) and isinstance(expected, list):
+        return len(actual) == len(expected) and all(replay_matches(a,b) for a,b in zip(actual,expected))
+    if isinstance(actual, (int, float)) and isinstance(expected, (int, float)):
+        return math.isclose(actual, expected, rel_tol=1e-12, abs_tol=1e-12)
+    return actual == expected
 
 
 def charts(result, output):
@@ -107,7 +155,7 @@ def charts(result, output):
     axes[1].set_xticks(np.arange(3), [label for _,label in metrics])
     axes[1].set_title('Probability and score errors · lower is better')
     axes[1].set_ylabel('Mean error (different metric scales)'); axes[1].set_ylim(0, axes[1].get_ylim()[1]*1.12)
-    fig.supxlabel('Same frozen calibration and fresh test. Reliability bins have unequal sample counts.', fontsize=10)
+    fig.supxlabel('Separate frozen calibration per model; same fresh test. Reliability bins have unequal sample counts.', fontsize=10)
     export(fig, 'calibration')
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 4.8), layout='constrained')
@@ -122,6 +170,7 @@ def charts(result, output):
     axes[0].set(xlabel='Approximate prompt tokens · four choices', title='Context length')
     axes[1].set(xlabel='Choice count · short prompt', title='Choice count and extra forward passes')
     axes[0].legend(); axes[1].axvline(52, color='#899099', linestyle=':', alpha=.7)
+    fig.suptitle('Shingi v0.1 · Sequential CUDA decisions', fontsize=14)
     fig.supxlabel('Median lines; shaded to sample p95. Ten sequential repeats per case, after warmup. Model loading excluded.', fontsize=10)
     export(fig, 'latency')
 
@@ -139,6 +188,7 @@ def charts(result, output):
         axes[1].bar_label(bars, fmt='%.2f', padding=3)
     axes[1].set_xticks([0,1], labels); axes[1].set(ylabel='Sampled GPU allocation delta (GiB)', title='Memory including context and buffers'); axes[1].legend()
     axes[1].set_ylim(0, axes[1].get_ylim()[1]*1.24)
+    fig.suptitle('Shingi v0.1 · Measured CUDA latency and memory', fontsize=14)
     fig.supxlabel('300 fixed records × three repeats; ten warmups. Memory sampled every 100 ms; these are not continuous peaks.', fontsize=10)
     export(fig, 'hardware')
 
@@ -149,6 +199,7 @@ def report_release(a):
         raise ValueError('test split changed')
     records = ordered_rows(read_jsonl(a.data / 'test.jsonl'), protocol['choice_order']=='canonical')
     result = {'model': RELEASE_MODEL_ID, 'protocol': protocol, 'data': manifest,
+              'report_generator_sha256': sha256(Path(__file__)),
               'quality': {}, 'speed': {}, 'api': {}, 'cross_device': {}, 'paired': {}, 'inputs': {}}
     predictions = {}
     for card in ('6000','4090'):
@@ -172,7 +223,7 @@ def report_release(a):
         predictions[card] = {name: load_predictions(quality / name / 'test.jsonl', records) for name in ('base','adapter')}
         for name, rows in predictions[card].items():
             recomputed = quality_report(records, rows)
-            if recomputed != result['quality'][card]['models'][name]['calibrated'] or recomputed['overall']['valid'] != len(records):
+            if not replay_matches(recomputed, result['quality'][card]['models'][name]['calibrated']) or recomputed['overall']['valid'] != len(records):
                 raise ValueError('quality summary differs from raw predictions')
         model = result['quality'][card]['models']['adapter']
         if model['context'] != {'correct': 12, 'n': 12} or model['order']['pairs'] != 200 or model['order']['flips']:
@@ -192,7 +243,8 @@ def report_release(a):
     if len({result[kind][card]['receipt']['source_revision'] for kind in ('quality','speed') for card in ('6000','4090')}) != 1:
         raise ValueError('measurement source revisions differ')
     for name in ('base','adapter'):
-        result['cross_device'][name] = parity(records, predictions['6000'][name], predictions['4090'][name])
+        result['cross_device'][name] = cross_device_parity(records, predictions['6000'][name], predictions['4090'][name],
+                                                         Calibration(**protocol['calibrations'][name]['parameters']))
         check = result['cross_device'][name]
         if check['argmax_agreement'] < .99 or check['mean_tvd'] > .01:
             raise ValueError('cross-device parity gate failed')
@@ -225,6 +277,17 @@ def write_report(result, output):
         lines.append(f"| {title} (n={adapter[key]['n']}) | {base[key]['mean']:.5f} | {adapter[key]['mean']:.5f} |")
     lines += [f"| Top-label ECE (n=1,500) | {base['ece_top_label']:.5f} | {adapter['ece_top_label']:.5f} |", '',
               '![Calibration and score quality](figures/calibration.png)', '',
+              '| GPU, same 1,500 inputs | Unchanged Bonsai correct | Shingi correct |', '|---|---:|---:|']
+    for card in ('6000','4090'):
+        m = result['quality'][card]['models']
+        counts = [m[n]['calibrated']['overall']['correct'] for n in ('base','adapter')]
+        lines.append(f'| {card} | {counts[0]}/1,500 ({counts[0]/15:.2f}%) | {counts[1]}/1,500 ({counts[1]/15:.2f}%) |')
+    lines += ['', '| Cross-GPU comparison | Argmax agreement | Mean / maximum probability TVD |', '|---|---:|---:|']
+    for name in ('base','adapter'):
+        check = result['cross_device'][name]
+        lines.append(f"| {name} | {100*check['argmax_agreement']:.4f}% | {check['mean_tvd']:.7f} / {check['max_tvd']:.7f} |")
+    lines += ['',
+              f"Both models pass the predeclared 99% agreement / 0.01 mean-TVD gates, but this is not exact numerical equivalence. Different final adaptive prompts occur in {result['cross_device']['base']['adaptive_final_prompt_differences']} base and {result['cross_device']['adapter']['adaptive_final_prompt_differences']} adapter requests after a chunk winner changes. Every static chunk prompt and candidate token ID matches across devices; every adaptive trace is verified independently by replay. Small hardware-dependent logit changes can cause a large individual probability shift in this approximate method; the maximum TVD is reported above and its record ID is in the JSON.", '',
               'Choice keys are sorted before inference. Map-order stability is an interface property, not learned invariance. The additional input-order diagnostic varies the underlying prompt order.', '',
               '| GPU | Map-order flips, base / adapter | Input-order diagnostic flips, base / adapter | Adapter context probes |', '|---|---:|---:|---:|']
     for card in ('6000','4090'):
@@ -241,7 +304,8 @@ def write_report(result, output):
               '- Choice sorting was selected with a predeclared development gate. Adapter development accuracy changed from 212/256 to 209/256; NLL from 0.509250 to 0.520816. It avoids caller map-order effects at this measured development tradeoff.',
               '- Paired intervals use 20,000 bootstrap draws, seed 20260922; descriptive, without multiplicity correction. Source slices have only 100 records.',
               '- Mixed latency: 300 fixed records, 20/source, repeated three times after ten warmups. Synthetic curves: ten repetitions per case after warmup. Short HTTP: 30 localhost SDK requests after three warmups; one three-choice question.',
-              '- Wall times include all forward passes, tokenization and memory checks; loading is separate. OS filesystem cache is uncontrolled. Device memory is sampled every 100 ms; a brief peak can be missed. Other resident processes are recorded in private operator evidence.',
+              '- Latency percentiles use sorted values at index round((n−1) × p). With ten repeats, the sample p95 is the maximum. Curves are workload measurements, not population tail-latency guarantees.',
+              '- Wall times include all forward passes, tokenization and memory checks; loading is separate. Model initialization times exclude artifact checksum hashing. OS filesystem cache is uncontrolled. Device memory is sampled every 100 ms; a brief peak can be missed. Host RSS is sampled only after native readiness, so it does not establish a host load-time peak. Other resident processes are recorded in private operator evidence.',
               '- Synthetic context probes test simple planted-fact retrieval through about 15K tokens. They do not establish real-document comprehension.',
               '- Text/JSON only; sequential serving. More than 52 choices use approximate multi-pass chunk-and-anchor scoring. Labels and wording can still affect decisions.',
               '- No Mac result, hosted Jev request, or hosted latency comparison is included.', '',
@@ -260,13 +324,24 @@ def assemble(a):
         raise ValueError('report and packaged protocol differ')
     if read('release/calibration.json') != protocol['calibrations']['adapter']:
         raise ValueError('packaged calibration differs')
+    validation_path = Path('results/cuda-v0.1/validation.json')
+    if read(validation_path)['evaluation_summary_sha256'] != sha256(a.report / 'summary.json'):
+        raise ValueError('publication audit belongs to a different report')
     a.output.mkdir(parents=True, exist_ok=False)
     for source, dest in [(a.adapter,'adapter.gguf'), (Path('release/calibration.json'),'calibration.json'),
                          (Path('release/manifest.json'),'protocol.json'), (Path('release/README.md'),'README.md'),
                          (Path('NOTICE'),'NOTICE')]:
         shutil.copyfile(source, a.output / dest)
+    # The checked-in card renders against repository evidence; the Hub bundle
+    # carries those same figures and aggregate files beside the card.
+    card = (a.output / 'README.md').read_text()
+    card = card.replace('(../results/cuda-v0.1/figures/', '(figures/')
+    card = card.replace('(../results/cuda-v0.1/', '(evaluation/')
+    card = card.replace('(../NOTICE)', '(NOTICE)')
+    (a.output / 'README.md').write_text(card)
     shutil.copytree(a.report / 'figures', a.output / 'figures')
     (a.output / 'evaluation').mkdir()
+    shutil.copyfile(validation_path, a.output / 'evaluation/validation.json')
     for name in ('summary.json','REPORT.md','accuracy.csv'):
         shutil.copyfile(a.report / name, a.output / 'evaluation' / name)
     # The report's figure links are relative to its evaluation/ directory.
@@ -279,9 +354,20 @@ def assemble(a):
         'licenses/Prism-MIT': 'https://raw.githubusercontent.com/PrismML-Eng/llama.cpp/d8f26eec76da6d09bb708bcba51ef64b8cd868a3/LICENSE',
         'licenses/OpenJev-helper-Apache-2.0': 'https://huggingface.co/openjev/openjev/resolve/5ec9e5fd2f80a6fff386779b1e5ac7e389971889/LICENSE-APACHE-2.0',
         'licenses/TypeSafe-MIT': 'https://raw.githubusercontent.com/typesafe-ai/system-one-adapter-python/adffc2eab300a4fa3c0e92252d4ffd6ceaa53700/LICENSE'}
+    license_hashes = {
+        'LICENSE': '28a9529c7d0bb4dc51f4bf5c116a3d16ef247a052f7591466768ddf563fd1cf5',
+        'licenses/Bonsai-LICENSE': '69849221bfb90053de2134ef5e6d540287b4b98062326492f1f96f5da685524b',
+        'licenses/Bonsai-NOTICE.txt': 'de0e0c48fb6f691a31e74f338e3ccf93f9ecdfe2866ab769c4bf8b79a7636a30',
+        'licenses/Prism-MIT': '94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d',
+        'licenses/OpenJev-helper-Apache-2.0': 'cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30',
+        'licenses/TypeSafe-MIT': '835f233f1d6ed84a9b9a351aba0689b47644a4137d6316911fc7957bde523b02'}
     for name, url in licenses.items():
         path = a.output / name; path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_bytes(urllib.request.urlopen(url, timeout=60).read())
+        request = urllib.request.Request(url, headers={'User-Agent': 'Shingi-release/0.1 (+https://github.com/kortexa-ai/shingi)'})
+        data = urllib.request.urlopen(request, timeout=60).read()
+        if hashlib.sha256(data).hexdigest() != license_hashes[name]:
+            raise ValueError('upstream license changed: ' + name)
+        path.write_bytes(data)
     manifest = {'format_version': 1, 'model': RELEASE_MODEL_ID, 'adapter_license': 'cc-by-sa-4.0',
                 'source_repository': 'https://github.com/kortexa-ai/shingi',
                 'source_revision': subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip(),
@@ -299,7 +385,10 @@ def assemble(a):
 
 def verify_bundle(directory):
     manifest = read(directory / 'manifest.json')
-    actual = {str(p.relative_to(directory)) for p in directory.rglob('*') if p.is_file()}
+    paths = list(directory.rglob('*'))
+    if any(p.is_symlink() for p in paths):
+        raise ValueError('bundle contains an external path')
+    actual = {str(p.relative_to(directory)) for p in paths if p.is_file()}
     if actual != set(manifest['files']) | {'manifest.json'}:
         raise ValueError('bundle file inventory differs')
     for name, expected in manifest['files'].items():

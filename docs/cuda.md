@@ -2,6 +2,7 @@
 
 The release target is Linux x86-64 with an RTX 4090 or RTX PRO 6000 Blackwell.
 Use Python 3.11 or later, `uv`, Git, CMake, a C++17 compiler, NVIDIA drivers,
+the Hugging Face CLI (`hf`),
 and a CUDA toolkit supporting both `sm_89` and `sm_120` (CUDA 12.8 or later).
 The release validation records the exact tested toolkit and driver.
 

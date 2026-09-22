@@ -86,13 +86,73 @@ verify source/weight identities and reported metric denominators; inspect Git
 history for credentials, bulk data, model weights, and private runtime imports;
 and verify restoration of every borrowed production service.
 
-The initial history audit at source `8fa8548` scanned 22 commits and 119 unique
-blobs. Gitleaks found one generic-key match: the recorded SHA-256 of
-`artifacts/decision-v2/tokenized-manifest.json` in the training report. It is an
-artifact digest, not a credential. The reviewed finding is retained in the
-ignored audit evidence; no broad secret-scanner allowlist is used.
+The source/history audit is recorded in
+[`results/cuda-v0.1/validation.json`](../results/cuda-v0.1/validation.json).
+Gitleaks matches on the training tokenization-manifest digest and the two API
+result digests were checked against the actual artifact files. They are
+SHA-256 records, not credentials. The redacted scan evidence is retained
+outside the distribution; no broad secret-scanner allowlist is used.
 
 Historical reports contain original machine paths and GPU identities as
 provenance. Those records are not dependencies of the public runtime. Product
 source, scripts, and tests must remain independent of local service managers,
 private hosts, fixed GPU identities, and sibling repositories.
+
+## Reproduce the release evidence
+
+Use the preserved `data`, `quality-6000-01`, `quality-4090-01`,
+`speed-6000-01`, `speed-4090-01`, `api-6000-01`, and `api-4090-01`
+directories beneath an artifact root. `data` contains the frozen manifest and
+inputs; raw prediction files include every candidate's logits and token IDs.
+They are retained for audit and are not included in the public bundle.
+
+```bash
+uv sync --locked --extra reporting
+uv run --locked --extra reporting python scripts/package_release.py report \
+  --data artifacts/release-v0.1/data \
+  --evaluation-6000 artifacts/release-v0.1/quality-6000-01 \
+  --evaluation-4090 artifacts/release-v0.1/quality-4090-01 \
+  --speed-6000 artifacts/release-v0.1/speed-6000-01 \
+  --speed-4090 artifacts/release-v0.1/speed-4090-01 \
+  --api-6000 artifacts/release-v0.1/api-6000-01 \
+  --api-4090 artifacts/release-v0.1/api-4090-01 \
+  --output artifacts/release-v0.1/report
+uv run --locked --extra reporting python scripts/package_release.py bundle \
+  --adapter artifacts/training-v1/run-02/adapter-0128.gguf \
+  --report artifacts/release-v0.1/report \
+  --output artifacts/release-v0.1/hf-bundle
+uv run --locked python scripts/package_release.py verify \
+  artifacts/release-v0.1/hf-bundle
+```
+
+Use new output directories for each attempt. Report generation verifies the
+frozen protocol, dataset hashes, complete prediction inventories, measured
+source revisions, context/order checks, memory floor, and cross-GPU agreement.
+It recomputes quality metrics from the raw predictions. Cross-GPU comparison
+checks identical static prompts and candidate IDs, then independently replays
+each device's adaptive chunk-winner path. Saved answers and recomputed metrics
+allow only 1e-12 numerical replay tolerance across Python/libm implementations;
+reported GPU distributions are the original saved outputs. Different adaptive
+paths and maximum probability shifts remain explicit in the report. Bundle assembly requires
+a clean committed checkout, checks the selected adapter, and downloads exact
+checksum-pinned license texts. The bundle contains one adapter, calibration,
+protocol, model card, notices/licenses, aggregate evidence, and figures. Its
+manifest binds each file by byte count and SHA-256. Verification rejects missing,
+extra, corrupted, and externally linked files.
+
+## Publication procedure
+
+The intended Hub repository is `kortexa-ai/shingi-bonsai-2-27b-v0.1`. Review the
+verified bundle's README and manifest, then upload exactly that directory. Do
+not upload the surrounding artifact root. The unchanged base is obtained from
+Prism's pinned Hub revision separately. The source repository is
+`kortexa-ai/shingi`; its owner can change visibility in GitHub repository
+settings after reviewing the source/history audit and release evidence.
+
+The model card is authored for the final published locations. Before those
+repositories are public, its download example requires access and the Hub
+repository must exist. After publication, verify the Hub file inventory and
+checksums, capture its immutable revision, and use that revision in deployment
+instructions. Test a download from an unauthenticated environment. Tag the
+matching source commit and retain the exact bundle manifest alongside the
+release record.
