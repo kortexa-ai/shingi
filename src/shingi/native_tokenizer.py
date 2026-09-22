@@ -7,7 +7,7 @@ from .backend import NativeReadout
 
 class NativeTokenizer:
     def __init__(self, executable, model, context=16384):
-        env={**os.environ,'SHINGI_VOCAB_ONLY':'1'}
+        env={**os.environ,'SHINGI_VOCAB_ONLY':'1','CUDA_VISIBLE_DEVICES':''}
         self.process=subprocess.Popen([str(executable),str(model),str(context)],env=env,
                                       stdin=subprocess.PIPE,stdout=subprocess.PIPE,text=True,bufsize=1)
         try:

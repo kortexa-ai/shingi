@@ -122,6 +122,19 @@ def load_bonsai(path, prism_root, *, device="cuda", dtype=None):
         signs[width] = torch.tensor(raw, dtype=torch.float32, device=device)
         offset += width
 
+    class FrozenMatmul(torch.autograd.Function):
+        # Retain the original FP16 weights, but keep activation/gradient math in
+        # FP32. The transient FP32 matrix is released after each multiplication.
+        # Saving only the FP16 matrix avoids a second full resident base copy.
+        @staticmethod
+        def forward(ctx, x, weight):
+            ctx.save_for_backward(weight)
+            return torch.nn.functional.linear(x.float(), weight.float())
+        @staticmethod
+        def backward(ctx, grad):
+            (weight,) = ctx.saved_tensors
+            return torch.matmul(grad.float(), weight.float()), None
+
     class Folded(nn.Module):
         def __init__(self, weight, sign, embedding):
             super().__init__()
@@ -130,8 +143,8 @@ def load_bonsai(path, prism_root, *, device="cuda", dtype=None):
             self.embedding = embedding
         def forward(self, x):
             if self.embedding:
-                return hadamard(torch.nn.functional.embedding(x, self.weight), self.signs, block, inverse=True)
-            return torch.nn.functional.linear(hadamard(x, self.signs, block), self.weight)
+                return hadamard(torch.nn.functional.embedding(x, self.weight).float(), self.signs, block, inverse=True)
+            return FrozenMatmul.apply(hadamard(x, self.signs, block), self.weight)
 
     for tensor in reader.tensors:
         name = tensor.name
@@ -169,8 +182,8 @@ def load_bonsai(path, prism_root, *, device="cuda", dtype=None):
                 a = a[:, None, :]
             if stem.endswith("norm.weight") and stem != "ssm_norm.weight":
                 a = a - 1.0
-            # Norms/recurrent parameters stay FP32; linear projections use activation dtype.
-            td = dtype if a.ndim >= 2 else torch.float32
+            # All unquantized recurrent and normalization parameters retain FP32.
+            td = torch.float32
             weight = torch.from_numpy(np.array(a, copy=True)).to(device=device, dtype=td)
         if tuple(weight.shape) != tuple(expected[target].shape):
             raise ValueError(f"shape mismatch {name}: {weight.shape} != {expected[target].shape}")
@@ -192,7 +205,8 @@ def load_bonsai(path, prism_root, *, device="cuda", dtype=None):
     model.requires_grad_(False)
     model.eval()
     return model, {"tensors": len(assigned), "dtype": str(dtype), "hadamard_block": block,
-                   "config": config.to_dict(), "prism_revision": PRISM_REVISION}
+                   "config": config.to_dict(), "prism_revision": PRISM_REVISION,
+                   "activation_dtype": "torch.float32", "frozen_matmul": "fp32 with transient expansion"}
 
 
 def attach_lora(model, rank=8, alpha=16, last_layers=64):
