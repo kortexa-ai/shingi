@@ -1,23 +1,54 @@
-# Shingi agent instructions
+# Shingi contributor instructions
 
-Follow the parent workspace instructions in `../AGENTS.md` when present, including canonical user guidance, issue tracking, work claims, and repository workflow.
+Follow applicable parent workspace instructions when present. Keep changes
+focused, reproducible, and covered by checks appropriate to their risk.
 
-## Research scope
+## Research discipline
 
-Shingi investigates general-purpose decision models, initially using Bonsai 2 27B. Keep choices and domains request-defined. Record the current experiment's goal, acceptance thresholds, and resource budget in its owning issue before running it. The bootstrap is not an instruction to start training or stop services.
+Shingi investigates general-purpose decision models based on Bonsai 2 27B.
+Choices and domains are request-defined. Record each experiment's objective,
+acceptance thresholds, and resource budget in its owning issue before running.
+Keep training, development, calibration, and locked evaluation data distinct.
+Record dataset provenance, overlap checks, model revisions, prompt templates,
+candidate token IDs, and inference settings with results.
 
-Prioritize a compact local model for RTX 4090-class GPUs and M3/M4 Macs with 24 GB unified memory. Decision quality, option-order stability, single-request latency, and total runtime memory are primary; concurrent throughput is secondary. Snappy's 64 GB is not the minimum deployment target. For Mac feasibility, account for load-time and inference peaks, context cache, temporary buffers, and macOS/application headroom. Metal/MLX optimization follows quality validation. Do not infer 24 GB Mac performance from a weight-file size or an unconstrained Snappy run.
+Read every candidate logit explicitly; truncated top-k output is insufficient.
+Preserve the upstream ternary scales and transforms when establishing numerical
+agreement. Report measured accuracy, probability quality, option-order effects,
+single-request latency, and total runtime memory. Never infer reliability or a
+speedup from a working wrapper or a smaller file.
 
-Keep training, calibration, development, and locked evaluation data distinct. Record dataset provenance, overlap checks, model revisions, prompt templates, candidate token IDs, and decoding settings with results. Retrieve every candidate's logit explicitly; a truncated top-k response is not sufficient. Preserve original scales and transforms when establishing conversion parity. Do not claim quality, numerical equivalence, or speedups without measurements.
+## GPU operation and artifacts
 
-## Machines and artifacts
+An operator must authorize shared GPU use and arrange availability. Pin every
+job to one full GPU UUID. Start with a batch-one canary and retain deliberate
+memory headroom. CUDA v1 caps context at 16,384 tokens. Its inference gates are
+14 GiB free before load and 4 GiB during inference on GPUs up to 32 GiB, or
+30/10 GiB on larger GPUs. Expanded-base training requires separate memory checks.
 
-Before GPU work, read `../legolm/SMARTY_6000_GUIDE.md` on Smarty. Pin each experiment to its authorized GPU UUID. The RTX PRO 6000 is the normal research GPU; use the RTX 4090 only with Franci's explicit authorization for that block. The initial investigation received that exception while Franci uses the 6000. Follow the documented service-control process, record the initially running services, and restore that set when the authorized run ends. The 4090 profile requires 14 GiB free before load, at least 4 GiB headroom, and at most 16K context; the 6000 retains its 30/10 GiB gates. Never stop or restore another experiment's 6000 services from a 4090 block.
+Product commands must not manage host services, assume a particular hostname,
+embed a machine's GPU UUID, or import another project's private tools. Any
+operator-specific downtime/restoration wrapper belongs outside the distributed
+project. Record the initial service set and restore exactly that set after an
+authorized block, including failures.
 
-Use `/home/francip/src/shingi/artifacts` on Smarty for authoritative project checkpoints and bulk artifacts. This project uses its own artifact paths, not LegoLM's. Record revisions and checksums, verify copies before cleanup, and preserve checkpoints needed to reproduce reported results. Never commit weights or use Git LFS for them.
-
-Synchronize source through Git. Use an isolated `.venv` and `uv` for Python work once implementation begins. Keep credentials, local environments, downloaded datasets, and bulk run output out of Git; commit concise, reproducible research records separately.
+Use an in-project `.venv` and `uv`. Keep credentials, environments, downloaded
+data, checkpoints, and bulk logs out of Git. Preserve checksums and the artifacts
+needed to reproduce reported results. Do not commit model weights or use Git LFS
+for them. Synchronize repository source through Git.
 
 ## Release discipline
 
-Validate decision quality before preparing distribution formats. Preserve the upstream model's license and notices, and check dataset and comparator permissions separately. A working inference wrapper alone is not a newly trained checkpoint. Public model cards must identify the actual changes, limitations, evaluation split, and measured results. Published Jev comparisons must use attributed third-party public information; do not benchmark hosted Jev. Follow `docs/evaluation-protocol.md` and distinguish reported results from our reanalysis of public predictions.
+Validate quality before preparing a release. Preserve upstream licenses and
+notices; check model, dataset, runtime, and comparator permissions separately.
+Model cards must identify the actual changes, evaluation splits, measured
+results, and limitations. A separate adapter is not a merged ternary checkpoint.
+
+Published Jev comparisons use attributed third-party public information. Do not
+benchmark hosted Jev. Follow `docs/evaluation-protocol.md` and distinguish third-
+party reported results from our reanalysis of public predictions.
+
+The local deployment targets are RTX 4090-class GPUs and, in future work,
+M3/M4 Macs with 24 GB unified memory. Mac feasibility must include load and
+inference peaks, context cache, temporary buffers, and operating-system headroom.
+Do not infer Mac performance from CUDA runs, weight-file size, or a larger Mac.
