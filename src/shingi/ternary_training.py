@@ -152,8 +152,12 @@ def load_bonsai(path, prism_root, *, device="cuda", dtype=None):
             for start in range(0, shape[0], 256):
                 stop = min(start + 256, shape[0])
                 data = decode_pq2(tensor.data[start:stop], stop-start, shape[1])
-                idx = torch.as_tensor(inverse_perm[start:stop], device=device)
-                weight.index_copy_(0, idx, torch.from_numpy(data).to(device=device, dtype=dtype))
+                chunk = torch.from_numpy(data).to(device=device, dtype=dtype)
+                if np.array_equal(perm, np.arange(shape[0])):
+                    weight[start:stop].copy_(chunk)
+                else:
+                    idx = torch.as_tensor(inverse_perm[start:stop], device=device)
+                    weight.index_copy_(0, idx, chunk)
         else:
             a = dequantize(tensor.data, tensor.tensor_type).reshape(shape)
             a = reorder_rows(a, stem, nk, nv, hk, hv)

@@ -90,6 +90,7 @@ def main():
         torch.cuda.synchronize()
         result['stages'][stage]={'free_gib':torch.cuda.mem_get_info()[0]/2**30,'allocated_gib':torch.cuda.memory_allocated()/2**30,'peak_reserved_gib':torch.cuda.max_memory_reserved()/2**30}
         rails.assert_post_first_backward_free();print(stage,result['stages'][stage],flush=True)
+        (a.output/'parity.json').write_text(json.dumps(result,indent=2)+'\n')
     memory('before_load')
     model,info=load_bonsai(a.model,a.prism);result['loader']=info;memory('after_load')
     def forward(r):
@@ -109,14 +110,14 @@ def main():
     np.testing.assert_array_equal(zero,actual[0])
     result['zero_adapter_exact']=True
     model.train();model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={'use_reentrant':False})
-    optimizer=torch.optim.AdamW(params,lr=2e-5);scaler=torch.amp.GradScaler('cuda')
+    optimizer=torch.optim.AdamW(params,lr=2e-5);scaler=torch.amp.GradScaler('cuda', init_scale=1.0)
     # Synthetic canary only: this gradient is never reused as a trained checkpoint.
-    start=time.monotonic();logits=forward(rows[0]);loss=torch.nn.functional.cross_entropy(logits[None],torch.tensor([0],device='cuda'))
+    start=time.monotonic();logits=forward(rows[0]);loss=torch.nn.functional.cross_entropy(logits[None],torch.tensor([1],device='cuda'))
     scaler.scale(loss).backward();memory('first_backward')
     scaler.unscale_(optimizer);norm=torch.nn.utils.clip_grad_norm_(params,1.0)
     if not torch.isfinite(norm): raise RuntimeError('non-finite gradients')
     scaler.step(optimizer);scaler.update();optimizer.zero_grad(set_to_none=True);memory('after_optimizer')
-    result['step_seconds']=time.monotonic()-start;result['loss']=loss.item();result['gradient_norm']=norm.item()
+    result['loss_scale']=scaler.get_scale();result['step_seconds']=time.monotonic()-start;result['loss']=loss.item();result['gradient_norm']=norm.item()
     model.eval();model.gradient_checkpointing_disable()
     with torch.no_grad(): trained=[forward(r).cpu().tolist() for r in rows]
     export_adapter(model,a.output/'canary.gguf',a.prism)
