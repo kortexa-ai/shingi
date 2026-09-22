@@ -1,0 +1,29 @@
+# Local environments, credentials, and caches
+.venv/
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.DS_Store
+
+# Bulk research artifacts; commit concise reports separately
+artifacts/
+checkpoints/
+weights/
+data/raw/
+data/cache/
+runs/
+wandb/
+
+# Model binaries, including files accidentally placed outside artifact directories
+*.safetensors
+*.gguf
+*.pt
+*.pth
+*.ckpt
+*.onnx
+pytorch_model*.bin
