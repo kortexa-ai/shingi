@@ -22,7 +22,7 @@ For more than 52 options, the baseline uses the same mathematical approximation 
 
 For K choices, confidence is `(K * max_probability - 1) / (K - 1)`, with confidence 1 for a singleton. Score confidence measures the mean distance from the modal level, normalized by a uniform distribution's mean distance from its center, then clipped below at zero. These follow the public TypeSafe adapter formulas. Confidence is a distribution statistic, not an empirical probability of correctness.
 
-The baseline starts at temperature 1 with no Noul bias adjustment. OpenJev's fitted calibration constants do not transfer automatically to Bonsai. Fit and report any calibration on separate data.
+Without `--calibration`, the baseline starts at temperature 1 with no Noul bias adjustment. OpenJev's fitted calibration constants do not transfer automatically to Bonsai. The first investigation fitted calibration on 350 separate validation records. Pass its JSON file with `--calibration`; `/v1/version` reports the active parameters and file hash. See the [measured results and tradeoffs](../results/baseline-v1/REPORT.md).
 
 ## Explicit limits
 

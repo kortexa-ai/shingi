@@ -1,8 +1,8 @@
 # Shingi — 審議
 
-General-purpose decision models: choices, scores, and probabilities in one forward pass.
+General-purpose decision models: choices, scores, and probabilities from candidate logits.
 
-**Shingi** takes its name from the Japanese word for deliberation. This repository is a research workspace, initially exploring decision readouts from **Bonsai 2 27B**. It does not yet contain a trained Shingi checkpoint or validated quality results.
+**Shingi** takes its name from the Japanese word for deliberation. This repository investigates decision readouts from **Bonsai 2 27B**. The [first measured baseline](results/baseline-v1/REPORT.md) runs on an RTX 4090 and passes the live TypeSafe SDK checks. It reaches 69.07% accuracy on 1,500 selected decisions, but changes 15.5% of answers in 200 option-order pairs. No Shingi weights have been trained or released.
 
 ## Research direction
 
@@ -22,7 +22,7 @@ Quality comes before release formats. Preserve the native ternary representation
 
 ## Prototype
 
-The first prototype exposes `POST /v1/systemone` and `GET /v1/models`. It implements Choice, Noul, and Score over native Bonsai candidate logits. See [API compatibility and limits](docs/api-contract.md). Protocol tests use a deterministic backend; they do not establish Bonsai quality.
+The first prototype exposes `POST /v1/systemone` and `GET /v1/models`. It implements Choice, Noul, and Score over native Bonsai candidate logits. See [API compatibility and limits](docs/api-contract.md). CPU protocol tests use a deterministic backend; the [live API smoke](results/baseline-v1/live-api.json) separately verifies the SDK against native Bonsai. More than 52 choices require multiple forward passes.
 
 ```bash
 uv sync --locked
@@ -34,13 +34,15 @@ The benchmark preparation downloads a pinned public JevBench revision into ignor
 
 Any published Jev comparison must cite third-party public evidence and label its provenance. We do not benchmark hosted Jev. See the [evaluation and publication protocol](docs/evaluation-protocol.md).
 
-On Smarty, `bash scripts/build_native.sh` builds the small readout executable against the existing pinned Prism runtime. Building uses no GPU. Run a GPU canary only after checking availability and following the [investigation procedure](planning/work-units/shingi-2.md). A model-quality verdict requires the measured run; no Shingi checkpoint is released yet.
+On Smarty, `bash scripts/build_native.sh` builds the small readout executable against the existing pinned Prism runtime. Building uses no GPU. Run a GPU canary only after checking availability and following the [investigation procedure](planning/work-units/shingi-2.md). The initial quality verdict supports further research; no Shingi checkpoint is released yet.
 
 Once the 6000 is available and claimed, run `bash scripts/run_gpu.sh` with `--model`, `--phase canary`, and a fresh `--output` directory. Then run the `calibration` phase, fit its saved raw logits with `scripts/fit_calibration.py`, and pass the resulting `--calibration` file to the locked `test` and `shuffle` phases. The runner preserves raw logits, exact prompt hashes, timing, memory headroom, source revision, and model/data hashes. It rejects dirty source and never overwrites an existing run directory. This 6000 launcher does not stop services to obtain memory.
 
 `scripts/score_saved_jev.py` computes an explicitly attributed reanalysis of third-party public predictions on the same selected record IDs. It never calls hosted Jev.
 
 For an explicitly authorized 4090 block, `uv run python scripts/borrow_4090.py --output BLOCK_LOG_DIR -- bash scripts/investigate.sh RUN_DIR MODEL.gguf` runs all phases with process-owned service restoration. It may stop the recorded fallback LM, TTS, and Qwen ASR services only as required for memory. It leaves Miso and all 6000 services alone. This path has a 14 GiB pre-load gate, 4 GiB headroom floor, 16K context cap, and eight-hour block limit.
+
+Within an owned GPU block, `uv run python -m shingi.server --model MODEL.gguf --calibration artifacts/baseline-v1-4090/calibration.json` serves the calibrated model on `127.0.0.1:8765`. The calibration file is also recorded in `results/baseline-v1/native-investigation.json` under `calibration`; extract that object if reproducing on another checkout. The server checks the model hash before applying it. `/v1/version` identifies the active calibration. `scripts/smoke_live_api.py` owns a temporary server for the live SDK check and shuts it down on exit.
 
 ## References and licensing
 

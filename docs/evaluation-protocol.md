@@ -12,7 +12,7 @@ Keep these evidence classes distinct:
 
 The initial source is [JevBench by Praveenrajus / uspraveen](https://huggingface.co/datasets/Praveenrajus/jev-bench/tree/002ad22de8db2df5e0eb898b3da8072dbd4af4de), with [published Jev 1.13.0 predictions](https://huggingface.co/datasets/Praveenrajus/jev-bench/blob/002ad22de8db2df5e0eb898b3da8072dbd4af4de/results/jev-1.13.0/test_predictions.jsonl). The file carries record IDs, but no input hashes. A join to the same-revision dataset supports provenance; it does not independently prove that the hosted model received identical payloads. Its latency reflects the publisher's network and execution conditions and cannot support a local speed comparison.
 
-The TypeSafe SDK tests call localhost with a deterministic backend. They test API compatibility, not Jev performance.
+The TypeSafe SDK tests call localhost. CPU contract tests use a deterministic backend; the separate live smoke uses native Bonsai. Neither calls hosted Jev or measures its performance.
 
 ## Frozen baseline
 
