@@ -211,6 +211,11 @@ def report_release(a):
         result['api'][card] = read(api / 'result.json')
         for kind, directory, filename in [('quality',quality,'summary.json'), ('speed',speed,'summary.json'), ('api',api,'result.json')]:
             result['inputs'][card+'/'+kind] = sha256(directory / filename)
+        for name in ('base','adapter'):
+            for filename in ('test.jsonl','shuffle.jsonl','order-pairs.jsonl','order-diagnostic-input.jsonl','order-diagnostic-shuffle.jsonl','context.json'):
+                result['inputs'][card+'/quality/'+name+'/'+filename] = sha256(quality / name / filename)
+        for filename in ('observations.jsonl','memory-samples.json'):
+            result['inputs'][card+'/speed/'+filename] = sha256(speed / filename)
         for kind in ('quality','speed'):
             validate_receipt(result[kind][card]['receipt'], card, sha256(a.protocol), sha256(a.data / 'manifest.json'))
         if not result['api'][card].get('passed'):
@@ -253,7 +258,7 @@ def report_release(a):
     save(a.output / 'summary.json', result)
     charts(result, a.output)
     with (a.output / 'accuracy.csv').open('w', newline='') as stream:
-        writer = csv.writer(stream)
+        writer = csv.writer(stream, lineterminator='\n')
         writer.writerow(['source','held_out_from_adaptation','gpu','model','n','correct','accuracy','wilson_low','wilson_high','nll'])
         for card in ('6000','4090'):
             for name in ('base','adapter'):

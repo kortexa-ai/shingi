@@ -1,0 +1,105 @@
+{
+  "date": "2026-09-22",
+  "evaluation_summary_sha256": "3c9644e3a062b2fdf8b05e0a2a0238a59365597367c925aa6e5f534ac2464e97",
+  "measurement_source_revision": "a65d5a15fb19ee2266df1b83660b64c7603c2985",
+  "native_executable_sha256": "dd71ef5ac08ac18e2028db3dd84dcca7864f12b904fb9a76379c12c0f034c2fb",
+  "prism_repository": "https://github.com/PrismML-Eng/llama.cpp",
+  "prism_revision": "d8f26eec76da6d09bb708bcba51ef64b8cd868a3",
+  "independent_installation": {
+    "public_source_build": true,
+    "cuda_toolkit": "13.0.88",
+    "cuda_architectures": [
+      89,
+      120
+    ],
+    "runtime_imports_private_projects": false,
+    "native_shared_libraries": "Independent Prism build, CUDA and system libraries only."
+  },
+  "cpu_tests": {
+    "passed": 63,
+    "linux_python": "3.14.3",
+    "macos_python": "3.12.13",
+    "tested_source_revision": "3071a2cbbb6a6e1181b4af771f38239540437cef"
+  },
+  "live_sdk": {
+    "6000": {
+      "passed": true,
+      "exact_key_choices": [
+        52,
+        53,
+        255
+      ],
+      "invalid_choice_count_status": 422,
+      "oversized_context_status": 422,
+      "canonical_map_reorder_identical": true
+    },
+    "4090": {
+      "passed": true,
+      "exact_key_choices": [
+        52,
+        53,
+        255
+      ],
+      "invalid_choice_count_status": 422,
+      "oversized_context_status": 422,
+      "canonical_map_reorder_identical": true
+    }
+  },
+  "context": {
+    "6000": {
+      "correct": 12,
+      "n": 12
+    },
+    "4090": {
+      "correct": 12,
+      "n": 12
+    }
+  },
+  "cross_gpu_gates": {
+    "argmax_agreement_minimum": 0.99,
+    "mean_tvd_maximum": 0.01,
+    "passed": true,
+    "method": "Replay and verify each adaptive path, require identical static prompts and token IDs, compare saved final probabilities.",
+    "reporting_correction": "An initial checker incorrectly required equal final adaptive prompts. Six changed paths per model are now reported; inference and thresholds did not change. Python replay permits only 1e-12 numeric drift."
+  },
+  "source_audit": {
+    "runtime_private_dependency_matches": 0,
+    "tracked_model_files": 0,
+    "gitleaks_review": "Reviewed artifact-digest false positives; no credentials found. No broad allowlist.",
+    "false_positive_artifact_keys": [
+      "artifacts/decision-v2/tokenized-manifest.json",
+      "6000/api",
+      "4090/api"
+    ],
+    "historical_machine_paths": "Retained as research provenance; not runtime dependencies."
+  },
+  "service_restoration": {
+    "6000": {
+      "selected_services_restored": 6,
+      "all_health_checks_passed": true,
+      "child_exit": 0,
+      "operator_record_sha256": "f66db7012ec8c98196402767b915e20c89de0d67ee0be0185b08344491df2bdc"
+    },
+    "4090": {
+      "selected_services_restored": 3,
+      "all_health_checks_passed": true,
+      "child_exit": 0,
+      "operator_record_sha256": "804c1e5902270da9ecf2018c9c72101352598da8132664436d260017d58fa942"
+    }
+  },
+  "independent_final_service_health_checks": 9,
+  "unrelated_gpu_process_ids_preserved": true,
+  "figures_visually_inspected": [
+    "accuracy",
+    "calibration",
+    "latency",
+    "hardware"
+  ],
+  "distribution": {
+    "adapter_license": "cc-by-sa-4.0",
+    "code_license": "apache-2.0",
+    "base_included": false,
+    "raw_datasets_included": false,
+    "publication_unit": "GGUF adapter, calibration, protocol, model card, notices/licenses, aggregate evidence and figures."
+  }
+}

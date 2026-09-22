@@ -9447,7 +9447,7 @@
     ],
     "pretraining_overlap": "Unknown; exclusions cover this project's adaptation and prior evaluation."
   },
-  "report_generator_sha256": "faf596c2562b8a996fa0dd74f576b4841f40346f4136539da3032568228377e1",
+  "report_generator_sha256": "af6bf797fce54399918ea0b7d6f2f76e757109a93367ec57691a1374637b1a05",
   "quality": {
     "6000": {
       "receipt": {
@@ -19094,8 +19094,36 @@
     "6000/quality": "aa6fd440257162e866a3ecbf02e066c5838d71257d8d8af4cb1d5be4eec2cff2",
     "6000/speed": "28e4758fdc93fe7be09b42165de0f5d001529aabff16c98e0c034c1f97a07f84",
     "6000/api": "1170c4a11f41c404b1d8bff2a96df07be086f6f8840465ae5e40d785744605ae",
+    "6000/quality/base/test.jsonl": "2e6980517f012df4f99f71eea56034ec74ed0125b585b293d0a1cc2b7d0eced9",
+    "6000/quality/base/shuffle.jsonl": "f02d3104830599c76c45b66f788c45a0916565dcebc1199486ebb483ebd949af",
+    "6000/quality/base/order-pairs.jsonl": "614530d7f61b422f6049e0e7884d8e86af556d0f999b67422b42163c244cf226",
+    "6000/quality/base/order-diagnostic-input.jsonl": "e8e04fa64e4e557221064c5e648018d3c80a3a81bf7b8bef68b89e95b34ff0b5",
+    "6000/quality/base/order-diagnostic-shuffle.jsonl": "427b256c0fb6e9b486d80eba4b7b87eef49977e2c2dad37529d52fadd0032451",
+    "6000/quality/base/context.json": "f15020f79434a8aaf7b9855bee099a6e45bd14b11aaff060f4351db15067a8c0",
+    "6000/quality/adapter/test.jsonl": "fb700bbe07b18e8f46a74107c83b3ad0fb0e64827c0010b14a4d23dbca182ee9",
+    "6000/quality/adapter/shuffle.jsonl": "a2bd8395356fee6d19be9ac7d4862aefb89c81ae6b6337b1cc42ae56b5fcb688",
+    "6000/quality/adapter/order-pairs.jsonl": "614530d7f61b422f6049e0e7884d8e86af556d0f999b67422b42163c244cf226",
+    "6000/quality/adapter/order-diagnostic-input.jsonl": "273c85827aec97c4b52e33c952449a89c23d41ba56c48332a11ba12bfa258614",
+    "6000/quality/adapter/order-diagnostic-shuffle.jsonl": "a77e6b3c171955a5d938dd46072270d49f8708599f6e6da0a70560cad910641e",
+    "6000/quality/adapter/context.json": "9fd633f31cd06d007f5a43924f78e70908dfdc7c7bd48087b58e0e782dd8eba3",
+    "6000/speed/observations.jsonl": "6624b7547193bbece9bc6b9e7008f73f3c9c6bf6118b0971465d32f11f3ef545",
+    "6000/speed/memory-samples.json": "9add7ad84d2a8ee032a5a96e31913056e8db9f3f5964ef5a1be9d40dabbd89e6",
     "4090/quality": "c43bb1134183c17b326441af057f00ade737b3d7e0a4b0bf2513fd0d3351c134",
     "4090/speed": "22002e17982f989e125f27625bf04a85f3f85d0276a81652ae48570ed83a2cc8",
-    "4090/api": "bcf2b796a05d4c0f7dfdaef51a7fdc532ae297a26dc2434f45978b31382ea23e"
+    "4090/api": "bcf2b796a05d4c0f7dfdaef51a7fdc532ae297a26dc2434f45978b31382ea23e",
+    "4090/quality/base/test.jsonl": "d1b2fefee8c23f9245a57865c2230c82d0dfa609bbd85a227bb8f34d737cb63f",
+    "4090/quality/base/shuffle.jsonl": "a49e05e4c162456cbf2055605d07ae481e1febd32bcc8483dceec6dd9b51bd3b",
+    "4090/quality/base/order-pairs.jsonl": "614530d7f61b422f6049e0e7884d8e86af556d0f999b67422b42163c244cf226",
+    "4090/quality/base/order-diagnostic-input.jsonl": "c5d1cf9c5d916d90b3dd6fc8ee1ad158097d9e2fb2706f52dbd9f28023fa355c",
+    "4090/quality/base/order-diagnostic-shuffle.jsonl": "41a11b3619903c92cd8b033e50d68f6cb9cb105917c1bc34ff72438f89f1576b",
+    "4090/quality/base/context.json": "0999c948fbd3a6424450d2ea73f69ed6bf3aaa9149a41719a9eadd8e898e805f",
+    "4090/quality/adapter/test.jsonl": "2de66d1e9e107d9274b946c1e6abf8b4f1442fcc828bc2a871e6f98768d08301",
+    "4090/quality/adapter/shuffle.jsonl": "c44dc5ffd0e4d1d2dee81059fb5b9412dbbbb9d352a5263c6c4fa6668b8790e0",
+    "4090/quality/adapter/order-pairs.jsonl": "614530d7f61b422f6049e0e7884d8e86af556d0f999b67422b42163c244cf226",
+    "4090/quality/adapter/order-diagnostic-input.jsonl": "7ba4e307486eae20853a78eff9e2e36538aa0acea9ced14e760a9096e818eb73",
+    "4090/quality/adapter/order-diagnostic-shuffle.jsonl": "5517b61159dfddf99be3c7166f218282eeb42f03b32760118a6c34f06eaa33b5",
+    "4090/quality/adapter/context.json": "5044acc8e2c6ada1785a2dec28f928e1d500f204c2c5b750ac1ae7d18565ff49",
+    "4090/speed/observations.jsonl": "b6b1795e38578cd58985101f73cd6b3c87083d1ad0ddc90a072689f837438e00",
+    "4090/speed/memory-samples.json": "24201556972a0ac4643503f8485de6dfc557be77016cc0ff7fda4b35176b8917"
   }
 }
