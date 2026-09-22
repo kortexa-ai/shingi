@@ -56,3 +56,38 @@ def test_release_rejects_experimental_runtime_flags(monkeypatch):
     monkeypatch.setenv('SHINGI_KV_F16', '1')
     with pytest.raises(RuntimeError, match='Q8 CUDA'):
         require_release_environment()
+
+
+def test_report_rejects_duplicate_or_changed_predictions(tmp_path):
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
+    from package_release import load_predictions
+    path = tmp_path / 'predictions.jsonl'
+    row = {'id': 'one', 'input_sha256': 'original', 'error': None}
+    path.write_text(json.dumps(row) + '\n')
+    assert load_predictions(path, [row]) == {'one': row}
+    path.write_text((json.dumps(row) + '\n') * 2)
+    with pytest.raises(ValueError, match='inventory'):
+        load_predictions(path, [row])
+    path.write_text(json.dumps({**row, 'input_sha256': 'changed'}) + '\n')
+    with pytest.raises(ValueError, match='mismatched'):
+        load_predictions(path, [row])
+
+
+def test_bundle_verification_rejects_extra_files_and_corruption(tmp_path, monkeypatch):
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
+    import package_release
+    adapter = tmp_path / 'adapter.gguf'; adapter.write_bytes(b'fixture')
+    monkeypatch.setattr(package_release, 'ADAPTER_SHA256', sha256(adapter))
+    manifest = {'files': {'adapter.gguf': {'bytes': adapter.stat().st_size, 'sha256': sha256(adapter)}}}
+    (tmp_path / 'manifest.json').write_text(json.dumps(manifest))
+    package_release.verify_bundle(tmp_path)
+    extra = tmp_path / 'raw-data.jsonl'; extra.write_text('private input')
+    with pytest.raises(ValueError, match='inventory'):
+        package_release.verify_bundle(tmp_path)
+    extra.unlink(); adapter.write_bytes(b'corrupt')
+    with pytest.raises(ValueError, match='checksum'):
+        package_release.verify_bundle(tmp_path)
