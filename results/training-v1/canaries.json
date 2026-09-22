@@ -1,0 +1,123 @@
+{
+  "base": "native ternary Bonsai 2 27B; original GGUF unchanged",
+  "attempts": [
+    {
+      "base_sha256": "3907dc1658db1f78a9826bf8d5bcb8dc65db0d466388937af57f2294fae62ec1",
+      "native_kv": "f16",
+      "stages": {
+        "before_load": {
+          "free_gib": 94.3896484375,
+          "allocated_gib": 0.0,
+          "peak_reserved_gib": 0.0
+        },
+        "after_load": {
+          "free_gib": 44.1474609375,
+          "allocated_gib": 50.10105609893799,
+          "peak_reserved_gib": 50.12109375
+        }
+      },
+      "base_parity": {
+        "centered_logit_rmse": 0.01524601951371977,
+        "mean_tvd": 0.001020635027386009,
+        "max_tvd": 0.01126455192987925,
+        "argmax_agreement": 1.0,
+        "prompts": 16
+      },
+      "forward_seconds": 4.800376896047965,
+      "attempt": 1,
+      "log_sha256": "9c4d2699ed8f961e80aa6df3a13ac25dc66b6f581b9cf6cac3ea9cc9bda9189e",
+      "restored_and_healthy": true,
+      "failure": "non-finite FP16 gradients; no optimizer update or trained checkpoint"
+    },
+    {
+      "base_sha256": "3907dc1658db1f78a9826bf8d5bcb8dc65db0d466388937af57f2294fae62ec1",
+      "native_kv": "f16",
+      "stages": {
+        "before_load": {
+          "free_gib": 94.3896484375,
+          "allocated_gib": 0.0,
+          "peak_reserved_gib": 0.0
+        },
+        "after_load": {
+          "free_gib": 44.1279296875,
+          "allocated_gib": 50.10105609893799,
+          "peak_reserved_gib": 50.140625
+        },
+        "first_backward": {
+          "free_gib": 41.7451171875,
+          "allocated_gib": 50.44090175628662,
+          "peak_reserved_gib": 52.486328125
+        }
+      },
+      "base_parity": {
+        "centered_logit_rmse": 0.01524601951371977,
+        "mean_tvd": 0.001020635027386009,
+        "max_tvd": 0.01126455192987925,
+        "argmax_agreement": 1.0,
+        "prompts": 16
+      },
+      "forward_seconds": 4.387989945011213,
+      "trainable_parameters": 34603008,
+      "zero_adapter_exact": true,
+      "backward_context_tokens": 1024,
+      "attempt": 2,
+      "log_sha256": "9a72e087845fde16c42866a2589183b70d3cea9a6b87ec70804ef40f24e4d5ec",
+      "restored_and_healthy": true,
+      "failure": "non-finite FP16 gradients; no optimizer update or trained checkpoint"
+    },
+    {
+      "base_sha256": "3907dc1658db1f78a9826bf8d5bcb8dc65db0d466388937af57f2294fae62ec1",
+      "native_kv": "f16",
+      "stages": {
+        "before_load": {
+          "free_gib": 94.3896484375,
+          "allocated_gib": 0.0,
+          "peak_reserved_gib": 0.0
+        },
+        "after_load": {
+          "free_gib": 44.0751953125,
+          "allocated_gib": 50.14866352081299,
+          "peak_reserved_gib": 50.193359375
+        },
+        "first_backward": {
+          "free_gib": 33.7158203125,
+          "allocated_gib": 50.50804042816162,
+          "peak_reserved_gib": 60.533203125
+        },
+        "after_optimizer": {
+          "free_gib": 33.3525390625,
+          "allocated_gib": 50.63694715499878,
+          "peak_reserved_gib": 60.896484375
+        }
+      },
+      "base_parity": {
+        "centered_logit_rmse": 0.013407532358613007,
+        "mean_tvd": 0.0010795768436049366,
+        "max_tvd": 0.01045213331974147,
+        "argmax_agreement": 1.0,
+        "prompts": 16
+      },
+      "forward_seconds": 6.483843619003892,
+      "trainable_parameters": 34603008,
+      "zero_adapter_exact": true,
+      "backward_context_tokens": 1024,
+      "loss_scale": 1.0,
+      "step_seconds": 5.100928721949458,
+      "loss": 1.1569290161132812,
+      "gradient_norm": 3.7643020153045654,
+      "adapter_parity": {
+        "centered_logit_rmse": 0.014021218168561576,
+        "mean_tvd": 0.00036108835708002036,
+        "max_tvd": 0.0033926386118313173,
+        "argmax_agreement": 1.0,
+        "prompts": 16
+      },
+      "passed": true,
+      "attempt": 3,
+      "log_sha256": "f5f5f3ce605b4fecf2bad325fc72269a86b6e21f772fb041625f37ed2362e703",
+      "restored_and_healthy": true
+    }
+  ],
+  "method": "FP16 frozen base matrices preserve original ternary scales; FP32 activations and gradients avoid the failed FP16 backward path. Only 34,603,008 MLP LoRA parameters train.",
+  "limitations": "Synthetic numerical and memory canary, not decision quality. Canary adapter is discarded before real training."
+}
