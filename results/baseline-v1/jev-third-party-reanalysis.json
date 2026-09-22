@@ -1,0 +1,1833 @@
+{
+  "provenance": {
+    "models": [
+      "jev-1.13.0"
+    ],
+    "predictions_renormalized": 41,
+    "evidence_class": "Our reanalysis of third-party public predictions; no hosted Jev calls.",
+    "publisher": "Praveenrajus / uspraveen (JevBench)",
+    "source_url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/blob/002ad22de8db2df5e0eb898b3da8072dbd4af4de/results/jev-1.13.0/test_predictions.jsonl",
+    "source": "Published predictions from pinned JevBench revision; not our live hosted run.",
+    "pairing": "ID join to same-revision records. Prediction file lacks independent input hashes.",
+    "latency": "Published hosted latency includes its original hardware and network; not comparable to local timing."
+  },
+  "metric_notes": {
+    "failures": "Included as incorrect in accuracy; excluded from probability metrics with explicit n.",
+    "ece": "10 equal-width bins of maximum class probability, not API confidence.",
+    "nll": "Natural log; probabilities floored at 1e-12 for this metric only.",
+    "brier": "Multiclass sum of squared errors; binary Brier also reported for Noul.",
+    "noul_threshold": "Yes when P(yes) >= 0.5, including an exact tie.",
+    "ordinal": "Zero-based expected score MAE and normalized ranked probability score.",
+    "human": "TVD to normalized human vote shares, where provided."
+  },
+  "overall": {
+    "n": 1500,
+    "valid": 1500,
+    "failures": [],
+    "correct": 1094,
+    "accuracy_failures_incorrect": 0.7293333333333333,
+    "accuracy_wilson_95": [
+      0.7062841314812321,
+      0.7512109029617778
+    ],
+    "nll": {
+      "mean": 2.0111117564066867,
+      "n": 1500
+    },
+    "brier_multiclass": {
+      "mean": 0.3870166242764344,
+      "n": 1500
+    },
+    "brier_binary": {
+      "mean": 0.0743255,
+      "n": 400
+    },
+    "score_mae": {
+      "mean": 0.7453670033670033,
+      "n": 300
+    },
+    "rps": {
+      "mean": 0.1803040790990715,
+      "n": 300
+    },
+    "human_tvd": {
+      "mean": 0.4347779399110007,
+      "n": 400
+    },
+    "ece_top_label": 0.11452545454545456,
+    "reliability_bins": [
+      {
+        "lower": 0.0,
+        "upper": 0.1,
+        "n": 0,
+        "accuracy": null,
+        "probability": null
+      },
+      {
+        "lower": 0.1,
+        "upper": 0.2,
+        "n": 0,
+        "accuracy": null,
+        "probability": null
+      },
+      {
+        "lower": 0.2,
+        "upper": 0.3,
+        "n": 0,
+        "accuracy": null,
+        "probability": null
+      },
+      {
+        "lower": 0.3,
+        "upper": 0.4,
+        "n": 18,
+        "accuracy": 0.1111111111111111,
+        "probability": 0.35444444444444445
+      },
+      {
+        "lower": 0.4,
+        "upper": 0.5,
+        "n": 78,
+        "accuracy": 0.15384615384615385,
+        "probability": 0.45258741258741264
+      },
+      {
+        "lower": 0.5,
+        "upper": 0.6,
+        "n": 135,
+        "accuracy": 0.4074074074074074,
+        "probability": 0.5453752338196783
+      },
+      {
+        "lower": 0.6,
+        "upper": 0.7,
+        "n": 123,
+        "accuracy": 0.45528455284552843,
+        "probability": 0.6464096247023076
+      },
+      {
+        "lower": 0.7,
+        "upper": 0.8,
+        "n": 106,
+        "accuracy": 0.5754716981132075,
+        "probability": 0.7436601867733943
+      },
+      {
+        "lower": 0.8,
+        "upper": 0.9,
+        "n": 170,
+        "accuracy": 0.7529411764705882,
+        "probability": 0.8474771241830066
+      },
+      {
+        "lower": 0.9,
+        "upper": 1.0,
+        "n": 870,
+        "accuracy": 0.896551724137931,
+        "probability": 0.974796818762336
+      }
+    ],
+    "latency_ms": {
+      "n": 1500,
+      "median": 190.66292200000134,
+      "p95": 284.2756539999982
+    }
+  },
+  "by_source": {
+    "banking77": {
+      "n": 100,
+      "valid": 100,
+      "failures": [],
+      "correct": 77,
+      "accuracy_failures_incorrect": 0.77,
+      "accuracy_wilson_95": [
+        0.6784561697712622,
+        0.8415673411969654
+      ],
+      "nll": {
+        "mean": 2.8663768254238766,
+        "n": 100
+      },
+      "brier_multiclass": {
+        "mean": 0.3579668088970513,
+        "n": 100
+      },
+      "brier_binary": {
+        "mean": null,
+        "n": 0
+      },
+      "score_mae": {
+        "mean": null,
+        "n": 0
+      },
+      "rps": {
+        "mean": null,
+        "n": 0
+      },
+      "human_tvd": {
+        "mean": null,
+        "n": 0
+      },
+      "ece_top_label": 0.11934545454545463,
+      "reliability_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 5,
+          "accuracy": 0.2,
+          "probability": 0.4708484848484849
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 7,
+          "accuracy": 0.5714285714285714,
+          "probability": 0.5407792207792208
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 5,
+          "accuracy": 0.2,
+          "probability": 0.6533939393939394
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 5,
+          "accuracy": 0.6,
+          "probability": 0.764
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 12,
+          "accuracy": 0.75,
+          "probability": 0.8583333333333334
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 66,
+          "accuracy": 0.8939393939393939,
+          "probability": 0.9845270890725437
+        }
+      ],
+      "latency_ms": {
+        "n": 100,
+        "median": 205.1459859999909,
+        "p95": 309.35164499999246
+      }
+    },
+    "clinc150": {
+      "n": 100,
+      "valid": 100,
+      "failures": [],
+      "correct": 91,
+      "accuracy_failures_incorrect": 0.91,
+      "accuracy_wilson_95": [
+        0.837737871472837,
+        0.9519274599974348
+      ],
+      "nll": {
+        "mean": 0.7146407231095421,
+        "n": 100
+      },
+      "brier_multiclass": {
+        "mean": 0.12371024711764106,
+        "n": 100
+      },
+      "brier_binary": {
+        "mean": null,
+        "n": 0
+      },
+      "score_mae": {
+        "mean": null,
+        "n": 0
+      },
+      "rps": {
+        "mean": null,
+        "n": 0
+      },
+      "human_tvd": {
+        "mean": null,
+        "n": 0
+      },
+      "ece_top_label": 0.028808080808080887,
+      "reliability_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 1,
+          "accuracy": 0.0,
+          "probability": 0.37
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 5,
+          "accuracy": 0.4,
+          "probability": 0.5390909090909092
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 6,
+          "accuracy": 0.6666666666666666,
+          "probability": 0.6478114478114478
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 2,
+          "accuracy": 1.0,
+          "probability": 0.74
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 9,
+          "accuracy": 0.8888888888888888,
+          "probability": 0.8573961840628507
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 77,
+          "accuracy": 0.974025974025974,
+          "probability": 0.9856985438803622
+        }
+      ],
+      "latency_ms": {
+        "n": 100,
+        "median": 234.07489900000655,
+        "p95": 359.41611500004456
+      }
+    },
+    "ledgar": {
+      "n": 100,
+      "valid": 100,
+      "failures": [],
+      "correct": 71,
+      "accuracy_failures_incorrect": 0.71,
+      "accuracy_wilson_95": [
+        0.6146110882442888,
+        0.7898516425087772
+      ],
+      "nll": {
+        "mean": 3.1730943955244277,
+        "n": 100
+      },
+      "brier_multiclass": {
+        "mean": 0.40793685032139576,
+        "n": 100
+      },
+      "brier_binary": {
+        "mean": null,
+        "n": 0
+      },
+      "score_mae": {
+        "mean": null,
+        "n": 0
+      },
+      "rps": {
+        "mean": null,
+        "n": 0
+      },
+      "human_tvd": {
+        "mean": null,
+        "n": 0
+      },
+      "ece_top_label": 0.13614242424242423,
+      "reliability_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 2,
+          "accuracy": 0.5,
+          "probability": 0.33
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 8,
+          "accuracy": 0.25,
+          "probability": 0.45431818181818184
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 9,
+          "accuracy": 0.5555555555555556,
+          "probability": 0.5345566778900113
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 11,
+          "accuracy": 0.18181818181818182,
+          "probability": 0.6603397612488522
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 2,
+          "accuracy": 0.5,
+          "probability": 0.735
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 10,
+          "accuracy": 0.6,
+          "probability": 0.8418181818181818
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 58,
+          "accuracy": 0.9310344827586207,
+          "probability": 0.9879101358411703
+        }
+      ],
+      "latency_ms": {
+        "n": 100,
+        "median": 191.4432429999806,
+        "p95": 258.884801000022
+      }
+    },
+    "go_emotions": {
+      "n": 100,
+      "valid": 100,
+      "failures": [],
+      "correct": 23,
+      "accuracy_failures_incorrect": 0.23,
+      "accuracy_wilson_95": [
+        0.15843265880303448,
+        0.3215438302287378
+      ],
+      "nll": {
+        "mean": 10.2826900284979,
+        "n": 100
+      },
+      "brier_multiclass": {
+        "mean": 1.1124379895928986,
+        "n": 100
+      },
+      "brier_binary": {
+        "mean": null,
+        "n": 0
+      },
+      "score_mae": {
+        "mean": null,
+        "n": 0
+      },
+      "rps": {
+        "mean": null,
+        "n": 0
+      },
+      "human_tvd": {
+        "mean": 0.6994678210678211,
+        "n": 100
+      },
+      "ece_top_label": 0.4641535353535354,
+      "reliability_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 5,
+          "accuracy": 0.0,
+          "probability": 0.33999999999999997
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 22,
+          "accuracy": 0.0,
+          "probability": 0.4469559228650138
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 14,
+          "accuracy": 0.0,
+          "probability": 0.5516233766233766
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 11,
+          "accuracy": 0.5454545454545454,
+          "probability": 0.6412672176308539
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 9,
+          "accuracy": 0.4444444444444444,
+          "probability": 0.7544444444444445
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 9,
+          "accuracy": 0.2222222222222222,
+          "probability": 0.8497979797979798
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 30,
+          "accuracy": 0.36666666666666664,
+          "probability": 0.9555824915824916
+        }
+      ],
+      "latency_ms": {
+        "n": 100,
+        "median": 178.4671999994316,
+        "p95": 234.8533000003954
+      }
+    },
+    "mmlu": {
+      "n": 100,
+      "valid": 100,
+      "failures": [],
+      "correct": 89,
+      "accuracy_failures_incorrect": 0.89,
+      "accuracy_wilson_95": [
+        0.8136870349691969,
+        0.9374580364293543
+      ],
+      "nll": {
+        "mean": 0.3320122182363954,
+        "n": 100
+      },
+      "brier_multiclass": {
+        "mean": 0.16056101520253033,
+        "n": 100
+      },
+      "brier_binary": {
+        "mean": null,
+        "n": 0
+      },
+      "score_mae": {
+        "mean": null,
+        "n": 0
+      },
+      "rps": {
+        "mean": null,
+        "n": 0
+      },
+      "human_tvd": {
+        "mean": null,
+        "n": 0
+      },
+      "ece_top_label": 0.05440606060606061,
+      "reliability_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 2,
+          "accuracy": 0.0,
+          "probability": 0.37
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 2,
+          "accuracy": 0.5,
+          "probability": 0.47
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 1,
+          "accuracy": 0.0,
+          "probability": 0.56
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 4,
+          "accuracy": 0.5,
+          "probability": 0.7575000000000001
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 8,
+          "accuracy": 0.5,
+          "probability": 0.85
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 83,
+          "accuracy": 0.9879518072289156,
+          "probability": 0.9849324571011318
+        }
+      ],
+      "latency_ms": {
+        "n": 100,
+        "median": 181.31596599994282,
+        "p95": 254.44570900003782
+      }
+    },
+    "arc_challenge": {
+      "n": 100,
+      "valid": 100,
+      "failures": [],
+      "correct": 98,
+      "accuracy_failures_incorrect": 0.98,
+      "accuracy_wilson_95": [
+        0.929988209271456,
+        0.9944980324498376
+      ],
+      "nll": {
+        "mean": 0.31282489006099345,
+        "n": 100
+      },
+      "brier_multiclass": {
+        "mean": 0.042348,
+        "n": 100
+      },
+      "brier_binary": {
+        "mean": null,
+        "n": 0
+      },
+      "score_mae": {
+        "mean": null,
+        "n": 0
+      },
+      "rps": {
+        "mean": null,
+        "n": 0
+      },
+      "human_tvd": {
+        "mean": null,
+        "n": 0
+      },
+      "ece_top_label": 0.021499999999999964,
+      "reliability_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 1,
+          "accuracy": 1.0,
+          "probability": 0.54
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 1,
+          "accuracy": 1.0,
+          "probability": 0.61
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 1,
+          "accuracy": 0.0,
+          "probability": 0.86
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 97,
+          "accuracy": 0.9896907216494846,
+          "probability": 0.9942268041237113
+        }
+      ],
+      "latency_ms": {
+        "n": 100,
+        "median": 191.01365899999223,
+        "p95": 252.09975899997517
+      }
+    },
+    "mnli": {
+      "n": 100,
+      "valid": 100,
+      "failures": [],
+      "correct": 91,
+      "accuracy_failures_incorrect": 0.91,
+      "accuracy_wilson_95": [
+        0.837737871472837,
+        0.9519274599974348
+      ],
+      "nll": {
+        "mean": 0.5282007836408393,
+        "n": 100
+      },
+      "brier_multiclass": {
+        "mean": 0.16740200000000002,
+        "n": 100
+      },
+      "brier_binary": {
+        "mean": null,
+        "n": 0
+      },
+      "score_mae": {
+        "mean": null,
+        "n": 0
+      },
+      "rps": {
+        "mean": null,
+        "n": 0
+      },
+      "human_tvd": {
+        "mean": null,
+        "n": 0
+      },
+      "ece_top_label": 0.05320000000000003,
+      "reliability_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 1,
+          "accuracy": 1.0,
+          "probability": 0.44
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 5,
+          "accuracy": 0.8,
+          "probability": 0.562
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 6,
+          "accuracy": 0.6666666666666666,
+          "probability": 0.6266666666666666
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 3,
+          "accuracy": 1.0,
+          "probability": 0.7433333333333333
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 13,
+          "accuracy": 0.8461538461538461,
+          "probability": 0.8484615384615384
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 72,
+          "accuracy": 0.9444444444444444,
+          "probability": 0.9795833333333334
+        }
+      ],
+      "latency_ms": {
+        "n": 100,
+        "median": 191.6443849999041,
+        "p95": 263.48238000002766
+      }
+    },
+    "sst5": {
+      "n": 100,
+      "valid": 100,
+      "failures": [],
+      "correct": 50,
+      "accuracy_failures_incorrect": 0.5,
+      "accuracy_wilson_95": [
+        0.4038315303659956,
+        0.5961684696340044
+      ],
+      "nll": {
+        "mean": 3.2806882353770117,
+        "n": 100
+      },
+      "brier_multiclass": {
+        "mean": 0.7164546291194775,
+        "n": 100
+      },
+      "brier_binary": {
+        "mean": null,
+        "n": 0
+      },
+      "score_mae": {
+        "mean": 0.6083070707070707,
+        "n": 100
+      },
+      "rps": {
+        "mean": 0.11162693271094787,
+        "n": 100
+      },
+      "human_tvd": {
+        "mean": null,
+        "n": 0
+      },
+      "ece_top_label": 0.238079797979798,
+      "reliability_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 2,
+          "accuracy": 0.0,
+          "probability": 0.375
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 6,
+          "accuracy": 0.16666666666666666,
+          "probability": 0.4533333333333333
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 20,
+          "accuracy": 0.45,
+          "probability": 0.5425
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 17,
+          "accuracy": 0.4117647058823529,
+          "probability": 0.6488235294117648
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 11,
+          "accuracy": 0.5454545454545454,
+          "probability": 0.7489072543617997
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 16,
+          "accuracy": 0.6875,
+          "probability": 0.8425
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 28,
+          "accuracy": 0.5714285714285714,
+          "probability": 0.955
+        }
+      ],
+      "latency_ms": {
+        "n": 100,
+        "median": 188.64907000011044,
+        "p95": 261.5831600001002
+      }
+    },
+    "helpsteer2_helpfulness": {
+      "n": 100,
+      "valid": 100,
+      "failures": [],
+      "correct": 36,
+      "accuracy_failures_incorrect": 0.36,
+      "accuracy_wilson_95": [
+        0.2727122040140433,
+        0.4576459754839126
+      ],
+      "nll": {
+        "mean": 2.5396576230057515,
+        "n": 100
+      },
+      "brier_multiclass": {
+        "mean": 0.7768938238955208,
+        "n": 100
+      },
+      "brier_binary": {
+        "mean": null,
+        "n": 0
+      },
+      "score_mae": {
+        "mean": 0.9186939393939394,
+        "n": 100
+      },
+      "rps": {
+        "mean": 0.1570928045862667,
+        "n": 100
+      },
+      "human_tvd": {
+        "mean": null,
+        "n": 0
+      },
+      "ece_top_label": 0.22196060606060605,
+      "reliability_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 5,
+          "accuracy": 0.2,
+          "probability": 0.354
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 31,
+          "accuracy": 0.1935483870967742,
+          "probability": 0.45129032258064516
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 23,
+          "accuracy": 0.34782608695652173,
+          "probability": 0.5465656565656566
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 16,
+          "accuracy": 0.375,
+          "probability": 0.6385542929292929
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 16,
+          "accuracy": 0.5,
+          "probability": 0.73875
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 6,
+          "accuracy": 0.8333333333333334,
+          "probability": 0.8430303030303031
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 3,
+          "accuracy": 0.6666666666666666,
+          "probability": 0.9233333333333333
+        }
+      ],
+      "latency_ms": {
+        "n": 100,
+        "median": 172.9947000003449,
+        "p95": 266.7289000000892
+      }
+    },
+    "measuring_hate_speech": {
+      "n": 100,
+      "valid": 100,
+      "failures": [],
+      "correct": 50,
+      "accuracy_failures_incorrect": 0.5,
+      "accuracy_wilson_95": [
+        0.4038315303659956,
+        0.5961684696340044
+      ],
+      "nll": {
+        "mean": 3.0509727112366467,
+        "n": 100
+      },
+      "brier_multiclass": {
+        "mean": 0.696704,
+        "n": 100
+      },
+      "brier_binary": {
+        "mean": null,
+        "n": 0
+      },
+      "score_mae": {
+        "mean": 0.7091,
+        "n": 100
+      },
+      "rps": {
+        "mean": 0.2721925,
+        "n": 100
+      },
+      "human_tvd": {
+        "mean": 0.42113333333333336,
+        "n": 100
+      },
+      "ece_top_label": 0.26399999999999996,
+      "reliability_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 1,
+          "accuracy": 0.0,
+          "probability": 0.39
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 3,
+          "accuracy": 0.0,
+          "probability": 0.4633333333333333
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 25,
+          "accuracy": 0.4,
+          "probability": 0.5508
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 11,
+          "accuracy": 0.09090909090909091,
+          "probability": 0.6527272727272728
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 17,
+          "accuracy": 0.35294117647058826,
+          "probability": 0.7382352941176471
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 7,
+          "accuracy": 0.8571428571428571,
+          "probability": 0.8457142857142858
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 36,
+          "accuracy": 0.75,
+          "probability": 0.9733333333333333
+        }
+      ],
+      "latency_ms": {
+        "n": 100,
+        "median": 188.50767799995083,
+        "p95": 254.3922790000579
+      }
+    },
+    "boolq": {
+      "n": 100,
+      "valid": 100,
+      "failures": [],
+      "correct": 94,
+      "accuracy_failures_incorrect": 0.94,
+      "accuracy_wilson_95": [
+        0.8752318455410406,
+        0.9722138760368118
+      ],
+      "nll": {
+        "mean": 0.15966322059912363,
+        "n": 100
+      },
+      "brier_multiclass": {
+        "mean": 0.093318,
+        "n": 100
+      },
+      "brier_binary": {
+        "mean": 0.046659,
+        "n": 100
+      },
+      "score_mae": {
+        "mean": null,
+        "n": 0
+      },
+      "rps": {
+        "mean": null,
+        "n": 0
+      },
+      "human_tvd": {
+        "mean": null,
+        "n": 0
+      },
+      "ece_top_label": 0.054099999999999995,
+      "reliability_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 3,
+          "accuracy": 0.6666666666666666,
+          "probability": 0.5433333333333333
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 1,
+          "accuracy": 0.0,
+          "probability": 0.62
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 3,
+          "accuracy": 1.0,
+          "probability": 0.7333333333333334
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 7,
+          "accuracy": 0.5714285714285714,
+          "probability": 0.8471428571428571
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 86,
+          "accuracy": 0.9883720930232558,
+          "probability": 0.9687209302325581
+        }
+      ],
+      "latency_ms": {
+        "n": 100,
+        "median": 195.51016599996274,
+        "p95": 261.5431599999738
+      }
+    },
+    "fever_evidence": {
+      "n": 100,
+      "valid": 100,
+      "failures": [],
+      "correct": 100,
+      "accuracy_failures_incorrect": 1.0,
+      "accuracy_wilson_95": [
+        0.9630065017930143,
+        1.0
+      ],
+      "nll": {
+        "mean": 0.039641305496507045,
+        "n": 100
+      },
+      "brier_multiclass": {
+        "mean": 0.005852000000000001,
+        "n": 100
+      },
+      "brier_binary": {
+        "mean": 0.0029260000000000006,
+        "n": 100
+      },
+      "score_mae": {
+        "mean": null,
+        "n": 0
+      },
+      "rps": {
+        "mean": null,
+        "n": 0
+      },
+      "human_tvd": {
+        "mean": null,
+        "n": 0
+      },
+      "ece_top_label": 0.03800000000000004,
+      "reliability_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 1,
+          "accuracy": 1.0,
+          "probability": 0.7
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 5,
+          "accuracy": 1.0,
+          "probability": 0.874
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 94,
+          "accuracy": 1.0,
+          "probability": 0.9694680851063829
+        }
+      ],
+      "latency_ms": {
+        "n": 100,
+        "median": 193.39453100008086,
+        "p95": 291.87812300006044
+      }
+    },
+    "civil_comments": {
+      "n": 100,
+      "valid": 100,
+      "failures": [],
+      "correct": 70,
+      "accuracy_failures_incorrect": 0.7,
+      "accuracy_wilson_95": [
+        0.6041514536665332,
+        0.7810511470506724
+      ],
+      "nll": {
+        "mean": 0.5715685661835449,
+        "n": 100
+      },
+      "brier_multiclass": {
+        "mean": 0.383988,
+        "n": 100
+      },
+      "brier_binary": {
+        "mean": 0.191994,
+        "n": 100
+      },
+      "score_mae": {
+        "mean": null,
+        "n": 0
+      },
+      "rps": {
+        "mean": null,
+        "n": 0
+      },
+      "human_tvd": {
+        "mean": 0.27661060524284836,
+        "n": 100
+      },
+      "ece_top_label": 0.08420000000000001,
+      "reliability_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 13,
+          "accuracy": 0.46153846153846156,
+          "probability": 0.5361538461538462
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 16,
+          "accuracy": 0.5,
+          "probability": 0.6375
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 17,
+          "accuracy": 0.6470588235294118,
+          "probability": 0.7482352941176471
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 24,
+          "accuracy": 0.8333333333333334,
+          "probability": 0.8333333333333334
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 30,
+          "accuracy": 0.8333333333333334,
+          "probability": 0.9510000000000001
+        }
+      ],
+      "latency_ms": {
+        "n": 100,
+        "median": 189.08257099997172,
+        "p95": 266.44184100001667
+      }
+    },
+    "sms_spam": {
+      "n": 100,
+      "valid": 100,
+      "failures": [],
+      "correct": 94,
+      "accuracy_failures_incorrect": 0.94,
+      "accuracy_wilson_95": [
+        0.8752318455410406,
+        0.9722138760368118
+      ],
+      "nll": {
+        "mean": 0.21848617989235347,
+        "n": 100
+      },
+      "brier_multiclass": {
+        "mean": 0.111446,
+        "n": 100
+      },
+      "brier_binary": {
+        "mean": 0.055723,
+        "n": 100
+      },
+      "score_mae": {
+        "mean": null,
+        "n": 0
+      },
+      "rps": {
+        "mean": null,
+        "n": 0
+      },
+      "human_tvd": {
+        "mean": null,
+        "n": 0
+      },
+      "ece_top_label": 0.06569999999999998,
+      "reliability_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 1,
+          "accuracy": 1.0,
+          "probability": 0.5800000000000001
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 7,
+          "accuracy": 0.5714285714285714,
+          "probability": 0.6542857142857142
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 5,
+          "accuracy": 1.0,
+          "probability": 0.74
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 28,
+          "accuracy": 0.9642857142857143,
+          "probability": 0.8528571428571429
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 59,
+          "accuracy": 0.9661016949152542,
+          "probability": 0.9466101694915254
+        }
+      ],
+      "latency_ms": {
+        "n": 100,
+        "median": 191.50284299985287,
+        "p95": 272.305200999881
+      }
+    },
+    "chaosnli": {
+      "n": 100,
+      "valid": 100,
+      "failures": [],
+      "correct": 60,
+      "accuracy_failures_incorrect": 0.6,
+      "accuracy_wilson_95": [
+        0.5020025867910618,
+        0.6905987135675411
+      ],
+      "nll": {
+        "mean": 2.09615863981539,
+        "n": 100
+      },
+      "brier_multiclass": {
+        "mean": 0.64823,
+        "n": 100
+      },
+      "brier_binary": {
+        "mean": null,
+        "n": 0
+      },
+      "score_mae": {
+        "mean": null,
+        "n": 0
+      },
+      "rps": {
+        "mean": null,
+        "n": 0
+      },
+      "human_tvd": {
+        "mean": 0.3419,
+        "n": 100
+      },
+      "ece_top_label": 0.2837,
+      "reliability_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 8,
+          "accuracy": 0.375,
+          "probability": 0.54125
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 15,
+          "accuracy": 0.8,
+          "probability": 0.656
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 11,
+          "accuracy": 0.5454545454545454,
+          "probability": 0.7345454545454545
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 15,
+          "accuracy": 0.6666666666666666,
+          "probability": 0.844
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 51,
+          "accuracy": 0.5686274509803921,
+          "probability": 0.9635294117647059
+        }
+      ],
+      "latency_ms": {
+        "n": 100,
+        "median": 194.07962899998665,
+        "p95": 288.92100500002016
+      }
+    }
+  }
+}

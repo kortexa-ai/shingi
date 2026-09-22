@@ -10,7 +10,7 @@ Keep training, calibration, development, and locked evaluation data distinct. Re
 
 ## Machines and artifacts
 
-Before GPU work, read `../legolm/SMARTY_6000_GUIDE.md` on Smarty. Pin experiments to the RTX PRO 6000 UUID; the RTX 4090 is not available for this project. Follow the documented service-control process, record the initially running services, and restore that set when the authorized run ends.
+Before GPU work, read `../legolm/SMARTY_6000_GUIDE.md` on Smarty. Pin each experiment to its authorized GPU UUID. The RTX PRO 6000 is the normal research GPU; use the RTX 4090 only with Franci's explicit authorization for that block. The initial investigation received that exception while Franci uses the 6000. Follow the documented service-control process, record the initially running services, and restore that set when the authorized run ends. The 4090 profile requires 14 GiB free before load, at least 4 GiB headroom, and at most 16K context; the 6000 retains its 30/10 GiB gates. Never stop or restore another experiment's 6000 services from a 4090 block.
 
 Use `/home/francip/src/shingi/artifacts` on Smarty for authoritative project checkpoints and bulk artifacts. This project uses its own artifact paths, not LegoLM's. Record revisions and checksums, verify copies before cleanup, and preserve checkpoints needed to reproduce reported results. Never commit weights or use Git LFS for them.
 
@@ -18,4 +18,4 @@ Synchronize source through Git. Use an isolated `.venv` and `uv` for Python work
 
 ## Release discipline
 
-Validate decision quality before preparing distribution formats. Preserve the upstream model's license and notices, and check dataset and comparator permissions separately. A working inference wrapper alone is not a newly trained checkpoint. Public model cards must identify the actual changes, limitations, evaluation split, and measured results.
+Validate decision quality before preparing distribution formats. Preserve the upstream model's license and notices, and check dataset and comparator permissions separately. A working inference wrapper alone is not a newly trained checkpoint. Public model cards must identify the actual changes, limitations, evaluation split, and measured results. Published Jev comparisons must use attributed third-party public information; do not benchmark hosted Jev. Follow `docs/evaluation-protocol.md` and distinguish reported results from our reanalysis of public predictions.

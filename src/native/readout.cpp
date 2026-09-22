@@ -31,12 +31,17 @@ int main(int argc, char **argv) {
         return 2;
     }
     const char *gpu = std::getenv("CUDA_VISIBLE_DEVICES");
-    if (!gpu || std::string(gpu) != "GPU-a71210ca-e14a-755a-88bb-77f53a2102f6") {
-        std::cerr << "Refusing to load: pin CUDA_VISIBLE_DEVICES to Smarty's RTX PRO 6000 UUID\n";
+    const char *allow_4090 = std::getenv("SHINGI_ALLOW_4090");
+    bool is_4090 = gpu && std::string(gpu) == "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010";
+    bool permitted = gpu && (std::string(gpu) == "GPU-a71210ca-e14a-755a-88bb-77f53a2102f6" ||
+                            (is_4090 && allow_4090 && std::string(allow_4090) == "1"));
+    if (!permitted) {
+        std::cerr << "Refusing to load: pin an authorized GPU UUID; 4090 requires explicit opt-in\n";
         return 2;
     }
     int context = std::stoi(argv[2]);
     if (context < 512 || context > 65536) return 2;
+    if (is_4090 && context > 16384) return 2;
     ggml_backend_load_all();
     llama_backend_init();
     if (!llama_supports_gpu_offload()) return 2;

@@ -1,20 +1,30 @@
 """One process owns the native model and serializes access to its context."""
 import json
+import hashlib
 import os
 import selectors
 import subprocess
 import threading
 
-GPU_UUID = "GPU-a71210ca-e14a-755a-88bb-77f53a2102f6"
+GPU_6000 = "GPU-a71210ca-e14a-755a-88bb-77f53a2102f6"
+GPU_4090 = "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010"
+
+
+def gpu_profile():
+    uuid = os.environ.get("CUDA_VISIBLE_DEVICES")
+    if uuid == GPU_6000:
+        return uuid, 30 * 1024, 10 * 1024
+    if uuid == GPU_4090 and os.environ.get("SHINGI_ALLOW_4090") == "1":
+        return uuid, 14 * 1024, 4 * 1024
+    raise RuntimeError("pin an authorized GPU UUID; 4090 also requires SHINGI_ALLOW_4090=1")
 
 
 def gpu_free_mib():
-    if os.environ.get("CUDA_VISIBLE_DEVICES") != GPU_UUID:
-        raise RuntimeError("pin CUDA_VISIBLE_DEVICES to the RTX PRO 6000 UUID")
-    row = subprocess.check_output(["nvidia-smi", "--id=" + GPU_UUID,
+    gpu, _, _ = gpu_profile()
+    row = subprocess.check_output(["nvidia-smi", "--id=" + gpu,
                                    "--query-gpu=uuid,memory.free", "--format=csv,noheader,nounits"], text=True)
     uuid, free = row.strip().split(",")
-    if uuid != GPU_UUID:
+    if uuid != gpu:
         raise RuntimeError("unexpected GPU identity")
     return int(free.strip())
 
@@ -22,16 +32,19 @@ def gpu_free_mib():
 class NativeReadout:
     def __init__(self, executable, model, context_tokens=16384):
         self.lock = threading.Lock()
-        if gpu_free_mib() < 30 * 1024:
-            raise RuntimeError("native canary requires at least 30 GiB free before loading")
+        gpu, preload, self.headroom = gpu_profile()
+        if gpu == GPU_4090 and context_tokens > 16384:
+            raise ValueError("4090 investigation context is capped at 16,384 tokens")
+        if gpu_free_mib() < preload:
+            raise RuntimeError(f"native canary requires at least {preload} MiB free before loading")
         self.process = subprocess.Popen([str(executable), str(model), str(context_tokens)],
                                         stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True, bufsize=1)
         try:
             self.info = self._read(300)
             if not self.info.get("ready"):
                 raise RuntimeError("native model failed to initialize")
-            if gpu_free_mib() < 10 * 1024:
-                raise RuntimeError("less than 10 GiB headroom after model load")
+            if gpu_free_mib() < self.headroom:
+                raise RuntimeError("insufficient GPU headroom after model load")
         except BaseException:
             self.close()
             raise
@@ -50,16 +63,18 @@ class NativeReadout:
             raise ValueError(result["error"])
         return result
 
-    def infer(self, prompt, labels):
+    def infer(self, prompt, labels, *, tokenize_only=False):
         with self.lock:
-            if gpu_free_mib() < 10 * 1024:
+            if gpu_free_mib() < self.headroom:
                 self.close()
-                raise RuntimeError("GPU headroom fell below 10 GiB; native model stopped")
+                raise RuntimeError("GPU headroom fell below profile floor; native model stopped")
             if self.process.poll() is not None:
                 raise RuntimeError("native readout is not running")
-            self.process.stdin.write(json.dumps({"prompt": prompt, "labels": labels}) + "\n")
+            self.process.stdin.write(json.dumps({"prompt": prompt, "labels": labels, "tokenize_only": tokenize_only}) + "\n")
             self.process.stdin.flush()
-            return self._read(300)
+            result = self._read(300)
+            result["prompt_sha256"] = hashlib.sha256(prompt.encode()).hexdigest()
+            return result
 
     def close(self):
         if self.process.poll() is None:

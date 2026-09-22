@@ -16,6 +16,7 @@ Quality comes before release formats. Preserve the native ternary representation
 
 - Source: this Git repository, synchronized between Snappy and Smarty through Git.
 - Compute: Smarty's RTX PRO 6000, subject to the machine's GPU and service procedures.
+- With explicit authorization, the RTX 4090 can run the bounded native-ternary inference profile while the 6000 is in use elsewhere.
 - Model artifacts: `/home/francip/src/shingi/artifacts` on Smarty, excluded from Git.
 - Research records: commit compact methods, configurations, and result summaries; keep weights, caches, and bulk run output out of Git.
 
@@ -31,7 +32,15 @@ uv run python scripts/prepare_benchmark.py
 
 The benchmark preparation downloads a pinned public JevBench revision into ignored `artifacts/`. It fixes 1,500 test and 350 calibration records, checks ID and state-content overlap, and selects 200 choice-order pairs before inference. Upstream dataset licenses remain separate. Saved hosted Jev predictions permit a same-revision ID join, but do not include independent input hashes.
 
+Any published Jev comparison must cite third-party public evidence and label its provenance. We do not benchmark hosted Jev. See the [evaluation and publication protocol](docs/evaluation-protocol.md).
+
 On Smarty, `bash scripts/build_native.sh` builds the small readout executable against the existing pinned Prism runtime. Building uses no GPU. Run a GPU canary only after checking availability and following the [investigation procedure](planning/work-units/shingi-2.md). A model-quality verdict requires the measured run; no Shingi checkpoint is released yet.
+
+Once the 6000 is available and claimed, run `bash scripts/run_gpu.sh` with `--model`, `--phase canary`, and a fresh `--output` directory. Then run the `calibration` phase, fit its saved raw logits with `scripts/fit_calibration.py`, and pass the resulting `--calibration` file to the locked `test` and `shuffle` phases. The runner preserves raw logits, exact prompt hashes, timing, memory headroom, source revision, and model/data hashes. It rejects dirty source and never overwrites an existing run directory. This 6000 launcher does not stop services to obtain memory.
+
+`scripts/score_saved_jev.py` computes an explicitly attributed reanalysis of third-party public predictions on the same selected record IDs. It never calls hosted Jev.
+
+For an explicitly authorized 4090 block, `uv run python scripts/borrow_4090.py --output BLOCK_LOG_DIR -- bash scripts/investigate.sh RUN_DIR MODEL.gguf` runs all phases with process-owned service restoration. It may stop the recorded fallback LM, TTS, and Qwen ASR services only as required for memory. It leaves Miso and all 6000 services alone. This path has a 14 GiB pre-load gate, 4 GiB headroom floor, 16K context cap, and eight-hour block limit.
 
 ## References and licensing
 
