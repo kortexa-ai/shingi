@@ -11,7 +11,7 @@ SHINGI_PRISM=/home/francip/src/models.server/.engines/llama-prism
 .venv/bin/python scripts/train_decision_adapter.py \
     --model "$SHINGI_BASE" --prism "$SHINGI_PRISM" \
     --canary artifacts/training-v1/canary-03/parity.json \
-    --output artifacts/training-v1/run-01 --max-seconds 21600
+    --output artifacts/training-v1/run-02 --max-seconds 21600
 .venv/bin/python scripts/evaluate_training.py \
-    --model "$SHINGI_BASE" --training artifacts/training-v1/run-01 \
-    --output artifacts/training-v1/evaluation-01
+    --model "$SHINGI_BASE" --training artifacts/training-v1/run-02 \
+    --output artifacts/training-v1/evaluation-02

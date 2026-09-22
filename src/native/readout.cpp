@@ -45,7 +45,7 @@ int main(int argc, char **argv) {
     if (is_4090 && context > 16384) return 2;
     ggml_backend_load_all();
     llama_backend_init();
-    if (!llama_supports_gpu_offload()) return 2;
+    if (!vocab_only && !llama_supports_gpu_offload()) return 2;
     auto mp = llama_model_default_params();
     mp.n_gpu_layers = vocab_only ? 0 : 99;
     mp.vocab_only = vocab_only;
@@ -78,7 +78,7 @@ int main(int argc, char **argv) {
             auto request = json::parse(line);
             std::string prompt = request.at("prompt");
             auto tokens = tokenize(vocab, prompt, true);
-            if (tokens.empty() || tokens.size() > (vocab_only ? context : llama_n_ctx(ctx)))
+            if (tokens.empty() || (!vocab_only && tokens.size() > llama_n_ctx(ctx)))
                 throw std::runtime_error("prompt exceeds context or is empty; never truncated");
             std::vector<llama_token> ids;
             std::set<llama_token> unique;

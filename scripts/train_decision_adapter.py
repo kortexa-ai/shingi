@@ -41,14 +41,12 @@ def main():
     manifest=json.loads((a.data/'manifest.json').read_text())
     for split in ('train-prompts','dev'):
         if sha(a.data/(split+'.jsonl'))!=manifest[split+'_sha256']:raise RuntimeError('dataset hash mismatch')
+    token_manifest=json.loads((a.data/'tokenized-manifest.json').read_text())
+    if token_manifest['data_manifest_sha256']!=sha(a.data/'manifest.json') or token_manifest['tokens_sha256']!=sha(a.data/'tokenized.jsonl'):
+        raise RuntimeError('prepared tokenization provenance differs')
+    prepared=rows(a.data/'tokenized.jsonl')
+    excluded=token_manifest['excluded']
     tokenizer=NativeTokenizer('artifacts/bin/readout',a.model)
-    prepared=[];excluded=[]
-    for row in rows(a.data/'train-prompts.jsonl'):
-        item=tokenizer.encode(row['prompt'],row['labels'])
-        if item['input_tokens']>1024:
-            excluded.append({'id':row['id'],'source':row['source'],'tokens':item['input_tokens'],'reason':'exceeds context; not truncated'})
-            continue
-        prepared.append({**row,**item})
     dev=rows(a.data/'dev.jsonl')
     if not prepared:raise RuntimeError('no training records')
     (a.output/'excluded-length.json').write_text(json.dumps(excluded,indent=2)+'\n')
