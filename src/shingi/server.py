@@ -9,7 +9,7 @@ import uvicorn
 from .backend import NativeReadout
 from .decision import Calibration, DecisionEngine, MODEL_ID
 from .schema import Request
-from .release import artifact_identity, load_calibration
+from .release import artifact_identity, load_calibration, require_release_environment, READOUT_VERSION
 
 
 def create_app(engine=None, *, executable=None, model=None, context_tokens=16384,
@@ -23,7 +23,8 @@ def create_app(engine=None, *, executable=None, model=None, context_tokens=16384
         try:
             if engine is None:
                 backend = NativeReadout(executable, model, context_tokens, adapter=adapter)
-                app.state.engine = DecisionEngine(backend, calibration, model_id=identity["model"])
+                app.state.engine = DecisionEngine(backend, calibration, model_id=identity["model"],
+                    canonical_choices=identity.get("readout_version") == READOUT_VERSION)
             yield
         finally:
             if backend is not None:
@@ -77,6 +78,7 @@ def main():
     parser.add_argument("--calibration", type=Path)
     parser.add_argument("--adapter", type=Path, help="native GGUF LoRA adapter; omit for the unchanged base")
     args = parser.parse_args()
+    require_release_environment()
     identity = artifact_identity(args.model, args.adapter)
     calibration, calibration_sha256 = load_calibration(args.calibration, identity)
     # Local serving only. Network deployment needs its own auth and resource policy.

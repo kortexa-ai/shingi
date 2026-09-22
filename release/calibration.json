@@ -34,22 +34,22 @@
     ]
   },
   "before": {
-    "choice_score_nll": 0.7289761678892249,
+    "choice_score_nll": 0.7455585483199546,
     "noul_nll": 0.46458927324301175
   },
   "after": {
-    "choice_score_nll": 0.7066514523110053,
+    "choice_score_nll": 0.718368351873375,
     "noul_nll": 0.3858298538568696
   },
-  "limitations": "Global calibration fitted on 240 separate records; these parameters do not establish probability reliability on other distributions.",
+  "limitations": "Global calibration only; validation fit is not held-out test performance. No weight changes.",
   "provenance": {
-    "code_revision": "d5188479fdc7f63041b387a61067e7cf4fb40191",
     "model_sha256": "3907dc1658db1f78a9826bf8d5bcb8dc65db0d466388937af57f2294fae62ec1",
     "adapter_sha256": "d7ea6bf61f6ef5fe26bd82ca1ece4686c20d29a1937834a18239629bb6db31d4",
-    "readout_version": "bonsai-letter-v1",
-    "dataset_manifest_sha256": "6fadc5da66abf7d192fe5c30ac5c24860fe318bd77e18d5bdd21ea881e8130c0",
+    "readout_version": "bonsai-sorted-choice-v2",
     "calibration_data_sha256": "8daaae000bea1f4372db03ef1782d701e0ad813cfc22aeca2901301c031eb1e9",
-    "dataset_revision": "002ad22de8db2df5e0eb898b3da8072dbd4af4de",
-    "source_report": "results/training-v1/REPORT.md"
+    "dataset_manifest_sha256": "6fadc5da66abf7d192fe5c30ac5c24860fe318bd77e18d5bdd21ea881e8130c0",
+    "predictions_sha256": "ff29990daacd3370b11ac4525b85e5a1e141e35639060b58e646f74632163df8",
+    "source_revision": "8fa854883c26739e2a073903797149678806b9fc",
+    "dataset_revision": "002ad22de8db2df5e0eb898b3da8072dbd4af4de"
   }
 }

@@ -1,6 +1,7 @@
 """Artifact identity and calibration checks shared by serving and evaluation."""
 import hashlib
 import json
+import os
 from pathlib import Path
 
 from .decision import Calibration, MODEL_ID
@@ -8,7 +9,12 @@ from .decision import Calibration, MODEL_ID
 BASE_SHA256 = "3907dc1658db1f78a9826bf8d5bcb8dc65db0d466388937af57f2294fae62ec1"
 ADAPTER_SHA256 = "d7ea6bf61f6ef5fe26bd82ca1ece4686c20d29a1937834a18239629bb6db31d4"
 RELEASE_MODEL_ID = "shingi-bonsai-2-27b-v0.1"
-READOUT_VERSION = "bonsai-letter-v1"
+READOUT_VERSION = "bonsai-sorted-choice-v2"
+
+
+def require_release_environment():
+    if any(name in os.environ for name in ("SHINGI_KV_F16", "SHINGI_VOCAB_ONLY")):
+        raise RuntimeError("unset SHINGI_KV_F16 and SHINGI_VOCAB_ONLY for the Q8 CUDA release runtime")
 
 
 def sha256(path):
@@ -38,6 +44,6 @@ def load_calibration(path, identity):
     for key in ("model_sha256", "adapter_sha256"):
         if provenance.get(key) != identity[key]:
             raise ValueError(f"calibration was fitted to different weights: {key}")
-    if provenance.get("readout_version", READOUT_VERSION) != READOUT_VERSION:
+    if provenance.get("readout_version", "bonsai-letter-v1") != READOUT_VERSION:
         raise ValueError("calibration uses a different readout version")
     return Calibration(**fitted["parameters"]), hashlib.sha256(data).hexdigest()

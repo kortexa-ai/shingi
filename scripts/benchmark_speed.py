@@ -15,7 +15,7 @@ from shingi.decision import Calibration, DecisionEngine
 from shingi.gpu import gpu_snapshot, selected_gpu
 from shingi.metrics import percentile
 from shingi.probes import probe_at_tokens
-from shingi.release import artifact_identity, sha256
+from shingi.release import artifact_identity, sha256, require_release_environment
 
 
 class MemorySampler:
@@ -92,6 +92,7 @@ def main():
     p.add_argument('--protocol', type=Path, required=True)
     p.add_argument('--output', type=Path, required=True)
     a = p.parse_args()
+    require_release_environment()
     if subprocess.check_output(['git', 'status', '--porcelain'], text=True).strip():
         raise RuntimeError('commit source before benchmarking')
     identity = artifact_identity(a.model, a.adapter)

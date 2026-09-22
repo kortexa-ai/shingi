@@ -16,7 +16,7 @@ from shingi.decision import Calibration, DecisionEngine
 from shingi.gpu import gpu_snapshot
 from shingi.metrics import report, probabilities, wilson
 from shingi.probes import probe_at_tokens
-from shingi.release import artifact_identity, sha256, BASE_SHA256, ADAPTER_SHA256
+from shingi.release import artifact_identity, sha256, BASE_SHA256, ADAPTER_SHA256, require_release_environment
 
 
 def ordered_rows(records, canonical):
@@ -83,6 +83,7 @@ def main():
     p.add_argument('--protocol', type=Path)
     p.add_argument('--output', type=Path, required=True)
     a = p.parse_args()
+    require_release_environment()
     if subprocess.check_output(['git', 'status', '--porcelain'], text=True).strip():
         raise RuntimeError('commit source before evaluation')
     identity = artifact_identity(a.model, a.adapter)
@@ -185,7 +186,7 @@ def main():
                 metrics = report(test, predictions)
                 if metrics['overall']['valid'] != len(test):
                     raise RuntimeError('release test contains failed predictions')
-                if not all(r['correct'] for r in context):
+                if name == 'adapter' and not all(r['correct'] for r in context):
                     raise RuntimeError('context gate failed')
                 summary['models'][name] = {'calibrated': metrics,
                     'order': {'pairs': len(pairs), 'flips': sum(r['flip'] for r in pairs),

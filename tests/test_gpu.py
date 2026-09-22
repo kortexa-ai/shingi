@@ -31,3 +31,12 @@ def test_context_bound_checked_before_gpu_access(monkeypatch):
     monkeypatch.delenv('CUDA_VISIBLE_DEVICES', raising=False)
     with pytest.raises(ValueError, match='16,384'):
         NativeReadout('unused', 'unused', 16385)
+
+
+def test_driver_failure_is_backend_unavailability(monkeypatch):
+    monkeypatch.setenv('CUDA_VISIBLE_DEVICES', UUID)
+    def fail(*args, **kwargs):
+        raise FileNotFoundError('nvidia-smi')
+    monkeypatch.setattr(gpu.subprocess, 'check_output', fail)
+    with pytest.raises(RuntimeError, match='could not query'):
+        gpu.gpu_snapshot()

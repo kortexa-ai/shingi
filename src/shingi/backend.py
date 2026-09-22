@@ -40,7 +40,10 @@ class NativeReadout:
         line = self.process.stdout.readline()
         if not line:
             raise RuntimeError("native readout exited")
-        result = json.loads(line)
+        try:
+            result = json.loads(line)
+        except json.JSONDecodeError as exc:
+            raise RuntimeError("native readout returned malformed JSON") from exc
         if "error" in result:
             error = ValueError if result.get("error_kind") == "input" else RuntimeError
             raise error(result["error"])

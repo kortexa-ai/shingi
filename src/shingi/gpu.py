@@ -13,13 +13,19 @@ def selected_gpu():
 
 def gpu_snapshot():
     uuid = selected_gpu()
-    row = subprocess.check_output(
-        ["nvidia-smi", "--id=" + uuid, "--query-gpu=uuid,name,memory.total,memory.free",
-         "--format=csv,noheader,nounits"], text=True, timeout=10)
+    try:
+        row = subprocess.check_output(
+            ["nvidia-smi", "--id=" + uuid, "--query-gpu=uuid,name,memory.total,memory.free",
+             "--format=csv,noheader,nounits"], text=True, timeout=10)
+    except (OSError, subprocess.SubprocessError) as exc:
+        raise RuntimeError("could not query the selected CUDA GPU") from exc
     fields = [s.strip() for s in row.strip().split(",")]
     if len(fields) != 4 or fields[0] != uuid:
         raise RuntimeError("nvidia-smi returned an unexpected GPU identity")
-    return {"uuid": fields[0], "name": fields[1], "total_mib": int(fields[2]), "free_mib": int(fields[3])}
+    try:
+        return {"uuid": fields[0], "name": fields[1], "total_mib": int(fields[2]), "free_mib": int(fields[3])}
+    except ValueError as exc:
+        raise RuntimeError("nvidia-smi returned invalid memory values") from exc
 
 
 def gpu_profile():

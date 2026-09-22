@@ -16,6 +16,14 @@ State and instructions accept strings, objects, and arrays. The API rejects malf
 
 ## Readout and confidence
 
+CUDA v0.1 sorts Choice keys lexicographically before assigning candidate letters
+and chunks. Reordering the same JSON map therefore gives an identical prompt.
+Score criteria retain their ordinal list order; Noul remains yes/no. This is an
+interface guarantee, not learned resistance to all prompt or label changes.
+The readout identifier is `bonsai-sorted-choice-v2`. Historical results used
+input-map ordering (`bonsai-letter-v1`), and their calibration files are not
+silently applied to this release.
+
 The first 52 choices map to unique single-token ASCII letters. The native runtime checks tokenization and reads every candidate logit directly from the final prompt position. It does not use truncated top-k log probabilities. It resets the model context between calls. Prompts use the Bonsai chat template with thinking disabled, checked against the installed Prism runtime's `/apply-template` endpoint.
 
 For more than 52 options, the baseline uses the same mathematical approximation as OpenJev: read chunks, compare their winners, and use each winner to place its chunk on a shared probability scale. Every option remains in the final distribution. This requires multiple passes and is sensitive to chunk context; it is not an exact global softmax. Tests cover 52, 53, and 255 options. Quality at these sizes requires separate measurement.

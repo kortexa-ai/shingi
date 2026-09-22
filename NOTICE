@@ -1,0 +1,85 @@
+Shingi
+Copyright 2026 Kortexa AI
+
+The repository's software is licensed under Apache-2.0 (see LICENSE).
+Model weights, datasets, and external runtimes retain their separate terms.
+
+Bonsai by Prism ML
+The required base is prism-ml/Ternary-Bonsai-2-27B-gguf, revision
+6ed5e12bf84b7a63069882c91dd9e9218647d17b. It is provided under Apache-2.0.
+Created using Bonsai by Prism ML. Preserve its LICENSE and NOTICE.txt when
+redistributing the base. The upstream notice credits Prism ML, Inc. and the
+Qwen3.8-27B base from Alibaba Cloud. Shingi keeps the base unchanged and adds a
+separate decision adapter.
+https://huggingface.co/prism-ml/Ternary-Bonsai-2-27B-gguf
+
+Prism runtime / llama.cpp
+The CUDA backend builds the public PrismML-Eng/llama.cpp fork at
+d8f26eec76da6d09bb708bcba51ef64b8cd868a3.
+Its code is MIT licensed, copyright 2023-2026 The ggml authors. Runtime binaries
+are built from source, not embedded in the Shingi Python package. Preserve the
+runtime's LICENSE and third-party notices when redistributing its binaries.
+https://github.com/PrismML-Eng/llama.cpp
+
+OpenJev and TypeSafe
+OpenJev's public helper and the TypeSafe system-one adapter informed Shingi's
+letter scoring, chunk-and-anchor composition, confidence formulas, and HTTP
+interface. OpenJev explicitly licenses helper/ under Apache-2.0; the TypeSafe
+adapter is MIT licensed (Copyright 2026 TypeSafe AI):
+https://huggingface.co/openjev/openjev/blob/5ec9e5fd2f80a6fff386779b1e5ac7e389971889/helper/shim.py
+https://github.com/typesafe-ai/system-one-adapter-python/tree/adffc2eab300a4fa3c0e92252d4ffd6ceaa53700
+No OpenJev weights are included. This is an independent project.
+
+Training data
+Praveenrajus / uspraveen published the JevBench transformations used here:
+https://huggingface.co/datasets/Praveenrajus/jev-bench/tree/002ad22de8db2df5e0eb898b3da8072dbd4af4de
+The underlying sources retain their own licenses. Training uses human targets,
+not hosted Jev predictions. The release does not redistribute dataset rows.
+
+- Banking77: PolyAI, Casanueva et al.; CC BY 4.0.
+  https://huggingface.co/datasets/PolyAI/banking77
+- CLINC150: Larson et al., CLINC; CC BY 3.0.
+  https://huggingface.co/datasets/clinc/clinc_oos
+- MMLU: Hendrycks et al.; MIT.
+  https://huggingface.co/datasets/cais/mmlu
+- ARC Challenge: Peter Clark et al., Allen Institute for AI; CC BY-SA 4.0.
+  https://huggingface.co/datasets/allenai/ai2_arc
+- HelpSteer2: Zhilin Wang et al., NVIDIA; CC BY 4.0.
+  https://huggingface.co/datasets/nvidia/HelpSteer2
+- Measuring Hate Speech: Kennedy et al., UC Berkeley D-Lab; CC BY 4.0.
+  https://huggingface.co/datasets/ucberkeley-dlab/measuring-hate-speech
+- BoolQ: Christopher Clark et al., Google; CC BY-SA 3.0.
+  https://huggingface.co/datasets/google/boolq
+- Civil Comments: Jigsaw / Civil Comments; CC0 1.0.
+  https://huggingface.co/datasets/google/civil_comments
+
+Shingi transforms the benchmark records into candidate-letter prompts, uses
+paired randomized option orders during training, selects a LoRA checkpoint on
+development NLL, and fits global calibration on a separate split. These are
+Shingi changes; no upstream author endorses the resulting model.
+
+Dataset terms are separate from the repository's software license. Additional
+sources are used only for evaluation; see docs/release.md for the source review.
+
+TypeSafe adapter MIT permission notice
+MIT License
+
+Copyright (c) 2026 TypeSafe AI
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

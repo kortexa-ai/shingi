@@ -9,6 +9,8 @@ import time
 
 import httpx
 from typesafe_sdk import TypeSafeClient, Choice, Score, Noul
+from shingi.metrics import percentile
+from shingi.release import artifact_identity
 
 
 def main():
@@ -47,6 +49,9 @@ def main():
                 time.sleep(.5)
             observations["version"] = http.get("/v1/version").json()
             assert observations["version"]["trained"] == (args.adapter is not None)
+            expected = artifact_identity(args.model, args.adapter)
+            assert observations["version"]["model_sha256"] == expected["model_sha256"]
+            assert observations["version"]["adapter_sha256"] == expected["adapter_sha256"]
             with TypeSafeClient(api_key="local-research", base_url=base, model="shingi", timeout=120) as client:
                 result = client.system_one(state={"message": "The parcel arrived damaged. Please send a replacement. I do not want a refund.", "severity": "low"}, questions={
                     "route": Choice(instructions="Which team handles the requested replacement?", criteria={"returns": "Damaged goods and replacements", "billing": "Charges and refunds", "shipping": "Delivery tracking"}),
@@ -68,9 +73,31 @@ def main():
                     assert all(math.isfinite(p) and 0 <= p <= 1 for p in answer.probabilities.values())
                     assert answer.probabilities[answer.choice] == max(answer.probabilities.values())
                     assert answer.choice == key
+                short = {"color": Choice(instructions="Read the stored color.",
+                    criteria={"red": None, "green": None, "blue": None})}
+                for _ in range(3):
+                    client.system_one(state={"color": "blue"}, questions=short)
+                elapsed = []
+                for _ in range(30):
+                    started = time.perf_counter()
+                    result = client.system_one(state={"color": "blue"}, questions=short)
+                    elapsed.append(1000 * (time.perf_counter() - started))
+                    assert result.choices["color"].choice == "blue"
+                observations["short_http_latency_ms"] = {"n": len(elapsed), "warmup": 3,
+                    "median": percentile(elapsed, .5), "p95": percentile(elapsed, .95), "samples": elapsed,
+                    "scope": "Sequential localhost TypeSafe SDK round trips; one short three-choice question; model already loaded."}
+                reversed_short = {"color": Choice(instructions="Read the stored color.",
+                    criteria={"blue": None, "green": None, "red": None})}
+                reordered = client.system_one(state={"color": "blue"}, questions=reversed_short)
+                assert reordered.choices["color"].probabilities == result.choices["color"].probabilities
             invalid = http.post("/v1/systemone", json={"model": "shingi", "state": "x", "questions": {"bad": {"type": "choice", "instructions": "pick", "criteria": {str(i): None for i in range(256)}}}})
             observations["invalid_status"] = invalid.status_code
             assert invalid.status_code == 422
+            oversized = http.post("/v1/systemone", json={"model": "shingi", "state": "oversized context " * 20000,
+                "questions": {"q": {"type": "noul", "instructions": "Is this short?"}}})
+            observations["oversized_status"] = oversized.status_code
+            assert oversized.status_code == 422
+            assert http.get("/health").status_code == 200
             observations["passed"] = True
     except BaseException as exc:
         observations["failure"] = f"{type(exc).__name__}: {exc}"
