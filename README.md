@@ -19,7 +19,19 @@ Quality comes before release formats. Preserve the native ternary representation
 - Model artifacts: `/home/francip/src/shingi/artifacts` on Smarty, excluded from Git.
 - Research records: commit compact methods, configurations, and result summaries; keep weights, caches, and bulk run output out of Git.
 
-The initial scaffold has no runtime dependencies or experiment entrypoint. Those follow the first research goal.
+## Prototype
+
+The first prototype exposes `POST /v1/systemone` and `GET /v1/models`. It implements Choice, Noul, and Score over native Bonsai candidate logits. See [API compatibility and limits](docs/api-contract.md). Protocol tests use a deterministic backend; they do not establish Bonsai quality.
+
+```bash
+uv sync --locked
+uv run pytest -q
+uv run python scripts/prepare_benchmark.py
+```
+
+The benchmark preparation downloads a pinned public JevBench revision into ignored `artifacts/`. It fixes 1,500 test and 350 calibration records, checks ID and state-content overlap, and selects 200 choice-order pairs before inference. Upstream dataset licenses remain separate. Saved hosted Jev predictions permit a same-revision ID join, but do not include independent input hashes.
+
+On Smarty, `bash scripts/build_native.sh` builds the small readout executable against the existing pinned Prism runtime. Building uses no GPU. Run a GPU canary only after checking availability and following the [investigation procedure](planning/work-units/shingi-2.md). A model-quality verdict requires the measured run; no Shingi checkpoint is released yet.
 
 ## References and licensing
 

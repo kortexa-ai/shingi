@@ -1,0 +1,486 @@
+{
+  "dataset": "Praveenrajus/jev-bench",
+  "revision": "002ad22de8db2df5e0eb898b3da8072dbd4af4de",
+  "seed": "shingi-baseline-v1-20260922",
+  "test_count": 1500,
+  "calibration_count": 350,
+  "domains": {
+    "customer-support": 100,
+    "virtual-assistant": 100,
+    "legal": 100,
+    "social": 100,
+    "knowledge": 200,
+    "nli": 200,
+    "reviews": 100,
+    "llm-judging": 100,
+    "safety": 200,
+    "reading-comprehension": 100,
+    "fact-checking": 100,
+    "messaging": 100
+  },
+  "files": {
+    "manifest.json": {
+      "sha256": "eace4223d323a91f6554c13aaa501785d60d8f6c7e173bd4d7c284fb5f52209b",
+      "bytes": 14575,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/manifest.json"
+    },
+    "results/jev-1.13.0/test_predictions.jsonl": {
+      "sha256": "b2f27ae059dbf5a662ee7ad94012f77c970281b9442fce0654401ece77a097f0",
+      "bytes": 15904772,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/results/jev-1.13.0/test_predictions.jsonl"
+    },
+    "data/banking77/test.jsonl": {
+      "sha256": "a2f6cca4b60c2a8bd2e46a2c3f3637fa5854e2eda3fc402e636b7667290c83df",
+      "bytes": 4591912,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/banking77/test.jsonl"
+    },
+    "data/clinc150/test.jsonl": {
+      "sha256": "1e59e5b9f9f9b799619338e4e7c7e825ffa5afabcd6f1f451b578e028e9d4086",
+      "bytes": 5944609,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/clinc150/test.jsonl"
+    },
+    "data/ledgar/test.jsonl": {
+      "sha256": "df75038cda52427febb1d2217c3ef8215a344670987200f62bed55563ef8c026",
+      "bytes": 3478377,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/ledgar/test.jsonl"
+    },
+    "data/go_emotions/test.jsonl": {
+      "sha256": "5495bf7524f856825374458cad1512ce1b3b8ce6bfa91dfd5a80665e78dba2b4",
+      "bytes": 1705474,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/go_emotions/test.jsonl"
+    },
+    "data/mmlu/test.jsonl": {
+      "sha256": "588eb716bf5f7f00ef026d749b7891e24724cfdd0b23da523738e9e4806b89a1",
+      "bytes": 996106,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/mmlu/test.jsonl"
+    },
+    "data/arc_challenge/test.jsonl": {
+      "sha256": "c3fe1e8720c873d0621f0adc9d3246c24c9cfdcfb019724eafa601383c7fdb8b",
+      "bytes": 786220,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/arc_challenge/test.jsonl"
+    },
+    "data/mnli/test.jsonl": {
+      "sha256": "f0d062d261fc024145ab0d67acf7cec5e06002bf9bf1b2299cfeb374aa7e8de7",
+      "bytes": 901259,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/mnli/test.jsonl"
+    },
+    "data/sst5/test.jsonl": {
+      "sha256": "4963982735612945d683631416dff465bdbed46cc79bb6c694f7300b514e8f09",
+      "bytes": 795344,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/sst5/test.jsonl"
+    },
+    "data/helpsteer2_helpfulness/test.jsonl": {
+      "sha256": "848367911dbbbc8cc4f198b5c324f339ee485caf49b7f94ed31e8e380ec4f37e",
+      "bytes": 3291489,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/helpsteer2_helpfulness/test.jsonl"
+    },
+    "data/measuring_hate_speech/test.jsonl": {
+      "sha256": "b8332c2677d657024690ba8acdb2fdd4c310969fa042798c513aa35da8a397e6",
+      "bytes": 913281,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/measuring_hate_speech/test.jsonl"
+    },
+    "data/boolq/test.jsonl": {
+      "sha256": "92bef666d167e8a5a3c5895a6ce62f957029ea1fa39f20e6f8a0c8ded7646305",
+      "bytes": 1086628,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/boolq/test.jsonl"
+    },
+    "data/fever_evidence/test.jsonl": {
+      "sha256": "00320883a6d19f8cbfd40df81c173de302ee507a3ae165903cf755e59cd9bd19",
+      "bytes": 813863,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/fever_evidence/test.jsonl"
+    },
+    "data/civil_comments/test.jsonl": {
+      "sha256": "815f96a3cbc237c28f526c6a9a92792e8ea5cd71f6b10749e7ebd3968a2d3259",
+      "bytes": 1732691,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/civil_comments/test.jsonl"
+    },
+    "data/sms_spam/test.jsonl": {
+      "sha256": "ed8bfc45e29e5b128cb087fde72366c05ea2ac20b61c8cee150cca4bd0875a94",
+      "bytes": 400948,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/sms_spam/test.jsonl"
+    },
+    "data/chaosnli/test.jsonl": {
+      "sha256": "74ab0c4d146a76777d045986bf7a7657651cc9685bba27a8d1d70a374d0cc8ce",
+      "bytes": 1810047,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/chaosnli/test.jsonl"
+    },
+    "data/banking77/validation.jsonl": {
+      "sha256": "df0549826f804eee201c99020085a57de53a48f2f03d373912a47f52c142dcec",
+      "bytes": 2304961,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/banking77/validation.jsonl"
+    },
+    "data/clinc150/validation.jsonl": {
+      "sha256": "e658c05407050150fc87e9f2cc986dd0c0d5e9636dc4b4ee6c721e167eafe08c",
+      "bytes": 2979113,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/clinc150/validation.jsonl"
+    },
+    "data/ledgar/validation.jsonl": {
+      "sha256": "8134d14fc07b3eede259c2a0027d2e4fb9ad470a35abba672e5be8381098e431",
+      "bytes": 1755045,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/ledgar/validation.jsonl"
+    },
+    "data/go_emotions/validation.jsonl": {
+      "sha256": "fddcf21d9109b2844e73c500ed2ab90b20f235e5ffba2da1c884dfb07b94ef28",
+      "bytes": 859635,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/go_emotions/validation.jsonl"
+    },
+    "data/mmlu/validation.jsonl": {
+      "sha256": "fdf986e6eda048bbbd9a172fc30c37ac7b6d928fffb71973fcaeac93eeb13c0a",
+      "bytes": 491129,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/mmlu/validation.jsonl"
+    },
+    "data/arc_challenge/validation.jsonl": {
+      "sha256": "20deabe7ae3402fdebfd9bc47b8f21a788dbb78bae7c2ee2590b5449c29fe973",
+      "bytes": 240373,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/arc_challenge/validation.jsonl"
+    },
+    "data/mnli/validation.jsonl": {
+      "sha256": "76c3aee9b4be5a3214d0b2caa8a8082e7f125eb3b1d66eb45dbfbed8a0ec1b09",
+      "bytes": 459752,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/mnli/validation.jsonl"
+    },
+    "data/sst5/validation.jsonl": {
+      "sha256": "ee52d0a092c88d90828a2d82e4cea89dab63164910b649a97c7fec16201dfd01",
+      "bytes": 402753,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/sst5/validation.jsonl"
+    },
+    "data/helpsteer2_helpfulness/validation.jsonl": {
+      "sha256": "122ad4fbf4b4be26961ffb40df75b2ce31f52cfe6be3ffa6026e0667795dde64",
+      "bytes": 1643247,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/helpsteer2_helpfulness/validation.jsonl"
+    },
+    "data/measuring_hate_speech/validation.jsonl": {
+      "sha256": "5748f42ea59f5ae11f7b3b36397c0b78f5c4674077b2ce8d8e47dc56aca44944",
+      "bytes": 464755,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/measuring_hate_speech/validation.jsonl"
+    },
+    "data/boolq/validation.jsonl": {
+      "sha256": "6fec5da0ead2c3635cec49929f0c1e37dcebab2d37cc6648bd9c3109337d5e98",
+      "bytes": 518518,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/boolq/validation.jsonl"
+    },
+    "data/fever_evidence/validation.jsonl": {
+      "sha256": "18d1eeaebfb96b7840bfb4a5c14456c923de740fad3fd3fd0d7b366d33b83fec",
+      "bytes": 408254,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/fever_evidence/validation.jsonl"
+    },
+    "data/civil_comments/validation.jsonl": {
+      "sha256": "5698b7f2dfbe15dfa6eec0ed9bf2af7154a2821893330b9eae79aa25acbd0179",
+      "bytes": 439849,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/civil_comments/validation.jsonl"
+    },
+    "data/sms_spam/validation.jsonl": {
+      "sha256": "a4cff65aa7fc61795ca15b0ca0c67ccc3078bcefd941869f2e0ed3f31d86e0d1",
+      "bytes": 119664,
+      "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/sms_spam/validation.jsonl"
+    }
+  },
+  "test_sha256": "966c75b5baf6e47774218511fe7b3dfaaa037b0c8be050db0a5d3b6b160ba2ea",
+  "calibration_sha256": "926f7bdb7f1cb24bd673d8213dfba0102f7a1e0637117c8d31ea6be004559ca0",
+  "shuffle_ids": [
+    "mnli/test/9054",
+    "mnli/test/9344",
+    "chaosnli/test/1352",
+    "ledgar/test/758",
+    "chaosnli/test/174",
+    "mnli/test/607",
+    "banking77/test/1229",
+    "mmlu/test/11339",
+    "arc_challenge/test/613",
+    "chaosnli/test/294",
+    "go_emotions/test/3436",
+    "clinc150/test/1193",
+    "chaosnli/test/1437",
+    "clinc150/test/2357",
+    "mnli/test/641",
+    "ledgar/test/5428",
+    "mmlu/test/10448",
+    "chaosnli/test/876",
+    "banking77/test/1821",
+    "mnli/test/8969",
+    "go_emotions/test/3967",
+    "clinc150/test/569",
+    "chaosnli/test/1045",
+    "chaosnli/test/163",
+    "mmlu/test/4149",
+    "ledgar/test/7634",
+    "ledgar/test/2705",
+    "chaosnli/test/1365",
+    "clinc150/test/2449",
+    "ledgar/test/8879",
+    "ledgar/test/3898",
+    "go_emotions/test/2868",
+    "chaosnli/test/1572",
+    "mnli/test/6712",
+    "mmlu/test/5916",
+    "arc_challenge/test/162",
+    "ledgar/test/1374",
+    "mmlu/test/3600",
+    "arc_challenge/test/390",
+    "clinc150/test/4538",
+    "ledgar/test/4886",
+    "mnli/test/4531",
+    "go_emotions/test/3027",
+    "clinc150/test/5212",
+    "chaosnli/test/686",
+    "clinc150/test/2008",
+    "chaosnli/test/710",
+    "arc_challenge/test/656",
+    "mmlu/test/10774",
+    "arc_challenge/test/925",
+    "go_emotions/test/4939",
+    "chaosnli/test/263",
+    "mnli/test/1618",
+    "mmlu/test/10906",
+    "ledgar/test/473",
+    "go_emotions/test/764",
+    "go_emotions/test/2002",
+    "clinc150/test/4785",
+    "clinc150/test/3512",
+    "ledgar/test/8574",
+    "chaosnli/test/398",
+    "go_emotions/test/1716",
+    "ledgar/test/9652",
+    "chaosnli/test/1128",
+    "banking77/test/2310",
+    "chaosnli/test/1529",
+    "arc_challenge/test/564",
+    "mmlu/test/2344",
+    "banking77/test/327",
+    "mmlu/test/3756",
+    "chaosnli/test/1499",
+    "go_emotions/test/488",
+    "ledgar/test/711",
+    "chaosnli/test/403",
+    "chaosnli/test/274",
+    "clinc150/test/4828",
+    "banking77/test/2274",
+    "go_emotions/test/3909",
+    "mnli/test/4234",
+    "chaosnli/test/76",
+    "ledgar/test/1839",
+    "chaosnli/test/1536",
+    "mmlu/test/4193",
+    "go_emotions/test/415",
+    "arc_challenge/test/265",
+    "go_emotions/test/3750",
+    "chaosnli/test/916",
+    "banking77/test/1900",
+    "chaosnli/test/974",
+    "ledgar/test/9057",
+    "clinc150/test/2380",
+    "chaosnli/test/1493",
+    "clinc150/test/5016",
+    "clinc150/test/2665",
+    "clinc150/test/2674",
+    "mnli/test/3294",
+    "ledgar/test/20",
+    "banking77/test/2346",
+    "chaosnli/test/534",
+    "chaosnli/test/379",
+    "clinc150/test/4533",
+    "banking77/test/2862",
+    "chaosnli/test/1403",
+    "clinc150/test/5425",
+    "banking77/test/127",
+    "arc_challenge/test/1152",
+    "chaosnli/test/815",
+    "chaosnli/test/830",
+    "go_emotions/test/983",
+    "chaosnli/test/267",
+    "banking77/test/1073",
+    "arc_challenge/test/1068",
+    "go_emotions/test/1522",
+    "clinc150/test/3836",
+    "chaosnli/test/1566",
+    "arc_challenge/test/919",
+    "chaosnli/test/1465",
+    "go_emotions/test/1249",
+    "mmlu/test/7025",
+    "clinc150/test/5162",
+    "mmlu/test/7858",
+    "ledgar/test/1137",
+    "mnli/test/2500",
+    "arc_challenge/test/337",
+    "chaosnli/test/53",
+    "go_emotions/test/20",
+    "chaosnli/test/243",
+    "mmlu/test/13536",
+    "go_emotions/test/527",
+    "ledgar/test/1679",
+    "ledgar/test/4327",
+    "ledgar/test/9558",
+    "mmlu/test/7250",
+    "banking77/test/386",
+    "banking77/test/1257",
+    "chaosnli/test/596",
+    "chaosnli/test/948",
+    "go_emotions/test/5303",
+    "chaosnli/test/1219",
+    "mnli/test/6701",
+    "go_emotions/test/4570",
+    "go_emotions/test/338",
+    "arc_challenge/test/325",
+    "mmlu/test/11878",
+    "banking77/test/1202",
+    "go_emotions/test/3198",
+    "mnli/test/4593",
+    "banking77/test/2935",
+    "mmlu/test/5758",
+    "go_emotions/test/114",
+    "ledgar/test/283",
+    "banking77/test/2357",
+    "arc_challenge/test/501",
+    "mmlu/test/8853",
+    "arc_challenge/test/320",
+    "arc_challenge/test/651",
+    "ledgar/test/35",
+    "mnli/test/3845",
+    "clinc150/test/1977",
+    "arc_challenge/test/431",
+    "mnli/test/4711",
+    "ledgar/test/2268",
+    "banking77/test/1903",
+    "mmlu/test/5359",
+    "banking77/test/63",
+    "mmlu/test/10836",
+    "ledgar/test/3686",
+    "ledgar/test/7330",
+    "mnli/test/3804",
+    "mnli/test/485",
+    "mnli/test/3466",
+    "banking77/test/2178",
+    "chaosnli/test/814",
+    "banking77/test/2118",
+    "clinc150/test/784",
+    "clinc150/test/937",
+    "chaosnli/test/664",
+    "ledgar/test/5812",
+    "ledgar/test/8900",
+    "go_emotions/test/320",
+    "banking77/test/188",
+    "chaosnli/test/1380",
+    "chaosnli/test/1177",
+    "banking77/test/1030",
+    "mnli/test/3276",
+    "ledgar/test/4316",
+    "mmlu/test/13908",
+    "clinc150/test/2629",
+    "arc_challenge/test/260",
+    "mnli/test/5302",
+    "mmlu/test/13248",
+    "banking77/test/756",
+    "mnli/test/8727",
+    "go_emotions/test/4608",
+    "clinc150/test/873",
+    "mnli/test/2381",
+    "go_emotions/test/1080",
+    "ledgar/test/8281",
+    "go_emotions/test/1349",
+    "go_emotions/test/5516"
+  ],
+  "hosted_predictions_missing": [],
+  "comparison_limit": "Saved Jev predictions carry IDs but no input hashes. Same-revision joins are provenance evidence, not independent proof of identical inference payloads.",
+  "overlap": {
+    "id": 0,
+    "state_sha256": 0
+  },
+  "pretraining_contamination": "Unknown; held out from this investigation only.",
+  "source_provenance": {
+    "banking77": {
+      "hf_id": "mteb/banking77",
+      "license": "cc-by-4.0 (PolyAI; mirror: mit)",
+      "domain": "customer-support",
+      "primitive": "choice"
+    },
+    "clinc150": {
+      "hf_id": "clinc/clinc_oos",
+      "license": "cc-by-3.0",
+      "domain": "virtual-assistant",
+      "primitive": "choice"
+    },
+    "ledgar": {
+      "hf_id": "coastalcph/lex_glue",
+      "license": "cc-by-4.0",
+      "domain": "legal",
+      "primitive": "choice"
+    },
+    "go_emotions": {
+      "hf_id": "google-research-datasets/go_emotions",
+      "license": "apache-2.0",
+      "domain": "social",
+      "primitive": "choice"
+    },
+    "mmlu": {
+      "hf_id": "cais/mmlu",
+      "license": "mit",
+      "domain": "knowledge",
+      "primitive": "choice"
+    },
+    "arc_challenge": {
+      "hf_id": "allenai/ai2_arc",
+      "license": "cc-by-sa-4.0",
+      "domain": "knowledge",
+      "primitive": "choice"
+    },
+    "mnli": {
+      "hf_id": "nyu-mll/glue",
+      "license": "other (GLUE/MultiNLI, research use)",
+      "domain": "nli",
+      "primitive": "choice"
+    },
+    "sst5": {
+      "hf_id": "SetFit/sst5",
+      "license": "unspecified (Stanford Sentiment Treebank)",
+      "domain": "reviews",
+      "primitive": "score"
+    },
+    "helpsteer2_helpfulness": {
+      "hf_id": "nvidia/HelpSteer2",
+      "license": "cc-by-4.0",
+      "domain": "llm-judging",
+      "primitive": "score"
+    },
+    "measuring_hate_speech": {
+      "hf_id": "ucberkeley-dlab/measuring-hate-speech",
+      "license": "cc-by-4.0",
+      "domain": "safety",
+      "primitive": "score"
+    },
+    "boolq": {
+      "hf_id": "google/boolq",
+      "license": "cc-by-sa-3.0",
+      "domain": "reading-comprehension",
+      "primitive": "noul"
+    },
+    "fever_evidence": {
+      "hf_id": "copenlu/fever_gold_evidence",
+      "license": "cc-by-sa-3.0",
+      "domain": "fact-checking",
+      "primitive": "noul"
+    },
+    "civil_comments": {
+      "hf_id": "google/civil_comments",
+      "license": "cc0-1.0",
+      "domain": "safety",
+      "primitive": "noul"
+    },
+    "sms_spam": {
+      "hf_id": "ucirvine/sms_spam",
+      "license": "unknown (UCI SMS Spam Collection, public)",
+      "domain": "messaging",
+      "primitive": "noul"
+    },
+    "chaosnli": {
+      "hf_id": "metaeval/chaos-mnli-ambiguity",
+      "license": "cc-by-sa-4.0 (ChaosNLI; Hub mirror of the MNLI portion)",
+      "domain": "nli",
+      "primitive": "choice"
+    }
+  },
+  "selection_rule": "100 unique test records per source and 25 validation records per source except ChaosNLI, ordered by SHA256(seed|id), excluding ID and state-content overlap; scripts/prepare_benchmark.py regenerates exact IDs.",
+  "excluded_duplicate_count": {
+    "sms_spam/test": 1,
+    "chaosnli/test": 2
+  }
+}
