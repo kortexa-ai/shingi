@@ -6,6 +6,8 @@ Follow the parent workspace instructions in `../AGENTS.md` when present, includi
 
 Shingi investigates general-purpose decision models, initially using Bonsai 2 27B. Keep choices and domains request-defined. Record the current experiment's goal, acceptance thresholds, and resource budget in its owning issue before running it. The bootstrap is not an instruction to start training or stop services.
 
+Prioritize a compact local model for RTX 4090-class GPUs and M3/M4 Macs with 24 GB unified memory. Decision quality, option-order stability, single-request latency, and total runtime memory are primary; concurrent throughput is secondary. Snappy's 64 GB is not the minimum deployment target. For Mac feasibility, account for load-time and inference peaks, context cache, temporary buffers, and macOS/application headroom. Metal/MLX optimization follows quality validation. Do not infer 24 GB Mac performance from a weight-file size or an unconstrained Snappy run.
+
 Keep training, calibration, development, and locked evaluation data distinct. Record dataset provenance, overlap checks, model revisions, prompt templates, candidate token IDs, and decoding settings with results. Retrieve every candidate's logit explicitly; a truncated top-k response is not sufficient. Preserve original scales and transforms when establishing conversion parity. Do not claim quality, numerical equivalence, or speedups without measurements.
 
 ## Machines and artifacts

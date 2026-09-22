@@ -12,6 +12,14 @@ The first question is whether a Bonsai-based model can make reliable decisions t
 
 Quality comes before release formats. Preserve the native ternary representation and its scales and transforms as the reference. MLX packaging and alternative GPU execution formats are later work; storing ternary values in FP4 does not by itself establish numerical equivalence or a speedup.
 
+## Local deployment targets
+
+Shingi targets comfortable local use on RTX 4090-class GPUs and Apple M3/M4 machines with **24 GB unified memory**. Snappy's 64 GB is development capacity, not the minimum Mac target. Decision quality, option-order stability, single-request latency, and total runtime memory take priority. Concurrent throughput is secondary.
+
+Measure loading and inference memory, context cache, temporary buffers, and useful context length. On Macs, leave room for macOS and normal applications; fitting the weight file alone is insufficient. Preserve the compact ternary representation where possible and measure any representation change against the native reference.
+
+The first baseline establishes 4090 inference feasibility. Metal/MLX-optimized inference and the 24 GB Mac target remain future validation work after model quality improves. Measurements on Snappy must identify its hardware and memory budget; they do not by themselves establish performance on a 24 GB M3/M4 machine.
+
 ## Workspace
 
 - Source: this Git repository, synchronized between Snappy and Smarty through Git.
