@@ -112,7 +112,11 @@ def main():
     model.train();model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={'use_reentrant':False})
     optimizer=torch.optim.AdamW(params,lr=2e-5);scaler=torch.amp.GradScaler('cuda', init_scale=1.0)
     # Synthetic canary only: this gradient is never reused as a trained checkpoint.
-    start=time.monotonic();logits=forward(rows[0]);loss=torch.nn.functional.cross_entropy(logits[None],torch.tensor([1],device='cuda'))
+    long_row={'tokenized':dict(rows[0]['tokenized'])}
+    original=rows[0]['tokenized']['input_ids']
+    long_row['tokenized']['input_ids']=(original*20)[:1024]
+    result['backward_context_tokens']=len(long_row['tokenized']['input_ids'])
+    start=time.monotonic();logits=forward(long_row);loss=torch.nn.functional.cross_entropy(logits[None],torch.tensor([1],device='cuda'))
     scaler.scale(loss).backward();memory('first_backward')
     scaler.unscale_(optimizer);norm=torch.nn.utils.clip_grad_norm_(params,1.0)
     if not torch.isfinite(norm): raise RuntimeError('non-finite gradients')

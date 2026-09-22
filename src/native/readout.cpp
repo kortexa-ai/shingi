@@ -30,12 +30,13 @@ int main(int argc, char **argv) {
         std::cerr << "usage: readout MODEL.gguf CONTEXT_TOKENS [ADAPTER.gguf]\n";
         return 2;
     }
+    const bool vocab_only = std::getenv("SHINGI_VOCAB_ONLY") != nullptr;
     const char *gpu = std::getenv("CUDA_VISIBLE_DEVICES");
     const char *allow_4090 = std::getenv("SHINGI_ALLOW_4090");
     bool is_4090 = gpu && std::string(gpu) == "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010";
     bool permitted = gpu && (std::string(gpu) == "GPU-a71210ca-e14a-755a-88bb-77f53a2102f6" ||
                             (is_4090 && allow_4090 && std::string(allow_4090) == "1"));
-    if (!permitted) {
+    if (!permitted && !vocab_only) {
         std::cerr << "Refusing to load: pin an authorized GPU UUID; 4090 requires explicit opt-in\n";
         return 2;
     }
@@ -46,7 +47,8 @@ int main(int argc, char **argv) {
     llama_backend_init();
     if (!llama_supports_gpu_offload()) return 2;
     auto mp = llama_model_default_params();
-    mp.n_gpu_layers = 99;
+    mp.n_gpu_layers = vocab_only ? 0 : 99;
+    mp.vocab_only = vocab_only;
     auto *model = llama_model_load_from_file(argv[1], mp);
     if (!model) return 1;
     auto cp = llama_context_default_params();
@@ -59,16 +61,16 @@ int main(int argc, char **argv) {
     bool fp16_kv = std::getenv("SHINGI_KV_F16") != nullptr;
     cp.type_k = fp16_kv ? GGML_TYPE_F16 : GGML_TYPE_Q8_0;
     cp.type_v = fp16_kv ? GGML_TYPE_F16 : GGML_TYPE_Q8_0;
-    auto *ctx = llama_init_from_model(model, cp);
-    if (!ctx) { llama_model_free(model); return 1; }
+    auto *ctx = vocab_only ? nullptr : llama_init_from_model(model, cp);
+    if (!ctx && !vocab_only) { llama_model_free(model); return 1; }
     llama_adapter_lora *adapter = nullptr;
-    if (argc == 4) {
+    if (argc == 4 && !vocab_only) {
         adapter = llama_adapter_lora_init(model, argv[3]);
         float scale = 1.0f;
         if (!adapter || llama_set_adapters_lora(ctx, &adapter, 1, &scale) != 0) return 1;
     }
     const auto *vocab = llama_model_get_vocab(model);
-    std::cout << json({{"ready", true}, {"context_tokens", llama_n_ctx(ctx)},
+    std::cout << json({{"ready", true}, {"context_tokens", vocab_only ? context : llama_n_ctx(ctx)},
                        {"vocab_size", llama_vocab_n_tokens(vocab)}}).dump() << std::endl;
     std::string line;
     while (std::getline(std::cin, line)) {
@@ -76,7 +78,7 @@ int main(int argc, char **argv) {
             auto request = json::parse(line);
             std::string prompt = request.at("prompt");
             auto tokens = tokenize(vocab, prompt, true);
-            if (tokens.empty() || tokens.size() > llama_n_ctx(ctx))
+            if (tokens.empty() || tokens.size() > (vocab_only ? context : llama_n_ctx(ctx)))
                 throw std::runtime_error("prompt exceeds context or is empty; never truncated");
             std::vector<llama_token> ids;
             std::set<llama_token> unique;
@@ -91,6 +93,7 @@ int main(int argc, char **argv) {
                 std::cout << json({{"input_tokens", tokens.size()}, {"candidate_ids", ids}, {"input_ids", tokens}}).dump() << std::endl;
                 continue;
             }
+            if (vocab_only) throw std::runtime_error("vocabulary-only process cannot run inference");
             llama_memory_clear(llama_get_memory(ctx), true);
             auto start = std::chrono::steady_clock::now();
             for (size_t pos = 0; pos < tokens.size(); pos += cp.n_batch) {
@@ -112,7 +115,7 @@ int main(int argc, char **argv) {
             std::cout << json({{"error", e.what()}}).dump() << std::endl;
         }
     }
-    llama_free(ctx);
+    if (ctx) llama_free(ctx);
     if (adapter) llama_adapter_lora_free(adapter);
     llama_model_free(model);
     llama_backend_free();
