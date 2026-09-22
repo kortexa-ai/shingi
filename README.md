@@ -2,13 +2,13 @@
 
 General-purpose decision models: choices, scores, and probabilities from candidate logits.
 
-**Shingi** takes its name from the Japanese word for deliberation. This repository investigates decision readouts from **Bonsai 2 27B**. The [first measured baseline](results/baseline-v1/REPORT.md) runs on an RTX 4090 and passes the live TypeSafe SDK checks. It reaches 69.07% accuracy on 1,500 selected decisions, but changes 15.5% of answers in 200 option-order pairs. No Shingi weights have been trained or released.
+**Shingi** takes its name from the Japanese word for deliberation. This repository investigates decision models based on **Bonsai 2 27B**. The [first adapter experiment](results/training-v1/REPORT.md) improves calibrated accuracy from **70.93% to 74.80%** on 1,500 fresh decisions. It preserves the ternary base and adds a 132 MiB adapter, with about 8.47 GiB of sampled GPU allocation on the RTX PRO 6000. Option-order answer flips remain 17%, so further quality work is needed. The [earlier unchanged-base prototype](results/baseline-v1/REPORT.md) runs on an RTX 4090 and passes live TypeSafe SDK checks. No Shingi checkpoint has been released.
 
 ## Research direction
 
 The intended interface accepts a question, context, and request-defined choices. Candidate token logits provide a decision distribution; yes/no probabilities and ordinal scores are related interfaces to investigate. The aim is broad usefulness across domains before any task-specific tuning.
 
-The first question is whether a Bonsai-based model can make reliable decisions this way. Establish baseline quality, calibration, sensitivity to choice order, and performance on held-out domains before deciding whether training is warranted. Experiment goals and acceptance thresholds will be recorded separately before runs begin.
+Research measures decision quality, calibration, sensitivity to choice order, and performance on held-out domains. The first training experiment supports further adaptation, but does not establish broad reliability. Experiment goals and acceptance thresholds are recorded separately before runs begin.
 
 Quality comes before release formats. Preserve the native ternary representation and its scales and transforms as the reference. MLX packaging and alternative GPU execution formats are later work; storing ternary values in FP4 does not by itself establish numerical equivalence or a speedup.
 

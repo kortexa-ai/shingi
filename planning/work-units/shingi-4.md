@@ -19,3 +19,7 @@ Run one GPU job at a time, at most eight GPU hours for the first experiment. Kee
 ## Delivery
 
 Keep reproducible code, pinned revisions, data exclusion evidence, parity and memory measurements, adapter checksums, evaluation results, and a clear continue/stop verdict. Quality validation comes before MLX or other release formats. No Hugging Face upload, hosted Jev call, or paid inference is authorized by this experiment. Any published Jev comparison uses attributed public third-party information.
+
+## Experiment record
+
+The 2026-09-22 experiment used a frozen, faithfully expanded Bonsai base and 34.6 million MLP LoRA parameters. Development NLL selected update 128; training stopped after update 401. Native export parity passed before the fresh comparison. Calibrated test accuracy improved by 3.87 points, but option-order flips remained 17%. The [experiment report](../../results/training-v1/REPORT.md) records methods, paired uncertainty, per-source regressions, artifact checksums, and deployment limits. This supports another controlled quality experiment, not a model release.
