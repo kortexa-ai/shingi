@@ -29,6 +29,7 @@ def main():
         raise SystemExit("calibration prediction ID inventory differs")
     result = fit(records, predictions)
     result["provenance"] = {key: run[key] for key in ("code_revision", "model_sha256", "executable_sha256", "dataset_revision", "dataset_manifest_sha256")}
+    result["provenance"]["adapter_sha256"] = run.get("adapter_sha256")
     result["provenance"]["predictions_sha256"] = hashlib.sha256((args.run / "predictions.jsonl").read_bytes()).hexdigest()
     result["provenance"]["calibration_data_sha256"] = manifest["calibration_sha256"]
     with args.output.open("x") as stream:

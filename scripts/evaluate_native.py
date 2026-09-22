@@ -66,6 +66,7 @@ def selected_records(benchmark, phase):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", required=True, type=Path)
+    parser.add_argument("--adapter", type=Path)
     parser.add_argument("--executable", type=Path, default=Path("artifacts/bin/readout"))
     parser.add_argument("--benchmark", type=Path, default=Path("artifacts/benchmark-v1"))
     parser.add_argument("--phase", choices=["canary", "calibration", "test", "shuffle", "context"], required=True)
@@ -86,6 +87,8 @@ def main():
     args.output.mkdir(parents=True, exist_ok=False)
     provenance = {"code_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
                   "model": MODEL_ID, "model_path": str(args.model), "model_sha256": file_sha256(args.model),
+                  "adapter_path": str(args.adapter) if args.adapter else None,
+                  "adapter_sha256": file_sha256(args.adapter) if args.adapter else None,
                   "executable_sha256": file_sha256(args.executable), "phase": args.phase,
                   "context_tokens": args.context_tokens, "calibration": asdict(calibration),
                   "calibration_sha256": file_sha256(args.calibration) if args.calibration else None,
@@ -94,6 +97,8 @@ def main():
                   "gpu_free_before_mib": gpu_free_mib(), "max_seconds": args.max_seconds}
     if calibration_file:
         fitted = calibration_file["provenance"]
+        if fitted.get("adapter_sha256") != provenance["adapter_sha256"]:
+            raise SystemExit("calibration provenance differs: adapter_sha256")
         for field in ("model_sha256", "executable_sha256", "dataset_manifest_sha256"):
             if fitted[field] != provenance[field]:
                 raise SystemExit(f"calibration provenance differs: {field}")
@@ -103,7 +108,7 @@ def main():
     started = time.monotonic()
     aborted = None
     try:
-        backend = NativeReadout(args.executable, args.model, args.context_tokens)
+        backend = NativeReadout(args.executable, args.model, args.context_tokens, adapter=args.adapter)
         engine = DecisionEngine(backend, calibration)
         if args.phase == "context":
             for target in (512, 4096, 8192, min(15000, args.context_tokens - 128)):
