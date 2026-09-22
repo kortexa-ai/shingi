@@ -1,40 +1,19 @@
 """One process owns the native model and serializes access to its context."""
 import json
 import hashlib
-import os
 import selectors
 import subprocess
 import threading
 
-GPU_6000 = "GPU-a71210ca-e14a-755a-88bb-77f53a2102f6"
-GPU_4090 = "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010"
-
-
-def gpu_profile():
-    uuid = os.environ.get("CUDA_VISIBLE_DEVICES")
-    if uuid == GPU_6000:
-        return uuid, 30 * 1024, 10 * 1024
-    if uuid == GPU_4090 and os.environ.get("SHINGI_ALLOW_4090") == "1":
-        return uuid, 14 * 1024, 4 * 1024
-    raise RuntimeError("pin an authorized GPU UUID; 4090 also requires SHINGI_ALLOW_4090=1")
-
-
-def gpu_free_mib():
-    gpu, _, _ = gpu_profile()
-    row = subprocess.check_output(["nvidia-smi", "--id=" + gpu,
-                                   "--query-gpu=uuid,memory.free", "--format=csv,noheader,nounits"], text=True)
-    uuid, free = row.strip().split(",")
-    if uuid != gpu:
-        raise RuntimeError("unexpected GPU identity")
-    return int(free.strip())
+from .gpu import gpu_free_mib, gpu_profile
 
 
 class NativeReadout:
     def __init__(self, executable, model, context_tokens=16384, *, adapter=None):
         self.lock = threading.Lock()
+        if not 512 <= context_tokens <= 16384:
+            raise ValueError("CUDA v1 supports contexts from 512 through 16,384 tokens")
         gpu, preload, self.headroom = gpu_profile()
-        if gpu == GPU_4090 and context_tokens > 16384:
-            raise ValueError("4090 investigation context is capped at 16,384 tokens")
         if gpu_free_mib() < preload:
             raise RuntimeError(f"native canary requires at least {preload} MiB free before loading")
         command = [str(executable), str(model), str(context_tokens)]
@@ -63,7 +42,8 @@ class NativeReadout:
             raise RuntimeError("native readout exited")
         result = json.loads(line)
         if "error" in result:
-            raise ValueError(result["error"])
+            error = ValueError if result.get("error_kind") == "input" else RuntimeError
+            raise error(result["error"])
         return result
 
     def infer(self, prompt, labels, *, tokenize_only=False):

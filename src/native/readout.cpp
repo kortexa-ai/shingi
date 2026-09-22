@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iostream>
+#include <regex>
 #include <set>
 #include <stdexcept>
 #include <string>
@@ -32,20 +33,25 @@ int main(int argc, char **argv) {
     }
     const bool vocab_only = std::getenv("SHINGI_VOCAB_ONLY") != nullptr;
     const char *gpu = std::getenv("CUDA_VISIBLE_DEVICES");
-    const char *allow_4090 = std::getenv("SHINGI_ALLOW_4090");
-    bool is_4090 = gpu && std::string(gpu) == "GPU-afb49bc6-cd89-6584-99cc-a0f03592a010";
-    bool permitted = gpu && (std::string(gpu) == "GPU-a71210ca-e14a-755a-88bb-77f53a2102f6" ||
-                            (is_4090 && allow_4090 && std::string(allow_4090) == "1"));
+    bool permitted = gpu && std::regex_match(gpu, std::regex("GPU-[0-9a-fA-F]{8}(-[0-9a-fA-F]{4}){3}-[0-9a-fA-F]{12}"));
     if (!permitted && !vocab_only) {
-        std::cerr << "Refusing to load: pin an authorized GPU UUID; 4090 requires explicit opt-in\n";
+        std::cerr << "Set CUDA_VISIBLE_DEVICES to exactly one full GPU UUID\n";
         return 2;
     }
     int context = std::stoi(argv[2]);
-    if (context < 512 || context > 65536) return 2;
-    if (is_4090 && context > 16384) return 2;
+    if (context < 512 || context > 16384) return 2;
     ggml_backend_load_all();
     llama_backend_init();
     if (!vocab_only && !llama_supports_gpu_offload()) return 2;
+    if (!vocab_only) {
+        size_t gpu_count = 0;
+        for (size_t i = 0; i < ggml_backend_dev_count(); ++i)
+            if (ggml_backend_dev_type(ggml_backend_dev_get(i)) == GGML_BACKEND_DEVICE_TYPE_GPU) ++gpu_count;
+        if (gpu_count != 1) {
+            std::cerr << "Expected one visible GPU; refusing CPU fallback or multiple devices\n";
+            return 2;
+        }
+    }
     auto mp = llama_model_default_params();
     mp.n_gpu_layers = vocab_only ? 0 : 99;
     mp.vocab_only = vocab_only;
@@ -79,16 +85,16 @@ int main(int argc, char **argv) {
             std::string prompt = request.at("prompt");
             auto tokens = tokenize(vocab, prompt, true);
             if (tokens.empty() || (!vocab_only && tokens.size() > llama_n_ctx(ctx)))
-                throw std::runtime_error("prompt exceeds context or is empty; never truncated");
+                throw std::invalid_argument("prompt exceeds context or is empty; never truncated");
             std::vector<llama_token> ids;
             std::set<llama_token> unique;
             for (const auto &label : request.at("labels")) {
                 auto t = tokenize(vocab, label.get<std::string>(), false);
                 if (t.size() != 1 || !unique.insert(t[0]).second)
-                    throw std::runtime_error("labels must be distinct single tokens");
+                    throw std::invalid_argument("labels must be distinct single tokens");
                 ids.push_back(t[0]);
             }
-            if (ids.empty() || ids.size() > 255) throw std::runtime_error("invalid candidate count");
+            if (ids.empty() || ids.size() > 255) throw std::invalid_argument("invalid candidate count");
             if (request.value("tokenize_only", false)) {
                 std::cout << json({{"input_tokens", tokens.size()}, {"candidate_ids", ids}, {"input_ids", tokens}}).dump() << std::endl;
                 continue;
@@ -111,8 +117,12 @@ int main(int argc, char **argv) {
             double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - start).count();
             std::cout << json({{"logits", logits}, {"candidate_ids", ids},
                               {"input_tokens", tokens.size()}, {"prefill_ms", ms}}).dump() << std::endl;
+        } catch (const std::invalid_argument &e) {
+            std::cout << json({{"error", e.what()}, {"error_kind", "input"}}).dump() << std::endl;
+        } catch (const json::exception &e) {
+            std::cout << json({{"error", e.what()}, {"error_kind", "input"}}).dump() << std::endl;
         } catch (const std::exception &e) {
-            std::cout << json({{"error", e.what()}}).dump() << std::endl;
+            std::cout << json({{"error", e.what()}, {"error_kind", "runtime"}}).dump() << std::endl;
         }
     }
     if (ctx) llama_free(ctx);

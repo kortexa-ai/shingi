@@ -52,9 +52,8 @@ def main():
     (a.output/'excluded-length.json').write_text(json.dumps(excluded,indent=2)+'\n')
     import torch
     from safetensors.torch import save_file
-    sys.path.insert(0,'/home/francip/src/legolm/scripts')
-    import smarty_gpu_rails as rails
-    if not rails.CUDA_RAILS_ACTIVE or os.environ.get('CUDA_VISIBLE_DEVICES')!='GPU-a71210ca-e14a-755a-88bb-77f53a2102f6':raise RuntimeError('6000 required')
+    from shingi import gpu as rails
+    rails.require_training_gpu()
     torch.set_num_threads(12);torch.manual_seed(20260922)
     started=time.monotonic();stop=False
     def request_stop(*unused):

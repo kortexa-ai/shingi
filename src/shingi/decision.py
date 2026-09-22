@@ -61,9 +61,10 @@ class Readout(Protocol):
 
 
 class DecisionEngine:
-    def __init__(self, backend: Readout, calibration=Calibration()):
+    def __init__(self, backend: Readout, calibration=Calibration(), *, model_id=MODEL_ID):
         self.backend = backend
         self.calibration = calibration
+        self.model_id = model_id
 
     def distribution(self, state, instructions, options):
         if len(options) <= len(LETTERS):
@@ -120,5 +121,5 @@ class DecisionEngine:
         for key, question in request["questions"].items():
             answers[key], traces[key] = self.answer(request["state"], question)
         calls = [x for group in traces.values() for x in group]
-        return {"model": MODEL_ID, "answers": answers,
+        return {"model": self.model_id, "answers": answers,
                 "usage": {"input_tokens": sum(x["input_tokens"] for x in calls), "output_tokens": 0}}, traces

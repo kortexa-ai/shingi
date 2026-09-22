@@ -68,7 +68,8 @@ def compare(actual, expected):
 def main():
     p=argparse.ArgumentParser();p.add_argument('--model',type=Path,required=True);p.add_argument('--prism',type=Path,required=True)
     p.add_argument('--output',type=Path,required=True);a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
-    if os.environ.get('CUDA_VISIBLE_DEVICES')!='GPU-a71210ca-e14a-755a-88bb-77f53a2102f6': raise RuntimeError('6000 pin required')
+    from shingi.gpu import selected_gpu
+    selected_gpu()
     digest=hashlib.file_digest(a.model.open('rb'),'sha256').hexdigest()
     if digest!=BASE_SHA256: raise ValueError('base checksum mismatch')
     os.environ['SHINGI_KV_F16']='1'
@@ -80,8 +81,8 @@ def main():
     finally: native.close()
     (a.output/'native-reference.json').write_text(json.dumps(rows,indent=2))
     import torch
-    sys.path.insert(0,'/home/francip/src/legolm/scripts')
-    import smarty_gpu_rails as rails
+    from shingi import gpu as rails
+    rails.require_training_gpu()
     torch.set_num_threads(12);torch.manual_seed(42)
     x=torch.randn(3,2048);sign=torch.randint(0,2,(2048,))*2-1
     torch.testing.assert_close(hadamard(hadamard(x,sign),sign,inverse=True),x,atol=1e-6,rtol=1e-5)

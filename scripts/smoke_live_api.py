@@ -15,6 +15,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--model", type=Path, required=True)
     parser.add_argument("--calibration", type=Path, required=True)
+    parser.add_argument("--adapter", type=Path)
+    parser.add_argument("--executable", type=Path, default=Path("artifacts/bin/readout"))
     parser.add_argument("--output", type=Path, required=True)
     args = parser.parse_args()
     args.output.mkdir(parents=True, exist_ok=False)
@@ -24,6 +26,9 @@ def main():
     with socket.socket() as sock:
         sock.bind(("127.0.0.1", 8765))
     command = [sys.executable, "-m", "shingi.server", "--model", str(args.model), "--calibration", str(args.calibration)]
+    command += ["--executable", str(args.executable)]
+    if args.adapter:
+        command += ["--adapter", str(args.adapter)]
     process = subprocess.Popen(command)
     observations = {}
     try:
@@ -41,6 +46,7 @@ def main():
                     raise TimeoutError("API readiness timeout")
                 time.sleep(.5)
             observations["version"] = http.get("/v1/version").json()
+            assert observations["version"]["trained"] == (args.adapter is not None)
             with TypeSafeClient(api_key="local-research", base_url=base, model="shingi", timeout=120) as client:
                 result = client.system_one(state={"message": "The parcel arrived damaged. Please send a replacement. I do not want a refund.", "severity": "low"}, questions={
                     "route": Choice(instructions="Which team handles the requested replacement?", criteria={"returns": "Damaged goods and replacements", "billing": "Charges and refunds", "shipping": "Delivery tracking"}),

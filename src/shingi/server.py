@@ -1,6 +1,4 @@
 import argparse
-import hashlib
-import json
 from contextlib import asynccontextmanager
 from dataclasses import asdict
 from pathlib import Path
@@ -11,17 +9,21 @@ import uvicorn
 from .backend import NativeReadout
 from .decision import Calibration, DecisionEngine, MODEL_ID
 from .schema import Request
+from .release import artifact_identity, load_calibration
 
 
 def create_app(engine=None, *, executable=None, model=None, context_tokens=16384,
-               calibration=Calibration(), calibration_sha256=None):
+               adapter=None, identity=None, calibration=Calibration(), calibration_sha256=None):
+    if identity is None:
+        identity = (artifact_identity(model, adapter) if engine is None
+                    else {"model": engine.model_id, "trained": False})
     @asynccontextmanager
     async def lifespan(app):
         backend = None
         try:
             if engine is None:
-                backend = NativeReadout(executable, model, context_tokens)
-                app.state.engine = DecisionEngine(backend, calibration)
+                backend = NativeReadout(executable, model, context_tokens, adapter=adapter)
+                app.state.engine = DecisionEngine(backend, calibration, model_id=identity["model"])
             yield
         finally:
             if backend is not None:
@@ -41,19 +43,19 @@ def create_app(engine=None, *, executable=None, model=None, context_tokens=16384
     @app.get("/v1/version")
     def version():
         current = app.state.engine
-        return {"model": MODEL_ID, "calibration": asdict(current.calibration),
+        return {**identity, "calibration": asdict(current.calibration),
                 "calibration_sha256": calibration_sha256,
-                "trained": False, "context_tokens": context_tokens, "single_pass_options": 52,
+                "context_tokens": context_tokens, "single_pass_options": 52,
                 "choice_limit": 255, "image_input": False}
 
     @app.get("/v1/models")
     def models():
-        return {"models": [{"name": MODEL_ID, "description": "Experimental frozen native ternary Bonsai readout; text only. See /v1/version for calibration.",
+        return {"models": [{"name": identity["model"], "description": "Local native ternary Bonsai decision model; text only. See /v1/version for adapter and calibration identity.",
                             "release_date": "2026-09-22"}]}
 
     @app.post("/v1/systemone")
     def system_one(body: Request):
-        if body.model not in (MODEL_ID, "shingi", "shingi-latest", "jev-latest", "openjev"):
+        if body.model not in (identity["model"], "shingi", "shingi-latest", "jev-latest", "openjev"):
             raise HTTPException(422, "unknown model alias")
         try:
             response, _ = app.state.engine.evaluate(body.model_dump(exclude_none=True))
@@ -73,20 +75,13 @@ def main():
     parser.add_argument("--context-tokens", type=int, default=16384)
     parser.add_argument("--port", type=int, default=8765)
     parser.add_argument("--calibration", type=Path)
+    parser.add_argument("--adapter", type=Path, help="native GGUF LoRA adapter; omit for the unchanged base")
     args = parser.parse_args()
-    calibration = Calibration()
-    calibration_sha256 = None
-    if args.calibration:
-        data = args.calibration.read_bytes()
-        calibration_sha256 = hashlib.sha256(data).hexdigest()
-        fitted = json.loads(data)
-        with args.model.open("rb") as stream:
-            model_sha256 = hashlib.file_digest(stream, "sha256").hexdigest()
-        if fitted["provenance"]["model_sha256"] != model_sha256:
-            raise SystemExit("calibration was fitted to a different model")
-        calibration = Calibration(**fitted["parameters"])
-    # Initial investigation is local only. A public deployment needs its own auth and resource policy.
+    identity = artifact_identity(args.model, args.adapter)
+    calibration, calibration_sha256 = load_calibration(args.calibration, identity)
+    # Local serving only. Network deployment needs its own auth and resource policy.
     uvicorn.run(create_app(executable=args.executable, model=args.model,
+                           adapter=args.adapter, identity=identity,
                            context_tokens=args.context_tokens, calibration=calibration,
                            calibration_sha256=calibration_sha256), host="127.0.0.1", port=args.port)
 
