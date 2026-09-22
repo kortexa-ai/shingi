@@ -1,0 +1,4156 @@
+{
+  "training": {
+    "code_revision": "d5188479fdc7f63041b387a61067e7cf4fb40191",
+    "model_sha256": "3907dc1658db1f78a9826bf8d5bcb8dc65db0d466388937af57f2294fae62ec1",
+    "canary_sha256": "b166399aaeaf7ce8b9c53ea031170abe161f09059deb058d84823bed0fb52a4e",
+    "dataset_manifest_sha256": "6fadc5da66abf7d192fe5c30ac5c24860fe318bd77e18d5bdd21ea881e8130c0",
+    "trainable_parameters": 34603008,
+    "prepared_prompts": 6040,
+    "excluded_prompts": 128,
+    "train_by_source": {
+      "measuring_hate_speech": 800,
+      "arc_challenge": 800,
+      "mmlu": 568,
+      "civil_comments": 800,
+      "boolq": 800,
+      "banking77": 800,
+      "helpsteer2_helpfulness": 672,
+      "clinc150": 800
+    },
+    "rank": 8,
+    "alpha": 16,
+    "learning_rate": 5e-05,
+    "gradient_accumulation": 8,
+    "max_context": 1024,
+    "max_seconds": 21600,
+    "planned_updates": 755,
+    "loss": "candidate cross entropy against human distribution when available, otherwise gold label",
+    "checkpoint_selection": "lowest uncalibrated development NLL; test and calibration not read during training",
+    "loader": {
+      "tensors": 851,
+      "dtype": "torch.float16",
+      "hadamard_block": 1024,
+      "config": {
+        "transformers_version": "5.15.1",
+        "architectures": null,
+        "output_hidden_states": false,
+        "return_dict": true,
+        "dtype": null,
+        "chunk_size_feed_forward": 0,
+        "is_encoder_decoder": false,
+        "id2label": {
+          "0": "LABEL_0",
+          "1": "LABEL_1"
+        },
+        "label2id": {
+          "LABEL_0": 0,
+          "LABEL_1": 1
+        },
+        "problem_type": null,
+        "vocab_size": 248320,
+        "hidden_size": 5120,
+        "intermediate_size": 17408,
+        "num_hidden_layers": 64,
+        "num_attention_heads": 24,
+        "num_key_value_heads": 4,
+        "hidden_act": "silu",
+        "max_position_embeddings": 262144,
+        "initializer_range": 0.02,
+        "rms_norm_eps": 9.999999974752427e-07,
+        "use_cache": false,
+        "tie_word_embeddings": false,
+        "rope_parameters": {
+          "rope_type": "default",
+          "rope_theta": 10000000.0,
+          "partial_rotary_factor": 0.25,
+          "mrope_section": [
+            11,
+            11,
+            10
+          ],
+          "mrope_interleaved": true
+        },
+        "attention_bias": false,
+        "attention_dropout": 0.0,
+        "head_dim": 256,
+        "linear_conv_kernel_dim": 4,
+        "linear_key_head_dim": 128,
+        "linear_value_head_dim": 128,
+        "linear_num_key_heads": 16,
+        "linear_num_value_heads": 48,
+        "layer_types": [
+          "linear_attention",
+          "linear_attention",
+          "linear_attention",
+          "full_attention",
+          "linear_attention",
+          "linear_attention",
+          "linear_attention",
+          "full_attention",
+          "linear_attention",
+          "linear_attention",
+          "linear_attention",
+          "full_attention",
+          "linear_attention",
+          "linear_attention",
+          "linear_attention",
+          "full_attention",
+          "linear_attention",
+          "linear_attention",
+          "linear_attention",
+          "full_attention",
+          "linear_attention",
+          "linear_attention",
+          "linear_attention",
+          "full_attention",
+          "linear_attention",
+          "linear_attention",
+          "linear_attention",
+          "full_attention",
+          "linear_attention",
+          "linear_attention",
+          "linear_attention",
+          "full_attention",
+          "linear_attention",
+          "linear_attention",
+          "linear_attention",
+          "full_attention",
+          "linear_attention",
+          "linear_attention",
+          "linear_attention",
+          "full_attention",
+          "linear_attention",
+          "linear_attention",
+          "linear_attention",
+          "full_attention",
+          "linear_attention",
+          "linear_attention",
+          "linear_attention",
+          "full_attention",
+          "linear_attention",
+          "linear_attention",
+          "linear_attention",
+          "full_attention",
+          "linear_attention",
+          "linear_attention",
+          "linear_attention",
+          "full_attention",
+          "linear_attention",
+          "linear_attention",
+          "linear_attention",
+          "full_attention",
+          "linear_attention",
+          "linear_attention",
+          "linear_attention",
+          "full_attention"
+        ],
+        "pad_token_id": null,
+        "bos_token_id": null,
+        "eos_token_id": null,
+        "_name_or_path": "",
+        "partial_rotary_factor": 0.25,
+        "model_type": "qwen3_5_text",
+        "output_attentions": false
+      },
+      "prism_revision": "d8f26eec76da6d09bb708bcba51ef64b8cd868a3",
+      "activation_dtype": "torch.float32",
+      "frozen_matmul": "fp32 with transient expansion"
+    },
+    "checkpoints": [
+      {
+        "update": 0,
+        "dev_nll": 0.7909912268114417,
+        "dev_accuracy": 0.70703125,
+        "checkpoint": "artifacts/training-v1/run-02/adapter-0000.safetensors",
+        "sha256": "2cd06463876d9e375c2a7fda026c04983616438955dbb8f7073f1c776b55b008",
+        "native": "artifacts/training-v1/run-02/adapter-0000.gguf",
+        "native_sha256": "3c20362e1f61698f987082490920a5470720131b14fd89669cd300fc37e3e642",
+        "elapsed_seconds": 540.4131372170523,
+        "memory": {
+          "free_gib": 38.4443359375,
+          "allocated_gib": 50.30881977081299,
+          "peak_reserved_gib": 55.8125
+        }
+      },
+      {
+        "update": 128,
+        "dev_nll": 0.5094426243258421,
+        "dev_accuracy": 0.828125,
+        "checkpoint": "artifacts/training-v1/run-02/adapter-0128.safetensors",
+        "sha256": "7538d66c1b926d75d787a814cc49c568be2f34645ffa5bd514229a9229ccda02",
+        "native": "artifacts/training-v1/run-02/adapter-0128.gguf",
+        "native_sha256": "d7ea6bf61f6ef5fe26bd82ca1ece4686c20d29a1937834a18239629bb6db31d4",
+        "elapsed_seconds": 2635.335674289032,
+        "memory": {
+          "free_gib": 33.1591796875,
+          "allocated_gib": 50.73686361312866,
+          "peak_reserved_gib": 61.08984375
+        }
+      },
+      {
+        "update": 256,
+        "dev_nll": 0.5111671236222883,
+        "dev_accuracy": 0.84375,
+        "checkpoint": "artifacts/training-v1/run-02/adapter-0256.safetensors",
+        "sha256": "97c198ec682c9b7dccb507bb726f4a2de29a7a051637898754cd2644575b4358",
+        "native": "artifacts/training-v1/run-02/adapter-0256.gguf",
+        "native_sha256": "5d4e0ff949da624fca6ee28e2a7ef6ceba2ecef5f25b93c4699fa27a744ca35b",
+        "elapsed_seconds": 4738.3359526330605,
+        "memory": {
+          "free_gib": 33.1591796875,
+          "allocated_gib": 50.744139194488525,
+          "peak_reserved_gib": 61.08984375
+        }
+      },
+      {
+        "update": 384,
+        "dev_nll": 0.543404283540849,
+        "dev_accuracy": 0.83984375,
+        "checkpoint": "artifacts/training-v1/run-02/adapter-0384.safetensors",
+        "sha256": "06ceb8993e73550da28bd538ae2eac175fe335a20c93b2fd8ef6d6d3ac9d1a63",
+        "native": "artifacts/training-v1/run-02/adapter-0384.gguf",
+        "native_sha256": "2479f9e9c40b432b2dc34b5a26f088d293c157774c9205683cf5b4d94848b0d6",
+        "elapsed_seconds": 6822.416940402007,
+        "memory": {
+          "free_gib": 33.1591796875,
+          "allocated_gib": 50.736234188079834,
+          "peak_reserved_gib": 61.08984375
+        }
+      },
+      {
+        "update": 401,
+        "dev_nll": 0.549586951907276,
+        "dev_accuracy": 0.83984375,
+        "checkpoint": "artifacts/training-v1/run-02/adapter-0401.safetensors",
+        "sha256": "5ce0509e325604853985a8ad84e34cf0663b786959a9cc17d3adb5c6884c4bf5",
+        "native": "artifacts/training-v1/run-02/adapter-0401.gguf",
+        "native_sha256": "860e7f3f23fae3f0420c425091a1161f27acddf5301b1dd65bba9e35050f1f49",
+        "elapsed_seconds": 7344.091014698031,
+        "memory": {
+          "free_gib": 33.1591796875,
+          "allocated_gib": 50.732529640197754,
+          "peak_reserved_gib": 61.08984375
+        }
+      }
+    ],
+    "skipped_optimizer_steps": 0,
+    "selected": {
+      "update": 128,
+      "dev_nll": 0.5094426243258421,
+      "dev_accuracy": 0.828125,
+      "checkpoint": "artifacts/training-v1/run-02/adapter-0128.safetensors",
+      "sha256": "7538d66c1b926d75d787a814cc49c568be2f34645ffa5bd514229a9229ccda02",
+      "native": "artifacts/training-v1/run-02/adapter-0128.gguf",
+      "native_sha256": "d7ea6bf61f6ef5fe26bd82ca1ece4686c20d29a1937834a18239629bb6db31d4",
+      "elapsed_seconds": 2635.335674289032,
+      "memory": {
+        "free_gib": 33.1591796875,
+        "allocated_gib": 50.73686361312866,
+        "peak_reserved_gib": 61.08984375
+      }
+    },
+    "first_backward": {
+      "free_gib": 38.2822265625,
+      "allocated_gib": 50.477932929992676,
+      "peak_reserved_gib": 55.966796875
+    },
+    "completed_updates": 401,
+    "processed_prompts": 3208,
+    "status": "bounded-stop",
+    "elapsed_seconds": 7344.097448752029
+  },
+  "data": {
+    "dataset": "Praveenrajus/jev-bench",
+    "revision": "002ad22de8db2df5e0eb898b3da8072dbd4af4de",
+    "seed": "shingi-training-v1-20260922",
+    "train_sources": [
+      "banking77",
+      "clinc150",
+      "mmlu",
+      "arc_challenge",
+      "helpsteer2_helpfulness",
+      "measuring_hate_speech",
+      "boolq",
+      "civil_comments"
+    ],
+    "held_out_sources": [
+      "chaosnli",
+      "fever_evidence",
+      "go_emotions",
+      "ledgar",
+      "mnli",
+      "sms_spam",
+      "sst5"
+    ],
+    "files": {
+      "banking77": {
+        "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/banking77/train.jsonl",
+        "bytes": 36804066,
+        "sha256": "515819bb43ad25922e0c6ec920f2819e9103ed8208cd116e8ce1c22a69516b44"
+      },
+      "clinc150": {
+        "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/clinc150/train.jsonl",
+        "bytes": 47589591,
+        "sha256": "5222891eab0edd90be553623913fd014b97d989171ad1d5e322a706da4e3f020"
+      },
+      "mmlu": {
+        "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/mmlu/train.jsonl",
+        "bytes": 264406,
+        "sha256": "60f826c3b503e4a89d810aa2b3262e0c19487118e3f9f842c94dea5098cbb80a"
+      },
+      "arc_challenge": {
+        "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/arc_challenge/train.jsonl",
+        "bytes": 876878,
+        "sha256": "4287b90db0bd9a3e347324b9b9f532a41794f89fe7a748c7853bee0a00260e38"
+      },
+      "helpsteer2_helpfulness": {
+        "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/helpsteer2_helpfulness/train.jsonl",
+        "bytes": 26517326,
+        "sha256": "47e6fa0567823a81961d28ec34aacb6c2080344d39990bac7040ce98a9581c20"
+      },
+      "measuring_hate_speech": {
+        "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/measuring_hate_speech/train.jsonl",
+        "bytes": 7375672,
+        "sha256": "79aab30c69bfd45e20f81280fe9b9a7171dd2933d69a2698f672a5f39a9c63e0"
+      },
+      "boolq": {
+        "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/boolq/train.jsonl",
+        "bytes": 8603255,
+        "sha256": "89ced2bd33b71c6e853c185155681901e22a551970c7e810280c78517a9c08e3"
+      },
+      "civil_comments": {
+        "url": "https://huggingface.co/datasets/Praveenrajus/jev-bench/resolve/002ad22de8db2df5e0eb898b3da8072dbd4af4de/data/civil_comments/train.jsonl",
+        "bytes": 7039967,
+        "sha256": "bdede77f40e4738ea52bc1e843e599d58b6a74127e350d697ace680a3427563b"
+      }
+    },
+    "counts": {
+      "train": 3084,
+      "train-prompts": 6168,
+      "dev": 256,
+      "calibration": 240,
+      "test": 1500
+    },
+    "train_by_source": {
+      "banking77": 400,
+      "clinc150": 400,
+      "mmlu": 284,
+      "arc_challenge": 400,
+      "helpsteer2_helpfulness": 400,
+      "measuring_hate_speech": 400,
+      "boolq": 400,
+      "civil_comments": 400
+    },
+    "overlap": {
+      "id": 0,
+      "state_sha256": 0
+    },
+    "excluded_published_eval_states": 22705,
+    "prior_baseline_manifest_sha256": "1bca2dc64d1c9828e93071718dc7ad28f8e12b0e65be74dfe68442ed76514e73",
+    "shuffle_ids": [
+      "go_emotions/test/674",
+      "go_emotions/test/2502",
+      "chaosnli/test/433",
+      "chaosnli/test/239",
+      "arc_challenge/test/495",
+      "arc_challenge/test/307",
+      "go_emotions/test/467",
+      "chaosnli/test/212",
+      "arc_challenge/test/1019",
+      "go_emotions/test/2500",
+      "banking77/test/2410",
+      "go_emotions/test/842",
+      "chaosnli/test/683",
+      "go_emotions/test/2652",
+      "clinc150/test/3834",
+      "ledgar/test/7403",
+      "clinc150/test/3620",
+      "go_emotions/test/400",
+      "banking77/test/197",
+      "banking77/test/592",
+      "go_emotions/test/4169",
+      "go_emotions/test/1851",
+      "banking77/test/744",
+      "mmlu/test/12320",
+      "clinc150/test/293",
+      "chaosnli/test/1160",
+      "mmlu/test/7264",
+      "banking77/test/98",
+      "chaosnli/test/401",
+      "arc_challenge/test/241",
+      "chaosnli/test/330",
+      "arc_challenge/test/452",
+      "clinc150/test/1881",
+      "go_emotions/test/625",
+      "banking77/test/516",
+      "banking77/test/425",
+      "ledgar/test/3490",
+      "chaosnli/test/1130",
+      "mmlu/test/949",
+      "chaosnli/test/1038",
+      "go_emotions/test/3250",
+      "arc_challenge/test/849",
+      "chaosnli/test/1097",
+      "mnli/test/4313",
+      "chaosnli/test/289",
+      "ledgar/test/4285",
+      "ledgar/test/6421",
+      "clinc150/test/3342",
+      "banking77/test/686",
+      "chaosnli/test/1037",
+      "mnli/test/1715",
+      "clinc150/test/4173",
+      "arc_challenge/test/89",
+      "ledgar/test/2947",
+      "mmlu/test/117",
+      "banking77/test/497",
+      "banking77/test/508",
+      "arc_challenge/test/1034",
+      "ledgar/test/9080",
+      "banking77/test/3020",
+      "go_emotions/test/330",
+      "banking77/test/1329",
+      "arc_challenge/test/1082",
+      "banking77/test/270",
+      "clinc150/test/5421",
+      "clinc150/test/2103",
+      "chaosnli/test/1069",
+      "chaosnli/test/380",
+      "banking77/test/2507",
+      "mmlu/test/1040",
+      "mnli/test/9107",
+      "mnli/test/7005",
+      "chaosnli/test/291",
+      "clinc150/test/2658",
+      "chaosnli/test/310",
+      "arc_challenge/test/340",
+      "arc_challenge/test/252",
+      "arc_challenge/test/675",
+      "clinc150/test/137",
+      "arc_challenge/test/150",
+      "ledgar/test/629",
+      "arc_challenge/test/878",
+      "ledgar/test/6975",
+      "mmlu/test/2999",
+      "ledgar/test/8552",
+      "mmlu/test/683",
+      "arc_challenge/test/614",
+      "arc_challenge/test/1003",
+      "go_emotions/test/4296",
+      "chaosnli/test/713",
+      "ledgar/test/6811",
+      "ledgar/test/5718",
+      "mmlu/test/6946",
+      "banking77/test/2441",
+      "mmlu/test/12528",
+      "ledgar/test/1041",
+      "go_emotions/test/657",
+      "chaosnli/test/1215",
+      "clinc150/test/4440",
+      "ledgar/test/525",
+      "mnli/test/6751",
+      "mnli/test/9618",
+      "arc_challenge/test/238",
+      "arc_challenge/test/3",
+      "go_emotions/test/2326",
+      "mmlu/test/12785",
+      "arc_challenge/test/790",
+      "clinc150/test/325",
+      "chaosnli/test/1430",
+      "mnli/test/7435",
+      "banking77/test/2672",
+      "mmlu/test/4226",
+      "go_emotions/test/2952",
+      "mmlu/test/5965",
+      "chaosnli/test/1539",
+      "go_emotions/test/1561",
+      "arc_challenge/test/34",
+      "banking77/test/2514",
+      "mmlu/test/8907",
+      "mnli/test/8499",
+      "go_emotions/test/5503",
+      "ledgar/test/844",
+      "chaosnli/test/959",
+      "go_emotions/test/2993",
+      "mmlu/test/5262",
+      "clinc150/test/2732",
+      "clinc150/test/2709",
+      "mnli/test/3123",
+      "arc_challenge/test/545",
+      "chaosnli/test/73",
+      "clinc150/test/3861",
+      "banking77/test/3010",
+      "arc_challenge/test/1031",
+      "go_emotions/test/4728",
+      "mmlu/test/12248",
+      "banking77/test/1093",
+      "go_emotions/test/1545",
+      "mmlu/test/2487",
+      "mmlu/test/3120",
+      "mnli/test/6278",
+      "mmlu/test/7948",
+      "clinc150/test/789",
+      "go_emotions/test/4226",
+      "chaosnli/test/116",
+      "mnli/test/4995",
+      "chaosnli/test/1392",
+      "banking77/test/2455",
+      "chaosnli/test/995",
+      "arc_challenge/test/256",
+      "arc_challenge/test/172",
+      "mmlu/test/13422",
+      "mmlu/test/13038",
+      "mmlu/test/6186",
+      "go_emotions/test/4591",
+      "mmlu/test/11938",
+      "arc_challenge/test/836",
+      "go_emotions/test/1115",
+      "go_emotions/test/971",
+      "clinc150/test/2115",
+      "mmlu/test/12921",
+      "mmlu/test/8035",
+      "mnli/test/5674",
+      "go_emotions/test/932",
+      "arc_challenge/test/555",
+      "ledgar/test/9801",
+      "arc_challenge/test/763",
+      "banking77/test/2624",
+      "go_emotions/test/5600",
+      "mnli/test/3355",
+      "clinc150/test/4566",
+      "mmlu/test/12142",
+      "arc_challenge/test/970",
+      "mnli/test/3728",
+      "banking77/test/1193",
+      "banking77/test/1614",
+      "go_emotions/test/3889",
+      "mnli/test/1288",
+      "banking77/test/2512",
+      "go_emotions/test/5726",
+      "banking77/test/696",
+      "go_emotions/test/4517",
+      "mmlu/test/2333",
+      "clinc150/test/3052",
+      "banking77/test/1564",
+      "banking77/test/1540",
+      "chaosnli/test/1078",
+      "mmlu/test/3720",
+      "banking77/test/1125",
+      "banking77/test/471",
+      "go_emotions/test/3694",
+      "clinc150/test/3723",
+      "banking77/test/3025",
+      "mmlu/test/1654",
+      "banking77/test/2165",
+      "go_emotions/test/2100",
+      "go_emotions/test/5313",
+      "mnli/test/4821",
+      "clinc150/test/4186",
+      "mmlu/test/13906",
+      "go_emotions/test/2277"
+    ],
+    "license_scope": "Source licenses are recorded upstream; release permission review remains separate.",
+    "pretraining_contamination": "Unknown; these exclusions apply to this adaptation only.",
+    "train_sha256": "c39cea6dad58be6647baf734ce1387e2198015834ecfb6b7b2acf96a8defaec6",
+    "train-prompts_sha256": "0690d473938f5710961ad0407cb71ea9f7156ec097b8c2a2ee9161b750d8b7c9",
+    "dev_sha256": "8b597fe1f8c7b188d5f1e01feee5090d77f0041a489d637f755ce905110c2d7e",
+    "calibration_sha256": "8daaae000bea1f4372db03ef1782d701e0ad813cfc22aeca2901301c031eb1e9",
+    "test_sha256": "90ba7e0355fc2ac1c4bdebb4a275110a3493daaaf7dc910e224e392d2337fab4"
+  },
+  "selected_exposure": {
+    "prompts": 1024,
+    "unique_records": 939,
+    "unique_states": 939,
+    "by_source": {
+      "measuring_hate_speech": 136,
+      "arc_challenge": 129,
+      "mmlu": 112,
+      "civil_comments": 117,
+      "boolq": 146,
+      "banking77": 136,
+      "helpsteer2_helpfulness": 117,
+      "clinc150": 131
+    },
+    "tokens": 227768,
+    "minimum_tokens": 71,
+    "maximum_tokens": 1019
+  },
+  "evaluation": {
+    "receipt": {
+      "selection": {
+        "selected": {
+          "update": 128,
+          "dev_nll": 0.5094426243258421,
+          "dev_accuracy": 0.828125,
+          "checkpoint": "artifacts/training-v1/run-02/adapter-0128.safetensors",
+          "sha256": "7538d66c1b926d75d787a814cc49c568be2f34645ffa5bd514229a9229ccda02",
+          "native": "artifacts/training-v1/run-02/adapter-0128.gguf",
+          "native_sha256": "d7ea6bf61f6ef5fe26bd82ca1ece4686c20d29a1937834a18239629bb6db31d4",
+          "elapsed_seconds": 2635.335674289032,
+          "memory": {
+            "free_gib": 33.1591796875,
+            "allocated_gib": 50.73686361312866,
+            "peak_reserved_gib": 61.08984375
+          }
+        },
+        "reason": "minimum development NLL",
+        "test_seen": false
+      },
+      "selection_sha256": "59574057eb662a0b02cb5a18d8414d6b9daeacf9cc17d4d91f9fc7cd4db5440e",
+      "opened_at": "2026-09-22T17:05:37.793585+00:00",
+      "data_manifest_sha256": "6fadc5da66abf7d192fe5c30ac5c24860fe318bd77e18d5bdd21ea881e8130c0",
+      "model_sha256": "3907dc1658db1f78a9826bf8d5bcb8dc65db0d466388937af57f2294fae62ec1",
+      "executable_sha256": "3812d291de70e29e3ee8ee845af1bef50017384f66c019de9ce618f2cefd918f",
+      "code_revision": "d5188479fdc7f63041b387a61067e7cf4fb40191"
+    },
+    "models": {
+      "base": {
+        "trained_native_parity": {
+          "n": 256,
+          "mean_tvd": 0.0029617500990420207,
+          "max_tvd": 0.01747085580937219,
+          "argmax_agreement": 0.99609375
+        },
+        "raw": {
+          "overall": {
+            "n": 1500,
+            "valid": 1500,
+            "failures": [],
+            "correct": 1065,
+            "accuracy_failures_incorrect": 0.71,
+            "accuracy_wilson_95": [
+              0.6865235380990367,
+              0.7324036009984871
+            ],
+            "nll": {
+              "mean": 0.9629232170647672,
+              "n": 1500
+            },
+            "brier_multiclass": {
+              "mean": 0.41662399735794836,
+              "n": 1500
+            },
+            "brier_binary": {
+              "mean": 0.08766944929087185,
+              "n": 400
+            },
+            "score_mae": {
+              "mean": 0.8389971002301816,
+              "n": 300
+            },
+            "rps": {
+              "mean": 0.1939002594586198,
+              "n": 300
+            },
+            "human_tvd": {
+              "mean": 0.4248896377697152,
+              "n": 400
+            },
+            "ece_top_label": 0.08233604988991859,
+            "latency_ms": {
+              "n": 1500,
+              "median": 73.03487998433411,
+              "p95": 558.2245140103623
+            }
+          },
+          "by_source": {
+            "banking77": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 74,
+              "accuracy_failures_incorrect": 0.74,
+              "accuracy_wilson_95": [
+                0.6462901055081282,
+                0.8159530153525186
+              ],
+              "nll": {
+                "mean": 1.1693944101222886,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.39376277387700215,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.08507323991385564,
+              "latency_ms": {
+                "n": 100,
+                "median": 384.41613502800465,
+                "p95": 391.16081001702696
+              }
+            },
+            "clinc150": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 84,
+              "accuracy_failures_incorrect": 0.84,
+              "accuracy_wilson_95": [
+                0.7557973061072976,
+                0.8990471151119521
+              ],
+              "nll": {
+                "mean": 0.673958121395752,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.23284160592069114,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.0683296855962102,
+              "latency_ms": {
+                "n": 100,
+                "median": 559.217635076493,
+                "p95": 564.0142830088735
+              }
+            },
+            "ledgar": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 71,
+              "accuracy_failures_incorrect": 0.71,
+              "accuracy_wilson_95": [
+                0.6146110882442888,
+                0.7898516425087772
+              ],
+              "nll": {
+                "mean": 1.3960657826875271,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.45923191607338765,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.11056782951543308,
+              "latency_ms": {
+                "n": 100,
+                "median": 371.36119802016765,
+                "p95": 611.2617539474741
+              }
+            },
+            "go_emotions": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 35,
+              "accuracy_failures_incorrect": 0.35,
+              "accuracy_wilson_95": [
+                0.26364248243097527,
+                0.44745556703112027
+              ],
+              "nll": {
+                "mean": 2.8288195545467247,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.9179548512903417,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": 0.6725979215795077,
+                "n": 100
+              },
+              "ece_top_label": 0.28061223321467577,
+              "latency_ms": {
+                "n": 100,
+                "median": 83.09166901744902,
+                "p95": 85.63840598799288
+              }
+            },
+            "mmlu": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 77,
+              "accuracy_failures_incorrect": 0.77,
+              "accuracy_wilson_95": [
+                0.6784561697712622,
+                0.8415673411969654
+              ],
+              "nll": {
+                "mean": 0.757501418868753,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.3716305776893887,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.07327638013167556,
+              "latency_ms": {
+                "n": 100,
+                "median": 69.9369030771777,
+                "p95": 119.10180898848921
+              }
+            },
+            "arc_challenge": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 96,
+              "accuracy_failures_incorrect": 0.96,
+              "accuracy_wilson_95": [
+                0.9016292856411208,
+                0.9843366960084523
+              ],
+              "nll": {
+                "mean": 0.1996287456943126,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.08883914384761703,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.06341894908538342,
+              "latency_ms": {
+                "n": 100,
+                "median": 61.686269007623196,
+                "p95": 72.39927700720727
+              }
+            },
+            "mnli": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 86,
+              "accuracy_failures_incorrect": 0.86,
+              "accuracy_wilson_95": [
+                0.7786281178903616,
+                0.9147365634006086
+              ],
+              "nll": {
+                "mean": 0.3732415153645207,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.21757866007988225,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.07488909913851498,
+              "latency_ms": {
+                "n": 100,
+                "median": 70.38281706627458,
+                "p95": 77.68650900106877
+              }
+            },
+            "sst5": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 54,
+              "accuracy_failures_incorrect": 0.54,
+              "accuracy_wilson_95": [
+                0.44264860323368227,
+                0.6343919169097589
+              ],
+              "nll": {
+                "mean": 1.361877355510825,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.6312381538090344,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": 0.7007136776906795,
+                "n": 100
+              },
+              "rps": {
+                "mean": 0.11221046528221842,
+                "n": 100
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.11192893029952154,
+              "latency_ms": {
+                "n": 100,
+                "median": 71.1722819833085,
+                "p95": 76.11495908349752
+              }
+            },
+            "helpsteer2_helpfulness": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 33,
+              "accuracy_failures_incorrect": 0.33,
+              "accuracy_wilson_95": [
+                0.24563122734128034,
+                0.4269465620490947
+              ],
+              "nll": {
+                "mean": 1.9801117627989513,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.8491415082865491,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": 1.1357525403897513,
+                "n": 100
+              },
+              "rps": {
+                "mean": 0.21156788612313754,
+                "n": 100
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.22312000549688915,
+              "latency_ms": {
+                "n": 100,
+                "median": 212.46177097782493,
+                "p95": 379.31871600449085
+              }
+            },
+            "measuring_hate_speech": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 46,
+              "accuracy_failures_incorrect": 0.46,
+              "accuracy_wilson_95": [
+                0.36560808309024106,
+                0.5573513967663177
+              ],
+              "nll": {
+                "mean": 1.433633335229758,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.7503004837098121,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": 0.6805250826101142,
+                "n": 100
+              },
+              "rps": {
+                "mean": 0.2579224269705035,
+                "n": 100
+              },
+              "human_tvd": {
+                "mean": 0.4708571530515085,
+                "n": 100
+              },
+              "ece_top_label": 0.3099122168870946,
+              "latency_ms": {
+                "n": 100,
+                "median": 69.95647202711552,
+                "p95": 82.15321507304907
+              }
+            },
+            "boolq": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 87,
+              "accuracy_failures_incorrect": 0.87,
+              "accuracy_wilson_95": [
+                0.7901964855992357,
+                0.9224283257275948
+              ],
+              "nll": {
+                "mean": 0.31838765469934194,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.19124729039718827,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.09562364519859413,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.03219415837049423,
+              "latency_ms": {
+                "n": 100,
+                "median": 83.79949489608407,
+                "p95": 126.53871602378786
+              }
+            },
+            "fever_evidence": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 92,
+              "accuracy_failures_incorrect": 0.92,
+              "accuracy_wilson_95": [
+                0.8500189229905127,
+                0.9589065385156194
+              ],
+              "nll": {
+                "mean": 0.26283078335600285,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.13735203819198538,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.06867601909599269,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.05534194076912125,
+              "latency_ms": {
+                "n": 100,
+                "median": 64.88576694391668,
+                "p95": 78.69383692741394
+              }
+            },
+            "civil_comments": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 79,
+              "accuracy_failures_incorrect": 0.79,
+              "accuracy_wilson_95": [
+                0.7002003116591013,
+                0.858343459380847
+              ],
+              "nll": {
+                "mean": 0.45198266874002807,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.2904808501320967,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.14524042506604834,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": 0.22378701160472494,
+                "n": 100
+              },
+              "ece_top_label": 0.07932085684693592,
+              "latency_ms": {
+                "n": 100,
+                "median": 63.077254919335246,
+                "p95": 105.73240695521235
+              }
+            },
+            "sms_spam": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 97,
+              "accuracy_failures_incorrect": 0.97,
+              "accuracy_wilson_95": [
+                0.9154806357094724,
+                0.9897454759759611
+              ],
+              "nll": {
+                "mean": 0.18106136851857943,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.08227541560570437,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.04113770780285218,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.10986292020021508,
+              "latency_ms": {
+                "n": 100,
+                "median": 54.50727604329586,
+                "p95": 63.913926016539335
+              }
+            },
+            "chaosnli": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 54,
+              "accuracy_failures_incorrect": 0.54,
+              "accuracy_wilson_95": [
+                0.44264860323368227,
+                0.6343919169097589
+              ],
+              "nll": {
+                "mean": 1.0553537784381435,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.6354846914585445,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": 0.33231646484311983,
+                "n": 100
+              },
+              "ece_top_label": 0.2587814476470468,
+              "latency_ms": {
+                "n": 100,
+                "median": 70.06029598414898,
+                "p95": 76.76201593130827
+              }
+            }
+          },
+          "metric_notes": {
+            "failures": "Included as incorrect in accuracy; excluded from probability metrics with explicit n.",
+            "ece": "10 equal-width bins of maximum class probability, not API confidence.",
+            "nll": "Natural log; probabilities floored at 1e-12 for this metric only.",
+            "brier": "Multiclass sum of squared errors; binary Brier also reported for Noul.",
+            "noul_threshold": "Yes when P(yes) >= 0.5, including an exact tie.",
+            "ordinal": "Zero-based expected score MAE and normalized ranked probability score.",
+            "human": "TVD to normalized human vote shares, where provided."
+          }
+        },
+        "calibrated": {
+          "overall": {
+            "n": 1500,
+            "valid": 1500,
+            "failures": [],
+            "correct": 1064,
+            "accuracy_failures_incorrect": 0.7093333333333334,
+            "accuracy_wilson_95": [
+              0.6858430547843443,
+              0.7317541568874731
+            ],
+            "nll": {
+              "mean": 0.89583379632634,
+              "n": 1500
+            },
+            "brier_multiclass": {
+              "mean": 0.40928443004169995,
+              "n": 1500
+            },
+            "brier_binary": {
+              "mean": 0.10113857663865902,
+              "n": 400
+            },
+            "score_mae": {
+              "mean": 0.8775843614564866,
+              "n": 300
+            },
+            "rps": {
+              "mean": 0.18569693714485513,
+              "n": 300
+            },
+            "human_tvd": {
+              "mean": 0.4054132137654326,
+              "n": 400
+            },
+            "ece_top_label": 0.033399508821472045,
+            "latency_ms": {
+              "n": 1500,
+              "median": 73.03487998433411,
+              "p95": 558.2245140103623
+            }
+          },
+          "by_source": {
+            "banking77": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 74,
+              "accuracy_failures_incorrect": 0.74,
+              "accuracy_wilson_95": [
+                0.6462901055081282,
+                0.8159530153525186
+              ],
+              "nll": {
+                "mean": 1.2030682790525085,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.4126446875774745,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.14479804822378467,
+              "latency_ms": {
+                "n": 100,
+                "median": 384.41613502800465,
+                "p95": 391.16081001702696
+              }
+            },
+            "clinc150": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 84,
+              "accuracy_failures_incorrect": 0.84,
+              "accuracy_wilson_95": [
+                0.7557973061072976,
+                0.8990471151119521
+              ],
+              "nll": {
+                "mean": 0.7384310077923234,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.253638374672984,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.16495299550729745,
+              "latency_ms": {
+                "n": 100,
+                "median": 559.217635076493,
+                "p95": 564.0142830088735
+              }
+            },
+            "ledgar": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 71,
+              "accuracy_failures_incorrect": 0.71,
+              "accuracy_wilson_95": [
+                0.6146110882442888,
+                0.7898516425087772
+              ],
+              "nll": {
+                "mean": 1.2527918888313572,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.44595565695170536,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.07143989478625308,
+              "latency_ms": {
+                "n": 100,
+                "median": 371.36119802016765,
+                "p95": 611.2617539474741
+              }
+            },
+            "go_emotions": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 35,
+              "accuracy_failures_incorrect": 0.35,
+              "accuracy_wilson_95": [
+                0.26364248243097527,
+                0.44745556703112027
+              ],
+              "nll": {
+                "mean": 2.4236990959367173,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.8496685591335462,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": 0.6932399505780924,
+                "n": 100
+              },
+              "ece_top_label": 0.1382335309058388,
+              "latency_ms": {
+                "n": 100,
+                "median": 83.09166901744902,
+                "p95": 85.63840598799288
+              }
+            },
+            "mmlu": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 77,
+              "accuracy_failures_incorrect": 0.77,
+              "accuracy_wilson_95": [
+                0.6784561697712622,
+                0.8415673411969654
+              ],
+              "nll": {
+                "mean": 0.7452572789155824,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.37574546252058527,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.09242202891690506,
+              "latency_ms": {
+                "n": 100,
+                "median": 69.9369030771777,
+                "p95": 119.10180898848921
+              }
+            },
+            "arc_challenge": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 96,
+              "accuracy_failures_incorrect": 0.96,
+              "accuracy_wilson_95": [
+                0.9016292856411208,
+                0.9843366960084523
+              ],
+              "nll": {
+                "mean": 0.2746388974282166,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.11504712374973224,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.1409562528350175,
+              "latency_ms": {
+                "n": 100,
+                "median": 61.686269007623196,
+                "p95": 72.39927700720727
+              }
+            },
+            "mnli": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 86,
+              "accuracy_failures_incorrect": 0.86,
+              "accuracy_wilson_95": [
+                0.7786281178903616,
+                0.9147365634006086
+              ],
+              "nll": {
+                "mean": 0.3833832248455557,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.21372515909010617,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.09793242014587865,
+              "latency_ms": {
+                "n": 100,
+                "median": 70.38281706627458,
+                "p95": 77.68650900106877
+              }
+            },
+            "sst5": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 54,
+              "accuracy_failures_incorrect": 0.54,
+              "accuracy_wilson_95": [
+                0.44264860323368227,
+                0.6343919169097589
+              ],
+              "nll": {
+                "mean": 1.2311912639894016,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.6180308493890013,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": 0.7622025588743733,
+                "n": 100
+              },
+              "rps": {
+                "mean": 0.11544014768092616,
+                "n": 100
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.10991294382832198,
+              "latency_ms": {
+                "n": 100,
+                "median": 71.1722819833085,
+                "p95": 76.11495908349752
+              }
+            },
+            "helpsteer2_helpfulness": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 33,
+              "accuracy_failures_incorrect": 0.33,
+              "accuracy_wilson_95": [
+                0.24563122734128034,
+                0.4269465620490947
+              ],
+              "nll": {
+                "mean": 1.7241900298921644,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.8022862421021713,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": 1.1698868099048907,
+                "n": 100
+              },
+              "rps": {
+                "mean": 0.20442237044635903,
+                "n": 100
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.15547227301313782,
+              "latency_ms": {
+                "n": 100,
+                "median": 212.46177097782493,
+                "p95": 379.31871600449085
+              }
+            },
+            "measuring_hate_speech": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 46,
+              "accuracy_failures_incorrect": 0.46,
+              "accuracy_wilson_95": [
+                0.36560808309024106,
+                0.5573513967663177
+              ],
+              "nll": {
+                "mean": 1.1703507336950394,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.6697332469619766,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": 0.7006637155901957,
+                "n": 100
+              },
+              "rps": {
+                "mean": 0.23722829330728015,
+                "n": 100
+              },
+              "human_tvd": {
+                "mean": 0.44632876362752505,
+                "n": 100
+              },
+              "ece_top_label": 0.227202743204493,
+              "latency_ms": {
+                "n": 100,
+                "median": 69.95647202711552,
+                "p95": 82.15321507304907
+              }
+            },
+            "boolq": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 83,
+              "accuracy_failures_incorrect": 0.83,
+              "accuracy_wilson_95": [
+                0.7445199523239887,
+                0.8910643388594006
+              ],
+              "nll": {
+                "mean": 0.4100047975431188,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.25739519317947473,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.12869759658973737,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.04367434554967318,
+              "latency_ms": {
+                "n": 100,
+                "median": 83.79949489608407,
+                "p95": 126.53871602378786
+              }
+            },
+            "fever_evidence": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 87,
+              "accuracy_failures_incorrect": 0.87,
+              "accuracy_wilson_95": [
+                0.7901964855992357,
+                0.9224283257275948
+              ],
+              "nll": {
+                "mean": 0.349921442127582,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.20898208706374372,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.10449104353187186,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.07899715534300629,
+              "latency_ms": {
+                "n": 100,
+                "median": 64.88576694391668,
+                "p95": 78.69383692741394
+              }
+            },
+            "civil_comments": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 87,
+              "accuracy_failures_incorrect": 0.87,
+              "accuracy_wilson_95": [
+                0.7901964855992357,
+                0.9224283257275948
+              ],
+              "nll": {
+                "mean": 0.3440447970897154,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.20586481494476364,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.10293240747238182,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": 0.19274629501852336,
+                "n": 100
+              },
+              "ece_top_label": 0.11670857550551444,
+              "latency_ms": {
+                "n": 100,
+                "median": 63.077254919335246,
+                "p95": 105.73240695521235
+              }
+            },
+            "sms_spam": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 97,
+              "accuracy_failures_incorrect": 0.97,
+              "accuracy_wilson_95": [
+                0.9154806357094724,
+                0.9897454759759611
+              ],
+              "nll": {
+                "mean": 0.27637280954036064,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.1368665179212901,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.06843325896064505,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.18625874845186957,
+              "latency_ms": {
+                "n": 100,
+                "median": 54.50727604329586,
+                "p95": 63.913926016539335
+              }
+            },
+            "chaosnli": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 54,
+              "accuracy_failures_incorrect": 0.54,
+              "accuracy_wilson_95": [
+                0.44264860323368227,
+                0.6343919169097589
+              ],
+              "nll": {
+                "mean": 0.9101613982154546,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.5736824753669442,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": 0.2893378458375895,
+                "n": 100
+              },
+              "ece_top_label": 0.16766171826223755,
+              "latency_ms": {
+                "n": 100,
+                "median": 70.06029598414898,
+                "p95": 76.76201593130827
+              }
+            }
+          },
+          "metric_notes": {
+            "failures": "Included as incorrect in accuracy; excluded from probability metrics with explicit n.",
+            "ece": "10 equal-width bins of maximum class probability, not API confidence.",
+            "nll": "Natural log; probabilities floored at 1e-12 for this metric only.",
+            "brier": "Multiclass sum of squared errors; binary Brier also reported for Noul.",
+            "noul_threshold": "Yes when P(yes) >= 0.5, including an exact tie.",
+            "ordinal": "Zero-based expected score MAE and normalized ranked probability score.",
+            "human": "TVD to normalized human vote shares, where provided."
+          }
+        },
+        "held_out_sources_calibrated": {
+          "overall": {
+            "n": 700,
+            "valid": 700,
+            "failures": [],
+            "correct": 484,
+            "accuracy_failures_incorrect": 0.6914285714285714,
+            "accuracy_wilson_95": [
+              0.6562436161866406,
+              0.7245239510564733
+            ],
+            "nll": {
+              "mean": 0.9753601604980613,
+              "n": 700
+            },
+            "brier_multiclass": {
+              "mean": 0.4352730435594767,
+              "n": 700
+            },
+            "brier_binary": {
+              "mean": 0.08646215124625846,
+              "n": 200
+            },
+            "score_mae": {
+              "mean": 0.7622025588743733,
+              "n": 100
+            },
+            "rps": {
+              "mean": 0.11544014768092616,
+              "n": 100
+            },
+            "human_tvd": {
+              "mean": 0.49128889820784094,
+              "n": 200
+            },
+            "ece_top_label": 0.023134757262232287,
+            "latency_ms": {
+              "n": 700,
+              "median": 71.09316496644169,
+              "p95": 388.4047759929672
+            }
+          },
+          "by_source": {
+            "ledgar": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 71,
+              "accuracy_failures_incorrect": 0.71,
+              "accuracy_wilson_95": [
+                0.6146110882442888,
+                0.7898516425087772
+              ],
+              "nll": {
+                "mean": 1.2527918888313572,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.44595565695170536,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.07143989478625308,
+              "latency_ms": {
+                "n": 100,
+                "median": 371.36119802016765,
+                "p95": 611.2617539474741
+              }
+            },
+            "go_emotions": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 35,
+              "accuracy_failures_incorrect": 0.35,
+              "accuracy_wilson_95": [
+                0.26364248243097527,
+                0.44745556703112027
+              ],
+              "nll": {
+                "mean": 2.4236990959367173,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.8496685591335462,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": 0.6932399505780924,
+                "n": 100
+              },
+              "ece_top_label": 0.1382335309058388,
+              "latency_ms": {
+                "n": 100,
+                "median": 83.09166901744902,
+                "p95": 85.63840598799288
+              }
+            },
+            "mnli": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 86,
+              "accuracy_failures_incorrect": 0.86,
+              "accuracy_wilson_95": [
+                0.7786281178903616,
+                0.9147365634006086
+              ],
+              "nll": {
+                "mean": 0.3833832248455557,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.21372515909010617,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.09793242014587865,
+              "latency_ms": {
+                "n": 100,
+                "median": 70.38281706627458,
+                "p95": 77.68650900106877
+              }
+            },
+            "sst5": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 54,
+              "accuracy_failures_incorrect": 0.54,
+              "accuracy_wilson_95": [
+                0.44264860323368227,
+                0.6343919169097589
+              ],
+              "nll": {
+                "mean": 1.2311912639894016,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.6180308493890013,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": 0.7622025588743733,
+                "n": 100
+              },
+              "rps": {
+                "mean": 0.11544014768092616,
+                "n": 100
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.10991294382832198,
+              "latency_ms": {
+                "n": 100,
+                "median": 71.1722819833085,
+                "p95": 76.11495908349752
+              }
+            },
+            "fever_evidence": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 87,
+              "accuracy_failures_incorrect": 0.87,
+              "accuracy_wilson_95": [
+                0.7901964855992357,
+                0.9224283257275948
+              ],
+              "nll": {
+                "mean": 0.349921442127582,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.20898208706374372,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.10449104353187186,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.07899715534300629,
+              "latency_ms": {
+                "n": 100,
+                "median": 64.88576694391668,
+                "p95": 78.69383692741394
+              }
+            },
+            "sms_spam": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 97,
+              "accuracy_failures_incorrect": 0.97,
+              "accuracy_wilson_95": [
+                0.9154806357094724,
+                0.9897454759759611
+              ],
+              "nll": {
+                "mean": 0.27637280954036064,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.1368665179212901,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.06843325896064505,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.18625874845186957,
+              "latency_ms": {
+                "n": 100,
+                "median": 54.50727604329586,
+                "p95": 63.913926016539335
+              }
+            },
+            "chaosnli": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 54,
+              "accuracy_failures_incorrect": 0.54,
+              "accuracy_wilson_95": [
+                0.44264860323368227,
+                0.6343919169097589
+              ],
+              "nll": {
+                "mean": 0.9101613982154546,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.5736824753669442,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": 0.2893378458375895,
+                "n": 100
+              },
+              "ece_top_label": 0.16766171826223755,
+              "latency_ms": {
+                "n": 100,
+                "median": 70.06029598414898,
+                "p95": 76.76201593130827
+              }
+            }
+          },
+          "metric_notes": {
+            "failures": "Included as incorrect in accuracy; excluded from probability metrics with explicit n.",
+            "ece": "10 equal-width bins of maximum class probability, not API confidence.",
+            "nll": "Natural log; probabilities floored at 1e-12 for this metric only.",
+            "brier": "Multiclass sum of squared errors; binary Brier also reported for Noul.",
+            "noul_threshold": "Yes when P(yes) >= 0.5, including an exact tie.",
+            "ordinal": "Zero-based expected score MAE and normalized ranked probability score.",
+            "human": "TVD to normalized human vote shares, where provided."
+          }
+        },
+        "calibration": {
+          "parameters": {
+            "temperature": 1.5,
+            "noul_temperature": 1.3333333333333333,
+            "noul_bias": -0.5
+          },
+          "objective": "hard-label NLL on validation records only",
+          "fit_records": 240,
+          "choice_score_records": 180,
+          "noul_records": 60,
+          "grid": {
+            "temperatures": [
+              0.5,
+              0.65,
+              0.8,
+              1.0,
+              1.25,
+              1.5,
+              2.0,
+              2.5,
+              3.0,
+              4.0
+            ],
+            "noul_biases": [
+              -2.0,
+              -1.5,
+              -1.0,
+              -0.5,
+              0.0,
+              0.5,
+              1.0,
+              1.5,
+              2.0
+            ]
+          },
+          "before": {
+            "choice_score_nll": 1.0596627397099918,
+            "noul_nll": 0.5573539121775181
+          },
+          "after": {
+            "choice_score_nll": 0.9891777266635677,
+            "noul_nll": 0.4672234129581634
+          },
+          "limitations": "Global calibration only; validation fit is not held-out test performance. No weight changes."
+        },
+        "order": {
+          "planned_pairs": 200,
+          "valid_pairs": 200,
+          "flips": 34,
+          "rate": 0.17,
+          "wilson_95": [
+            0.12427907912586969,
+            0.22815883628312625
+          ],
+          "mean_tvd": 0.23278691175493563
+        },
+        "memory": {
+          "before_mib": 97214,
+          "minimum_sampled_free_mib": 88749,
+          "allocation_delta_mib": 8465
+        },
+        "adapter_bytes": 0
+      },
+      "adapter": {
+        "trained_native_parity": {
+          "n": 256,
+          "mean_tvd": 0.002037396779223571,
+          "max_tvd": 0.02844965404978625,
+          "argmax_agreement": 1.0
+        },
+        "raw": {
+          "overall": {
+            "n": 1500,
+            "valid": 1500,
+            "failures": [],
+            "correct": 1120,
+            "accuracy_failures_incorrect": 0.7466666666666667,
+            "accuracy_wilson_95": [
+              0.7240460808307774,
+              0.7680270666806
+            ],
+            "nll": {
+              "mean": 0.8065665671627882,
+              "n": 1500
+            },
+            "brier_multiclass": {
+              "mean": 0.35930235723542675,
+              "n": 1500
+            },
+            "brier_binary": {
+              "mean": 0.0672951223706594,
+              "n": 400
+            },
+            "score_mae": {
+              "mean": 0.7029659868761219,
+              "n": 300
+            },
+            "rps": {
+              "mean": 0.13934517311900416,
+              "n": 300
+            },
+            "human_tvd": {
+              "mean": 0.35787375914520736,
+              "n": 400
+            },
+            "ece_top_label": 0.05164343223751324,
+            "latency_ms": {
+              "n": 1500,
+              "median": 78.9172719232738,
+              "p95": 603.720264043659
+            }
+          },
+          "by_source": {
+            "banking77": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 76,
+              "accuracy_failures_incorrect": 0.76,
+              "accuracy_wilson_95": [
+                0.6676766365018553,
+                0.8330867444305122
+              ],
+              "nll": {
+                "mean": 0.9687005464157147,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.35106317734732984,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.1380040796702793,
+              "latency_ms": {
+                "n": 100,
+                "median": 416.0047029145062,
+                "p95": 424.075330956839
+              }
+            },
+            "clinc150": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 84,
+              "accuracy_failures_incorrect": 0.84,
+              "accuracy_wilson_95": [
+                0.7557973061072976,
+                0.8990471151119521
+              ],
+              "nll": {
+                "mean": 0.5302428631821303,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.2437790879911969,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.07618248266731337,
+              "latency_ms": {
+                "n": 100,
+                "median": 605.6649390375242,
+                "p95": 611.1838690703735
+              }
+            },
+            "ledgar": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 72,
+              "accuracy_failures_incorrect": 0.72,
+              "accuracy_wilson_95": [
+                0.6251197129007884,
+                0.7986031478881379
+              ],
+              "nll": {
+                "mean": 1.2120823409989387,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.4324678571269812,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.12191658974695217,
+              "latency_ms": {
+                "n": 100,
+                "median": 402.4116499349475,
+                "p95": 666.8029970023781
+              }
+            },
+            "go_emotions": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 31,
+              "accuracy_failures_incorrect": 0.31,
+              "accuracy_wilson_95": [
+                0.22779697212376038,
+                0.40626055719489407
+              ],
+              "nll": {
+                "mean": 3.0573529899049534,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 1.0039413360259068,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": 0.6954341946434691,
+                "n": 100
+              },
+              "ece_top_label": 0.3151017605386734,
+              "latency_ms": {
+                "n": 100,
+                "median": 90.02772194799036,
+                "p95": 92.51292201224715
+              }
+            },
+            "mmlu": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 78,
+              "accuracy_failures_incorrect": 0.78,
+              "accuracy_wilson_95": [
+                0.6892964648501421,
+                0.8499871761539459
+              ],
+              "nll": {
+                "mean": 0.7391067329844363,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.3373897413926732,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.08575958167917713,
+              "latency_ms": {
+                "n": 100,
+                "median": 76.22868404723704,
+                "p95": 129.02809702791274
+              }
+            },
+            "arc_challenge": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 95,
+              "accuracy_failures_incorrect": 0.95,
+              "accuracy_wilson_95": [
+                0.8882495307680808,
+                0.9784563208456319
+              ],
+              "nll": {
+                "mean": 0.1773685458803241,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.0830066056388554,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.03231414714067262,
+              "latency_ms": {
+                "n": 100,
+                "median": 65.99880999419838,
+                "p95": 77.74078706279397
+              }
+            },
+            "mnli": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 92,
+              "accuracy_failures_incorrect": 0.92,
+              "accuracy_wilson_95": [
+                0.8500189229905127,
+                0.9589065385156194
+              ],
+              "nll": {
+                "mean": 0.2777334169586324,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.1413463771360658,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.047091688790600196,
+              "latency_ms": {
+                "n": 100,
+                "median": 75.86685300339013,
+                "p95": 83.3143200725317
+              }
+            },
+            "sst5": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 52,
+              "accuracy_failures_incorrect": 0.52,
+              "accuracy_wilson_95": [
+                0.4231657776522397,
+                0.615354482419481
+              ],
+              "nll": {
+                "mean": 1.1430942763713532,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.6281892567429824,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": 0.5463003259213945,
+                "n": 100
+              },
+              "rps": {
+                "mean": 0.09347344067804123,
+                "n": 100
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.16651894303831047,
+              "latency_ms": {
+                "n": 100,
+                "median": 76.73204608727247,
+                "p95": 82.6410650042817
+              }
+            },
+            "helpsteer2_helpfulness": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 41,
+              "accuracy_failures_incorrect": 0.41,
+              "accuracy_wilson_95": [
+                0.3186731302113651,
+                0.5079856994658921
+              ],
+              "nll": {
+                "mean": 1.4299567245046512,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.7289577012864096,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": 0.9567787063254337,
+                "n": 100
+              },
+              "rps": {
+                "mean": 0.1594318898259112,
+                "n": 100
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.1473846975371512,
+              "latency_ms": {
+                "n": 100,
+                "median": 230.91474501416087,
+                "p95": 413.0435900297016
+              }
+            },
+            "measuring_hate_speech": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 69,
+              "accuracy_failures_incorrect": 0.69,
+              "accuracy_wilson_95": [
+                0.5937394428051057,
+                0.7722030278762395
+              ],
+              "nll": {
+                "mean": 0.6923368043682785,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.4001702593271409,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": 0.6058189283815373,
+                "n": 100
+              },
+              "rps": {
+                "mean": 0.16513018885306008,
+                "n": 100
+              },
+              "human_tvd": {
+                "mean": 0.27949149035915505,
+                "n": 100
+              },
+              "ece_top_label": 0.06864238223316589,
+              "latency_ms": {
+                "n": 100,
+                "median": 75.7818870479241,
+                "p95": 87.93796401005238
+              }
+            },
+            "boolq": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 89,
+              "accuracy_failures_incorrect": 0.89,
+              "accuracy_wilson_95": [
+                0.8136870349691969,
+                0.9374580364293543
+              ],
+              "nll": {
+                "mean": 0.3063953328838136,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.1653770306090583,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.08268851530452916,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.06434308069429848,
+              "latency_ms": {
+                "n": 100,
+                "median": 90.91304405592382,
+                "p95": 135.84793801419437
+              }
+            },
+            "fever_evidence": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 95,
+              "accuracy_failures_incorrect": 0.95,
+              "accuracy_wilson_95": [
+                0.8882495307680808,
+                0.9784563208456319
+              ],
+              "nll": {
+                "mean": 0.2400004032547597,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.09481218894914693,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.047406094474573474,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.05370850456881078,
+              "latency_ms": {
+                "n": 100,
+                "median": 69.80826403014362,
+                "p95": 85.50642605405301
+              }
+            },
+            "civil_comments": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 89,
+              "accuracy_failures_incorrect": 0.89,
+              "accuracy_wilson_95": [
+                0.8136870349691969,
+                0.9374580364293543
+              ],
+              "nll": {
+                "mean": 0.329698594853983,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.1957684657141819,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.09788423285709096,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": 0.18676195388571082,
+                "n": 100
+              },
+              "ece_top_label": 0.1052061355870002,
+              "latency_ms": {
+                "n": 100,
+                "median": 67.66919000074267,
+                "p95": 114.39636501017958
+              }
+            },
+            "sms_spam": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 96,
+              "accuracy_failures_incorrect": 0.96,
+              "accuracy_wilson_95": [
+                0.9016292856411208,
+                0.9843366960084523
+              ],
+              "nll": {
+                "mean": 0.17304554745810485,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.082403293692888,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.041201646846444,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.09106666810265862,
+              "latency_ms": {
+                "n": 100,
+                "median": 58.45853197388351,
+                "p95": 69.07085701823235
+              }
+            },
+            "chaosnli": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 61,
+              "accuracy_failures_incorrect": 0.61,
+              "accuracy_wilson_95": [
+                0.5120301704584073,
+                0.6998312599360558
+              ],
+              "nll": {
+                "mean": 0.8213833874217482,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.5008629795505839,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": 0.26980739769249457,
+                "n": 100
+              },
+              "ece_top_label": 0.17068152848578752,
+              "latency_ms": {
+                "n": 100,
+                "median": 75.74873592238873,
+                "p95": 82.41985505446792
+              }
+            }
+          },
+          "metric_notes": {
+            "failures": "Included as incorrect in accuracy; excluded from probability metrics with explicit n.",
+            "ece": "10 equal-width bins of maximum class probability, not API confidence.",
+            "nll": "Natural log; probabilities floored at 1e-12 for this metric only.",
+            "brier": "Multiclass sum of squared errors; binary Brier also reported for Noul.",
+            "noul_threshold": "Yes when P(yes) >= 0.5, including an exact tie.",
+            "ordinal": "Zero-based expected score MAE and normalized ranked probability score.",
+            "human": "TVD to normalized human vote shares, where provided."
+          }
+        },
+        "calibrated": {
+          "overall": {
+            "n": 1500,
+            "valid": 1500,
+            "failures": [],
+            "correct": 1122,
+            "accuracy_failures_incorrect": 0.748,
+            "accuracy_wilson_95": [
+              0.7254142508688529,
+              0.7693187514939371
+            ],
+            "nll": {
+              "mean": 0.7639627304311101,
+              "n": 1500
+            },
+            "brier_multiclass": {
+              "mean": 0.35072792213850223,
+              "n": 1500
+            },
+            "brier_binary": {
+              "mean": 0.06642945666104753,
+              "n": 400
+            },
+            "score_mae": {
+              "mean": 0.7191592480131452,
+              "n": 300
+            },
+            "rps": {
+              "mean": 0.1372316930351024,
+              "n": 300
+            },
+            "human_tvd": {
+              "mean": 0.3459388092063047,
+              "n": 400
+            },
+            "ece_top_label": 0.013059612131855348,
+            "latency_ms": {
+              "n": 1500,
+              "median": 78.9172719232738,
+              "p95": 603.720264043659
+            }
+          },
+          "by_source": {
+            "banking77": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 76,
+              "accuracy_failures_incorrect": 0.76,
+              "accuracy_wilson_95": [
+                0.6676766365018553,
+                0.8330867444305122
+              ],
+              "nll": {
+                "mean": 0.9194896201251028,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.3479627018311842,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.1210428238862194,
+              "latency_ms": {
+                "n": 100,
+                "median": 416.0047029145062,
+                "p95": 424.075330956839
+              }
+            },
+            "clinc150": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 84,
+              "accuracy_failures_incorrect": 0.84,
+              "accuracy_wilson_95": [
+                0.7557973061072976,
+                0.8990471151119521
+              ],
+              "nll": {
+                "mean": 0.5732352713324708,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.2478744399285789,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.0993143220316835,
+              "latency_ms": {
+                "n": 100,
+                "median": 605.6649390375242,
+                "p95": 611.1838690703735
+              }
+            },
+            "ledgar": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 72,
+              "accuracy_failures_incorrect": 0.72,
+              "accuracy_wilson_95": [
+                0.6251197129007884,
+                0.7986031478881379
+              ],
+              "nll": {
+                "mean": 1.1138005402720395,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.41541502483045034,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.08750438973407766,
+              "latency_ms": {
+                "n": 100,
+                "median": 402.4116499349475,
+                "p95": 666.8029970023781
+              }
+            },
+            "go_emotions": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 31,
+              "accuracy_failures_incorrect": 0.31,
+              "accuracy_wilson_95": [
+                0.22779697212376038,
+                0.40626055719489407
+              ],
+              "nll": {
+                "mean": 2.7219810492411,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.9520472435881794,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": 0.6993178858664416,
+                "n": 100
+              },
+              "ece_top_label": 0.256360338716245,
+              "latency_ms": {
+                "n": 100,
+                "median": 90.02772194799036,
+                "p95": 92.51292201224715
+              }
+            },
+            "mmlu": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 78,
+              "accuracy_failures_incorrect": 0.78,
+              "accuracy_wilson_95": [
+                0.6892964648501421,
+                0.8499871761539459
+              ],
+              "nll": {
+                "mean": 0.6736835560275758,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.3264085329165365,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.05894033102558999,
+              "latency_ms": {
+                "n": 100,
+                "median": 76.22868404723704,
+                "p95": 129.02809702791274
+              }
+            },
+            "arc_challenge": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 95,
+              "accuracy_failures_incorrect": 0.95,
+              "accuracy_wilson_95": [
+                0.8882495307680808,
+                0.9784563208456319
+              ],
+              "nll": {
+                "mean": 0.1710473358311684,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.082874295814724,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.024736552231780208,
+              "latency_ms": {
+                "n": 100,
+                "median": 65.99880999419838,
+                "p95": 77.74078706279397
+              }
+            },
+            "mnli": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 92,
+              "accuracy_failures_incorrect": 0.92,
+              "accuracy_wilson_95": [
+                0.8500189229905127,
+                0.9589065385156194
+              ],
+              "nll": {
+                "mean": 0.2981020405106342,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.14987016896762917,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.08106936936103541,
+              "latency_ms": {
+                "n": 100,
+                "median": 75.86685300339013,
+                "p95": 83.3143200725317
+              }
+            },
+            "sst5": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 52,
+              "accuracy_failures_incorrect": 0.52,
+              "accuracy_wilson_95": [
+                0.4231657776522397,
+                0.615354482419481
+              ],
+              "nll": {
+                "mean": 1.0986642445879904,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.6132517179172042,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": 0.5481057343618374,
+                "n": 100
+              },
+              "rps": {
+                "mean": 0.09162758452708009,
+                "n": 100
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.12123892617766781,
+              "latency_ms": {
+                "n": 100,
+                "median": 76.73204608727247,
+                "p95": 82.6410650042817
+              }
+            },
+            "helpsteer2_helpfulness": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 41,
+              "accuracy_failures_incorrect": 0.41,
+              "accuracy_wilson_95": [
+                0.3186731302113651,
+                0.5079856994658921
+              ],
+              "nll": {
+                "mean": 1.3792147168146136,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.7075423994927926,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": 0.9672437337466601,
+                "n": 100
+              },
+              "rps": {
+                "mean": 0.15433658008409562,
+                "n": 100
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.09962204386485242,
+              "latency_ms": {
+                "n": 100,
+                "median": 230.91474501416087,
+                "p95": 413.0435900297016
+              }
+            },
+            "measuring_hate_speech": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 69,
+              "accuracy_failures_incorrect": 0.69,
+              "accuracy_wilson_95": [
+                0.5937394428051057,
+                0.7722030278762395
+              ],
+              "nll": {
+                "mean": 0.6989988253186428,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.40184568844417595,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": 0.6421282759309384,
+                "n": 100
+              },
+              "rps": {
+                "mean": 0.16573091449413152,
+                "n": 100
+              },
+              "human_tvd": {
+                "mean": 0.2956940007368839,
+                "n": 100
+              },
+              "ece_top_label": 0.07783075427534251,
+              "latency_ms": {
+                "n": 100,
+                "median": 75.7818870479241,
+                "p95": 87.93796401005238
+              }
+            },
+            "boolq": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 87,
+              "accuracy_failures_incorrect": 0.87,
+              "accuracy_wilson_95": [
+                0.7901964855992357,
+                0.9224283257275948
+              ],
+              "nll": {
+                "mean": 0.3632364770924187,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.20990430765724352,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.10495215382862176,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.06708336982079267,
+              "latency_ms": {
+                "n": 100,
+                "median": 90.91304405592382,
+                "p95": 135.84793801419437
+              }
+            },
+            "fever_evidence": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 93,
+              "accuracy_failures_incorrect": 0.93,
+              "accuracy_wilson_95": [
+                0.8625048526092651,
+                0.9656807389327273
+              ],
+              "nll": {
+                "mean": 0.2263632017823618,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.11323986516065267,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.05661993258032633,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.042902401706177866,
+              "latency_ms": {
+                "n": 100,
+                "median": 69.80826403014362,
+                "p95": 85.50642605405301
+              }
+            },
+            "civil_comments": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 94,
+              "accuracy_failures_incorrect": 0.94,
+              "accuracy_wilson_95": [
+                0.8752318455410406,
+                0.9722138760368118
+              ],
+              "nll": {
+                "mean": 0.25135071602577613,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.13237853760635257,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.06618926880317628,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": 0.13800413327173627,
+                "n": 100
+              },
+              "ece_top_label": 0.09404314594984566,
+              "latency_ms": {
+                "n": 100,
+                "median": 67.66919000074267,
+                "p95": 114.39636501017958
+              }
+            },
+            "sms_spam": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 97,
+              "accuracy_failures_incorrect": 0.97,
+              "accuracy_wilson_95": [
+                0.9154806357094724,
+                0.9897454759759611
+              ],
+              "nll": {
+                "mean": 0.17452606608910043,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.07591294286413156,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.03795647143206578,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.10176752472208792,
+              "latency_ms": {
+                "n": 100,
+                "median": 58.45853197388351,
+                "p95": 69.07085701823235
+              }
+            },
+            "chaosnli": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 61,
+              "accuracy_failures_incorrect": 0.61,
+              "accuracy_wilson_95": [
+                0.5120301704584073,
+                0.6998312599360558
+              ],
+              "nll": {
+                "mean": 0.7957472954156557,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.48439096505769685,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": 0.250739216950157,
+                "n": 100
+              },
+              "ece_top_label": 0.09621772145428016,
+              "latency_ms": {
+                "n": 100,
+                "median": 75.74873592238873,
+                "p95": 82.41985505446792
+              }
+            }
+          },
+          "metric_notes": {
+            "failures": "Included as incorrect in accuracy; excluded from probability metrics with explicit n.",
+            "ece": "10 equal-width bins of maximum class probability, not API confidence.",
+            "nll": "Natural log; probabilities floored at 1e-12 for this metric only.",
+            "brier": "Multiclass sum of squared errors; binary Brier also reported for Noul.",
+            "noul_threshold": "Yes when P(yes) >= 0.5, including an exact tie.",
+            "ordinal": "Zero-based expected score MAE and normalized ranked probability score.",
+            "human": "TVD to normalized human vote shares, where provided."
+          }
+        },
+        "held_out_sources_calibrated": {
+          "overall": {
+            "n": 700,
+            "valid": 700,
+            "failures": [],
+            "correct": 498,
+            "accuracy_failures_incorrect": 0.7114285714285714,
+            "accuracy_wilson_95": [
+              0.6767810991265567,
+              0.7437681542464346
+            ],
+            "nll": {
+              "mean": 0.9184549196998403,
+              "n": 700
+            },
+            "brier_multiclass": {
+              "mean": 0.40058970405513494,
+              "n": 700
+            },
+            "brier_binary": {
+              "mean": 0.04728820200619605,
+              "n": 200
+            },
+            "score_mae": {
+              "mean": 0.5481057343618374,
+              "n": 100
+            },
+            "rps": {
+              "mean": 0.09162758452708009,
+              "n": 100
+            },
+            "human_tvd": {
+              "mean": 0.4750285514082993,
+              "n": 200
+            },
+            "ece_top_label": 0.031211385618091923,
+            "latency_ms": {
+              "n": 700,
+              "median": 76.60861394833773,
+              "p95": 422.34724608715624
+            }
+          },
+          "by_source": {
+            "ledgar": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 72,
+              "accuracy_failures_incorrect": 0.72,
+              "accuracy_wilson_95": [
+                0.6251197129007884,
+                0.7986031478881379
+              ],
+              "nll": {
+                "mean": 1.1138005402720395,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.41541502483045034,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.08750438973407766,
+              "latency_ms": {
+                "n": 100,
+                "median": 402.4116499349475,
+                "p95": 666.8029970023781
+              }
+            },
+            "go_emotions": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 31,
+              "accuracy_failures_incorrect": 0.31,
+              "accuracy_wilson_95": [
+                0.22779697212376038,
+                0.40626055719489407
+              ],
+              "nll": {
+                "mean": 2.7219810492411,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.9520472435881794,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": 0.6993178858664416,
+                "n": 100
+              },
+              "ece_top_label": 0.256360338716245,
+              "latency_ms": {
+                "n": 100,
+                "median": 90.02772194799036,
+                "p95": 92.51292201224715
+              }
+            },
+            "mnli": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 92,
+              "accuracy_failures_incorrect": 0.92,
+              "accuracy_wilson_95": [
+                0.8500189229905127,
+                0.9589065385156194
+              ],
+              "nll": {
+                "mean": 0.2981020405106342,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.14987016896762917,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.08106936936103541,
+              "latency_ms": {
+                "n": 100,
+                "median": 75.86685300339013,
+                "p95": 83.3143200725317
+              }
+            },
+            "sst5": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 52,
+              "accuracy_failures_incorrect": 0.52,
+              "accuracy_wilson_95": [
+                0.4231657776522397,
+                0.615354482419481
+              ],
+              "nll": {
+                "mean": 1.0986642445879904,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.6132517179172042,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": 0.5481057343618374,
+                "n": 100
+              },
+              "rps": {
+                "mean": 0.09162758452708009,
+                "n": 100
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.12123892617766781,
+              "latency_ms": {
+                "n": 100,
+                "median": 76.73204608727247,
+                "p95": 82.6410650042817
+              }
+            },
+            "fever_evidence": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 93,
+              "accuracy_failures_incorrect": 0.93,
+              "accuracy_wilson_95": [
+                0.8625048526092651,
+                0.9656807389327273
+              ],
+              "nll": {
+                "mean": 0.2263632017823618,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.11323986516065267,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.05661993258032633,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.042902401706177866,
+              "latency_ms": {
+                "n": 100,
+                "median": 69.80826403014362,
+                "p95": 85.50642605405301
+              }
+            },
+            "sms_spam": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 97,
+              "accuracy_failures_incorrect": 0.97,
+              "accuracy_wilson_95": [
+                0.9154806357094724,
+                0.9897454759759611
+              ],
+              "nll": {
+                "mean": 0.17452606608910043,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.07591294286413156,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": 0.03795647143206578,
+                "n": 100
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": null,
+                "n": 0
+              },
+              "ece_top_label": 0.10176752472208792,
+              "latency_ms": {
+                "n": 100,
+                "median": 58.45853197388351,
+                "p95": 69.07085701823235
+              }
+            },
+            "chaosnli": {
+              "n": 100,
+              "valid": 100,
+              "failures": [],
+              "correct": 61,
+              "accuracy_failures_incorrect": 0.61,
+              "accuracy_wilson_95": [
+                0.5120301704584073,
+                0.6998312599360558
+              ],
+              "nll": {
+                "mean": 0.7957472954156557,
+                "n": 100
+              },
+              "brier_multiclass": {
+                "mean": 0.48439096505769685,
+                "n": 100
+              },
+              "brier_binary": {
+                "mean": null,
+                "n": 0
+              },
+              "score_mae": {
+                "mean": null,
+                "n": 0
+              },
+              "rps": {
+                "mean": null,
+                "n": 0
+              },
+              "human_tvd": {
+                "mean": 0.250739216950157,
+                "n": 100
+              },
+              "ece_top_label": 0.09621772145428016,
+              "latency_ms": {
+                "n": 100,
+                "median": 75.74873592238873,
+                "p95": 82.41985505446792
+              }
+            }
+          },
+          "metric_notes": {
+            "failures": "Included as incorrect in accuracy; excluded from probability metrics with explicit n.",
+            "ece": "10 equal-width bins of maximum class probability, not API confidence.",
+            "nll": "Natural log; probabilities floored at 1e-12 for this metric only.",
+            "brier": "Multiclass sum of squared errors; binary Brier also reported for Noul.",
+            "noul_threshold": "Yes when P(yes) >= 0.5, including an exact tie.",
+            "ordinal": "Zero-based expected score MAE and normalized ranked probability score.",
+            "human": "TVD to normalized human vote shares, where provided."
+          }
+        },
+        "calibration": {
+          "parameters": {
+            "temperature": 1.25,
+            "noul_temperature": 1.2,
+            "noul_bias": -1.0
+          },
+          "objective": "hard-label NLL on validation records only",
+          "fit_records": 240,
+          "choice_score_records": 180,
+          "noul_records": 60,
+          "grid": {
+            "temperatures": [
+              0.5,
+              0.65,
+              0.8,
+              1.0,
+              1.25,
+              1.5,
+              2.0,
+              2.5,
+              3.0,
+              4.0
+            ],
+            "noul_biases": [
+              -2.0,
+              -1.5,
+              -1.0,
+              -0.5,
+              0.0,
+              0.5,
+              1.0,
+              1.5,
+              2.0
+            ]
+          },
+          "before": {
+            "choice_score_nll": 0.7289761678892249,
+            "noul_nll": 0.46458927324301175
+          },
+          "after": {
+            "choice_score_nll": 0.7066514523110053,
+            "noul_nll": 0.3858298538568696
+          },
+          "limitations": "Global calibration only; validation fit is not held-out test performance. No weight changes."
+        },
+        "order": {
+          "planned_pairs": 200,
+          "valid_pairs": 200,
+          "flips": 34,
+          "rate": 0.17,
+          "wilson_95": [
+            0.12427907912586969,
+            0.22815883628312625
+          ],
+          "mean_tvd": 0.1595615464329783
+        },
+        "memory": {
+          "before_mib": 97214,
+          "minimum_sampled_free_mib": 88539,
+          "allocation_delta_mib": 8675
+        },
+        "adapter_bytes": 138438400
+      }
+    },
+    "accuracy_delta_percentage_points": 3.8666666666666627,
+    "order_flip_delta_percentage_points": 0.0,
+    "selection_is_unchanged_base": false,
+    "limitations": [
+      "This is one bounded adaptation, not a release-quality claim.",
+      "Test excluded from checkpoint selection; calibration used only its separate validation records.",
+      "Source holdouts do not establish absence from base pretraining.",
+      "Runtime memory samples are not a continuous peak measurement.",
+      "All speed measurements use the RTX PRO 6000, not the 4090 or a Mac.",
+      "No hosted Jev calls or claims based on new Jev measurements."
+    ]
+  },
+  "paired_calibrated": {
+    "overall": {
+      "n": 1500,
+      "both_correct": 992,
+      "both_wrong": 306,
+      "adapter_only_correct": 130,
+      "base_only_correct": 72,
+      "accuracy_delta_pp": 3.8666666666666667,
+      "paired_bootstrap_95_pp": [
+        2.0,
+        5.733333333333333
+      ]
+    },
+    "held_out_sources": {
+      "n": 700,
+      "both_correct": 450,
+      "both_wrong": 168,
+      "adapter_only_correct": 48,
+      "base_only_correct": 34,
+      "accuracy_delta_pp": 2.0,
+      "paired_bootstrap_95_pp": [
+        -0.5714285714285714,
+        4.571428571428571
+      ]
+    },
+    "interval_method": "Paired percentile bootstrap, 20,000 resamples, NumPy seed 20260922. Descriptive; no multiplicity correction."
+  },
+  "artifact_bytes": {
+    "checkpoint": 138451240,
+    "native": 138438400
+  },
+  "artifact_hashes": {
+    "artifacts/training-v1/run-02/run.json": "8bb6698344fdea01f39b6c9501f089084d89471c19501fcc9d8d5e6895a63902",
+    "artifacts/training-v1/run-02/selection.json": "59574057eb662a0b02cb5a18d8414d6b9daeacf9cc17d4d91f9fc7cd4db5440e",
+    "artifacts/training-v1/evaluation-02/summary.json": "c3d5e28c4bbf0b24397724e51621698a984727a0bca898909af464c7673344dd",
+    "artifacts/decision-v2/manifest.json": "6fadc5da66abf7d192fe5c30ac5c24860fe318bd77e18d5bdd21ea881e8130c0",
+    "artifacts/decision-v2/tokenized-manifest.json": "a16170663d825167cc2cdc223c50765aa5e4749b7747bc6e56260770bb3afcc9"
+  }
+}

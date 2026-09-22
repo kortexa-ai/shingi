@@ -1,0 +1,524 @@
+{
+  "run": {
+    "code_revision": "fe1af14f6f135e94e0fa8ae02383659bfb218b73",
+    "model": "shingi-bonsai-2-27b-baseline",
+    "model_path": "/home/francip/.cache/huggingface/hub/models--prism-ml--Ternary-Bonsai-2-27B-gguf/snapshots/6ed5e12bf84b7a63069882c91dd9e9218647d17b/Ternary-Bonsai-2-27B-PQ2_0.gguf",
+    "model_sha256": "3907dc1658db1f78a9826bf8d5bcb8dc65db0d466388937af57f2294fae62ec1",
+    "adapter_path": "artifacts/training-v1/run-02/adapter-0128.gguf",
+    "adapter_sha256": "d7ea6bf61f6ef5fe26bd82ca1ece4686c20d29a1937834a18239629bb6db31d4",
+    "executable_sha256": "3812d291de70e29e3ee8ee845af1bef50017384f66c019de9ce618f2cefd918f",
+    "phase": "context",
+    "context_tokens": 16384,
+    "calibration": {
+      "temperature": 1.0,
+      "noul_temperature": 1.0,
+      "noul_bias": 0.0
+    },
+    "calibration_sha256": null,
+    "dataset_revision": "002ad22de8db2df5e0eb898b3da8072dbd4af4de",
+    "dataset_manifest_sha256": "6fadc5da66abf7d192fe5c30ac5c24860fe318bd77e18d5bdd21ea881e8130c0",
+    "started_at": "2026-09-22T17:23:53.087118+00:00",
+    "planned_records": 12,
+    "gpu_free_before_mib": 46518,
+    "max_seconds": 600,
+    "context_probe": "Synthetic repeated filler and planted fact; not real-document comprehension.",
+    "completed_at": "2026-09-22T17:24:28.055945+00:00",
+    "elapsed_seconds": 34.938512269058265,
+    "completed_records": 12,
+    "aborted": null,
+    "gpu_free_after_mib": 46518
+  },
+  "metrics": {
+    "overall": {
+      "n": 12,
+      "valid": 12,
+      "failures": [],
+      "correct": 12,
+      "accuracy_failures_incorrect": 1.0,
+      "accuracy_wilson_95": [
+        0.7575059933447592,
+        1.0
+      ],
+      "nll": {
+        "mean": 0.00023285292779272847,
+        "n": 12
+      },
+      "brier_multiclass": {
+        "mean": 9.732030481203314e-08,
+        "n": 12
+      },
+      "brier_binary": {
+        "mean": null,
+        "n": 0
+      },
+      "score_mae": {
+        "mean": null,
+        "n": 0
+      },
+      "rps": {
+        "mean": null,
+        "n": 0
+      },
+      "human_tvd": {
+        "mean": null,
+        "n": 0
+      },
+      "ece_top_label": 0.00023282202533358998,
+      "reliability_bins": [
+        {
+          "lower": 0.0,
+          "upper": 0.1,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.1,
+          "upper": 0.2,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.2,
+          "upper": 0.3,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.3,
+          "upper": 0.4,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.4,
+          "upper": 0.5,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.5,
+          "upper": 0.6,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.6,
+          "upper": 0.7,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.7,
+          "upper": 0.8,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.8,
+          "upper": 0.9,
+          "n": 0,
+          "accuracy": null,
+          "probability": null
+        },
+        {
+          "lower": 0.9,
+          "upper": 1.0,
+          "n": 12,
+          "accuracy": 1.0,
+          "probability": 0.9997671779746664
+        }
+      ],
+      "latency_ms": {
+        "n": 12,
+        "median": 2639.7469389485195,
+        "p95": 5035.3074399754405
+      }
+    },
+    "by_source": {
+      "synthetic-context": {
+        "n": 12,
+        "valid": 12,
+        "failures": [],
+        "correct": 12,
+        "accuracy_failures_incorrect": 1.0,
+        "accuracy_wilson_95": [
+          0.7575059933447592,
+          1.0
+        ],
+        "nll": {
+          "mean": 0.00023285292779272847,
+          "n": 12
+        },
+        "brier_multiclass": {
+          "mean": 9.732030481203314e-08,
+          "n": 12
+        },
+        "brier_binary": {
+          "mean": null,
+          "n": 0
+        },
+        "score_mae": {
+          "mean": null,
+          "n": 0
+        },
+        "rps": {
+          "mean": null,
+          "n": 0
+        },
+        "human_tvd": {
+          "mean": null,
+          "n": 0
+        },
+        "ece_top_label": 0.00023282202533358998,
+        "reliability_bins": [
+          {
+            "lower": 0.0,
+            "upper": 0.1,
+            "n": 0,
+            "accuracy": null,
+            "probability": null
+          },
+          {
+            "lower": 0.1,
+            "upper": 0.2,
+            "n": 0,
+            "accuracy": null,
+            "probability": null
+          },
+          {
+            "lower": 0.2,
+            "upper": 0.3,
+            "n": 0,
+            "accuracy": null,
+            "probability": null
+          },
+          {
+            "lower": 0.3,
+            "upper": 0.4,
+            "n": 0,
+            "accuracy": null,
+            "probability": null
+          },
+          {
+            "lower": 0.4,
+            "upper": 0.5,
+            "n": 0,
+            "accuracy": null,
+            "probability": null
+          },
+          {
+            "lower": 0.5,
+            "upper": 0.6,
+            "n": 0,
+            "accuracy": null,
+            "probability": null
+          },
+          {
+            "lower": 0.6,
+            "upper": 0.7,
+            "n": 0,
+            "accuracy": null,
+            "probability": null
+          },
+          {
+            "lower": 0.7,
+            "upper": 0.8,
+            "n": 0,
+            "accuracy": null,
+            "probability": null
+          },
+          {
+            "lower": 0.8,
+            "upper": 0.9,
+            "n": 0,
+            "accuracy": null,
+            "probability": null
+          },
+          {
+            "lower": 0.9,
+            "upper": 1.0,
+            "n": 12,
+            "accuracy": 1.0,
+            "probability": 0.9997671779746664
+          }
+        ],
+        "latency_ms": {
+          "n": 12,
+          "median": 2639.7469389485195,
+          "p95": 5035.3074399754405
+        }
+      }
+    },
+    "metric_notes": {
+      "failures": "Included as incorrect in accuracy; excluded from probability metrics with explicit n.",
+      "ece": "10 equal-width bins of maximum class probability, not API confidence.",
+      "nll": "Natural log; probabilities floored at 1e-12 for this metric only.",
+      "brier": "Multiclass sum of squared errors; binary Brier also reported for Noul.",
+      "noul_threshold": "Yes when P(yes) >= 0.5, including an exact tie.",
+      "ordinal": "Zero-based expected score MAE and normalized ranked probability score.",
+      "human": "TVD to normalized human vote shares, where provided."
+    }
+  },
+  "predictions": [
+    {
+      "id": "context/512/0.0",
+      "input_tokens": 508,
+      "target_tokens": 512,
+      "needle_position": 0.0,
+      "label": "amber",
+      "error": null,
+      "answer": {
+        "type": "choice",
+        "choice": "amber",
+        "probabilities": {
+          "violet": 0.00017915848179879228,
+          "teal": 2.413199746059462e-05,
+          "amber": 0.9997906238843177,
+          "silver": 6.085636422830949e-06
+        },
+        "confidence": 0.999720831845757
+      },
+      "latency_ms": 303.8011980243027,
+      "gpu_free_after_mib": 37859
+    },
+    {
+      "id": "context/512/0.5",
+      "input_tokens": 508,
+      "target_tokens": 512,
+      "needle_position": 0.5,
+      "label": "amber",
+      "error": null,
+      "answer": {
+        "type": "choice",
+        "choice": "amber",
+        "probabilities": {
+          "silver": 0.00012982218204260991,
+          "violet": 2.2129951889518476e-05,
+          "amber": 0.9998424168809426,
+          "teal": 5.630985125259879e-06
+        },
+        "confidence": 0.9997898891745901
+      },
+      "latency_ms": 198.5199609771371,
+      "gpu_free_after_mib": 37849
+    },
+    {
+      "id": "context/512/1.0",
+      "input_tokens": 508,
+      "target_tokens": 512,
+      "needle_position": 1.0,
+      "label": "violet",
+      "error": null,
+      "answer": {
+        "type": "choice",
+        "choice": "violet",
+        "probabilities": {
+          "teal": 8.524536640155706e-05,
+          "silver": 2.3751200244749493e-05,
+          "violet": 0.9998848130789826,
+          "amber": 6.190354371033804e-06
+        },
+        "confidence": 0.9998464174386434
+      },
+      "latency_ms": 183.1868049921468,
+      "gpu_free_after_mib": 37849
+    },
+    {
+      "id": "context/4096/0.0",
+      "input_tokens": 4095,
+      "target_tokens": 4096,
+      "needle_position": 0.0,
+      "label": "amber",
+      "error": null,
+      "answer": {
+        "type": "choice",
+        "choice": "amber",
+        "probabilities": {
+          "silver": 0.00018166130638572948,
+          "amber": 0.999764038763187,
+          "teal": 3.226500290011128e-05,
+          "violet": 2.203492752717514e-05
+        },
+        "confidence": 0.9996853850175826
+      },
+      "latency_ms": 1307.7136839274317,
+      "gpu_free_after_mib": 37849
+    },
+    {
+      "id": "context/4096/0.5",
+      "input_tokens": 4095,
+      "target_tokens": 4096,
+      "needle_position": 0.5,
+      "label": "teal",
+      "error": null,
+      "answer": {
+        "type": "choice",
+        "choice": "teal",
+        "probabilities": {
+          "violet": 0.00014449983980241798,
+          "teal": 0.9997936190892208,
+          "amber": 3.497443203904038e-05,
+          "silver": 2.6906638937714053e-05
+        },
+        "confidence": 0.9997248254522945
+      },
+      "latency_ms": 1308.0210930202156,
+      "gpu_free_after_mib": 37849
+    },
+    {
+      "id": "context/4096/1.0",
+      "input_tokens": 4095,
+      "target_tokens": 4096,
+      "needle_position": 1.0,
+      "label": "silver",
+      "error": null,
+      "answer": {
+        "type": "choice",
+        "choice": "silver",
+        "probabilities": {
+          "violet": 0.00012843557733098948,
+          "silver": 0.9998063076155681,
+          "amber": 3.7763158998577383e-05,
+          "teal": 2.749364810231174e-05
+        },
+        "confidence": 0.9997417434874242
+      },
+      "latency_ms": 1312.9208359168842,
+      "gpu_free_after_mib": 37849
+    },
+    {
+      "id": "context/8192/0.0",
+      "input_tokens": 8192,
+      "target_tokens": 8192,
+      "needle_position": 0.0,
+      "label": "violet",
+      "error": null,
+      "answer": {
+        "type": "choice",
+        "choice": "violet",
+        "probabilities": {
+          "amber": 0.00018504481735738068,
+          "violet": 0.9997473309846945,
+          "teal": 3.75463380013015e-05,
+          "silver": 3.0077859946750436e-05
+        },
+        "confidence": 0.9996631079795927
+      },
+      "latency_ms": 2639.7469389485195,
+      "gpu_free_after_mib": 37849
+    },
+    {
+      "id": "context/8192/0.5",
+      "input_tokens": 8192,
+      "target_tokens": 8192,
+      "needle_position": 0.5,
+      "label": "amber",
+      "error": null,
+      "answer": {
+        "type": "choice",
+        "choice": "amber",
+        "probabilities": {
+          "teal": 0.0002599266649972242,
+          "silver": 4.157149055839093e-05,
+          "violet": 8.494902849745826e-05,
+          "amber": 0.999613552815947
+        },
+        "confidence": 0.9994847370879293
+      },
+      "latency_ms": 2647.96238404233,
+      "gpu_free_after_mib": 37849
+    },
+    {
+      "id": "context/8192/1.0",
+      "input_tokens": 8192,
+      "target_tokens": 8192,
+      "needle_position": 1.0,
+      "label": "amber",
+      "error": null,
+      "answer": {
+        "type": "choice",
+        "choice": "amber",
+        "probabilities": {
+          "silver": 0.00013421906892798044,
+          "violet": 2.379368858007363e-05,
+          "amber": 0.999833430210256,
+          "teal": 8.557032236076922e-06
+        },
+        "confidence": 0.999777906947008
+      },
+      "latency_ms": 2654.183567967266,
+      "gpu_free_after_mib": 37849
+    },
+    {
+      "id": "context/15000/0.0",
+      "input_tokens": 14992,
+      "target_tokens": 15000,
+      "needle_position": 0.0,
+      "label": "silver",
+      "error": null,
+      "answer": {
+        "type": "choice",
+        "choice": "silver",
+        "probabilities": {
+          "amber": 0.0003257287347979604,
+          "silver": 0.9995976537615785,
+          "violet": 4.7222327122995205e-05,
+          "teal": 2.9395176500567663e-05
+        },
+        "confidence": 0.9994635383487713
+      },
+      "latency_ms": 5011.037747026421,
+      "gpu_free_after_mib": 37849
+    },
+    {
+      "id": "context/15000/0.5",
+      "input_tokens": 14992,
+      "target_tokens": 15000,
+      "needle_position": 0.5,
+      "label": "violet",
+      "error": null,
+      "answer": {
+        "type": "choice",
+        "choice": "violet",
+        "probabilities": {
+          "violet": 0.9996899337308489,
+          "silver": 0.00014731081845551137,
+          "amber": 8.607162565740323e-05,
+          "teal": 7.668382503814991e-05
+        },
+        "confidence": 0.9995865783077985
+      },
+      "latency_ms": 5035.3074399754405,
+      "gpu_free_after_mib": 37849
+    },
+    {
+      "id": "context/15000/1.0",
+      "input_tokens": 14992,
+      "target_tokens": 15000,
+      "needle_position": 1.0,
+      "label": "silver",
+      "error": null,
+      "answer": {
+        "type": "choice",
+        "choice": "silver",
+        "probabilities": {
+          "amber": 0.00012584441408034706,
+          "teal": 2.2890164206385488e-05,
+          "silver": 0.9998424148804526,
+          "violet": 8.850541260735479e-06
+        },
+        "confidence": 0.9997898865072701
+      },
+      "latency_ms": 5053.605102002621,
+      "gpu_free_after_mib": 37849
+    }
+  ]
+}

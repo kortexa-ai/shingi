@@ -1,0 +1,43 @@
+{
+  "verified_at": "2026-09-22T17:23:34.669438+00:00",
+  "health": {
+    "comfyui.server": {
+      "url": "http://127.0.0.1:8050/system_stats",
+      "status": 200,
+      "final_status": 200
+    },
+    "alt-image-gen.server/base": {
+      "url": "http://127.0.0.1:4004/health",
+      "status": 200,
+      "final_status": 200
+    },
+    "models/bonsai-2-27b": {
+      "url": "http://127.0.0.1:2062/health",
+      "status": 200,
+      "final_status": 200
+    },
+    "models/lfm2.5-vl-3b": {
+      "url": "http://127.0.0.1:2055/health",
+      "status": 200,
+      "final_status": 200
+    },
+    "models/hy-mt2-7b": {
+      "url": "http://127.0.0.1:2060/health",
+      "status": 200,
+      "final_status": 200
+    },
+    "vision.server": {
+      "url": "http://127.0.0.1:4001/health",
+      "status": 200,
+      "final_status": 200
+    }
+  },
+  "gpu": "uuid, memory.used [MiB], memory.free [MiB]\nGPU-a71210ca-e14a-755a-88bb-77f53a2102f6, 50763 MiB, 46518 MiB\nGPU-afb49bc6-cd89-6584-99cc-a0f03592a010, 21925 MiB, 659 MiB\n",
+  "processes": "gpu_uuid, pid, process_name, used_gpu_memory [MiB]\nGPU-a71210ca-e14a-755a-88bb-77f53a2102f6, 3812179, /home/francip/src/models.server/.engines/llama-prism/build/bin/llama-server, 24324 MiB\nGPU-a71210ca-e14a-755a-88bb-77f53a2102f6, 3812207, llama-server, 4704 MiB\nGPU-a71210ca-e14a-755a-88bb-77f53a2102f6, 3812272, llama-server, 6238 MiB\nGPU-a71210ca-e14a-755a-88bb-77f53a2102f6, 3812145, /home/francip/src/comfyui.server/.venv/bin/python, 550 MiB\nGPU-a71210ca-e14a-755a-88bb-77f53a2102f6, 3812330, /home/francip/src/vision.server/.venv/bin/python3, 14846 MiB\nGPU-afb49bc6-cd89-6584-99cc-a0f03592a010, 1204446, .venv/bin/python, 1708 MiB\nGPU-afb49bc6-cd89-6584-99cc-a0f03592a010, 1204522, /home/francip/src/asr.server/.venv/bin/python3, 5022 MiB\nGPU-afb49bc6-cd89-6584-99cc-a0f03592a010, 3440895, /home/francip/src/tts.server/.venv/bin/python3, 4928 MiB\nGPU-afb49bc6-cd89-6584-99cc-a0f03592a010, 3442221, llama-server, 10228 MiB\n",
+  "run_log_restored": true,
+  "context_block_stopped_no_services": true,
+  "final_verified_at": "2026-09-22T17:26:23.466373+00:00",
+  "context_block_log_sha256": "4c5da4a7d6d5f4d6ce8129c83178b5481876e1b8d8155395bcb120ad138e8cab",
+  "final_gpu": "uuid, memory.used [MiB], memory.free [MiB]\nGPU-a71210ca-e14a-755a-88bb-77f53a2102f6, 50763 MiB, 46518 MiB\nGPU-afb49bc6-cd89-6584-99cc-a0f03592a010, 21925 MiB, 659 MiB\n",
+  "final_processes": "gpu_uuid, pid, process_name, used_gpu_memory [MiB]\nGPU-a71210ca-e14a-755a-88bb-77f53a2102f6, 3812179, /home/francip/src/models.server/.engines/llama-prism/build/bin/llama-server, 24324 MiB\nGPU-a71210ca-e14a-755a-88bb-77f53a2102f6, 3812207, llama-server, 4704 MiB\nGPU-a71210ca-e14a-755a-88bb-77f53a2102f6, 3812272, llama-server, 6238 MiB\nGPU-a71210ca-e14a-755a-88bb-77f53a2102f6, 3812145, /home/francip/src/comfyui.server/.venv/bin/python, 550 MiB\nGPU-a71210ca-e14a-755a-88bb-77f53a2102f6, 3812330, /home/francip/src/vision.server/.venv/bin/python3, 14846 MiB\nGPU-afb49bc6-cd89-6584-99cc-a0f03592a010, 1204446, .venv/bin/python, 1708 MiB\nGPU-afb49bc6-cd89-6584-99cc-a0f03592a010, 1204522, /home/francip/src/asr.server/.venv/bin/python3, 5022 MiB\nGPU-afb49bc6-cd89-6584-99cc-a0f03592a010, 3440895, /home/francip/src/tts.server/.venv/bin/python3, 4928 MiB\nGPU-afb49bc6-cd89-6584-99cc-a0f03592a010, 3442221, llama-server, 10228 MiB\n"
+}
