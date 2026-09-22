@@ -92,7 +92,7 @@ def main():
             out=model.lm_head(h)[0,0,r['candidate_ids']].float().cpu().tolist()
             rails.assert_post_first_backward_free()
             return {'logits':out,'input_tokens':r['input_tokens'],'candidate_ids':r['candidate_ids'],
-                    'prefill_ms':1000*(time.monotonic()-t)}
+                    'prefill_ms':1000*(time.monotonic()-t),'prompt_sha256':hashlib.sha256(prompt.encode()).hexdigest()}
     backend=Backend();engine=DecisionEngine(backend)
     best_nll=float('inf');best_path=None
     def evaluate(step):
@@ -101,7 +101,8 @@ def main():
         with torch.no_grad():
             for r in dev:
                 answer,traces=engine.answer(r['state'],r['question'])
-                predictions[r['id']]={'answer':answer}
+                predictions[r['id']]={'answer':answer,'traces':traces}
+        with (a.output/f'dev-predictions-{step:04}.json').open('x') as f:json.dump(predictions,f)
         metrics=report(dev,predictions);nll=metrics['overall']['nll']['mean']
         (a.output/f'dev-{step:04}.json').write_text(json.dumps(metrics,indent=2)+'\n')
         if not math.isfinite(nll) or metrics['overall']['valid']!=len(dev):raise RuntimeError('invalid development evaluation')

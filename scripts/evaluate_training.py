@@ -12,7 +12,7 @@ import time
 from shingi.backend import NativeReadout,gpu_free_mib
 from shingi.calibration import fit,replay
 from shingi.decision import Calibration,DecisionEngine
-from shingi.metrics import report,wilson
+from shingi.metrics import report,wilson,probabilities
 from train_decision_adapter import sha,rows
 
 
@@ -23,7 +23,7 @@ def main():
     if sha(selected['native'])!=selected['native_sha256']:raise RuntimeError('selected adapter changed')
     manifest=json.loads((a.data/'manifest.json').read_text())
     splits={}
-    for split in ('calibration','test'):
+    for split in ('dev','calibration','test'):
         path=a.data/(split+'.jsonl')
         if sha(path)!=manifest[split+'_sha256']:raise RuntimeError('data changed')
         splits[split]=rows(path)
@@ -61,6 +61,17 @@ def main():
                     if (i+1)%100==0:print(name,phase,i+1,flush=True)
             return predictions
         try:
+            native_dev=infer(splits['dev'],'dev')
+            step=0 if name=='base' else selected['update']
+            torch_dev=json.loads((a.training/f'dev-predictions-{step:04}.json').read_text())
+            tvds=[];agrees=[]
+            for r in splits['dev']:
+                x=probabilities(r,native_dev[r['id']]['answer']);y=probabilities(r,torch_dev[r['id']]['answer'])
+                tvds.append(sum(abs(x[k]-y[k]) for k in x)/2)
+                agrees.append(max(x,key=x.__getitem__)==max(y,key=y.__getitem__))
+            dev_parity={'n':len(tvds),'mean_tvd':sum(tvds)/len(tvds),'max_tvd':max(tvds),'argmax_agreement':sum(agrees)/len(agrees)}
+            (dest/'trained-native-parity.json').write_text(json.dumps(dev_parity,indent=2)+'\n')
+            if dev_parity['mean_tvd']>.03 or dev_parity['argmax_agreement']<.95:raise RuntimeError('trained adapter deployment parity failed before test')
             calibration_predictions=infer(splits['calibration'],'calibration')
             calibration=fit(splits['calibration'],calibration_predictions)
             (dest/'calibration.json').write_text(json.dumps(calibration,indent=2)+'\n')
@@ -81,7 +92,7 @@ def main():
                           'tvd':sum(abs(x['probabilities'][k]-y['probabilities'][k]) for k in keys)/2})
         valid=[p for p in pairs if not p.get('error')];flips=sum(p['flip'] for p in valid)
         held=[r for r in splits['test'] if r['source'] in manifest['held_out_sources']]
-        metrics={'raw':report(splits['test'],test),'calibrated':report(splits['test'],fitted),
+        metrics={'trained_native_parity':dev_parity,'raw':report(splits['test'],test),'calibrated':report(splits['test'],fitted),
                  'held_out_sources_calibrated':report(held,fitted),'calibration':calibration,
                  'order':{'planned_pairs':len(pairs),'valid_pairs':len(valid),'flips':flips,'rate':flips/len(valid),
                           'wilson_95':wilson(flips,len(valid)),'mean_tvd':sum(p['tvd'] for p in valid)/len(valid)},
