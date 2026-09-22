@@ -128,6 +128,23 @@ def test_incomplete_logits_are_backend_failure_not_fabricated_probabilities():
     assert result.status_code == 503
 
 
+def test_canonical_choice_keys_make_map_reordering_identical():
+    backend = StubReadout([.8, .2])
+    engine = DecisionEngine(backend, canonical_choices=True)
+    answers = [engine.answer("x", {"type": "choice", "instructions": "pick", "criteria": criteria})[0]
+               for criteria in ({"zebra": None, "apple": None}, {"apple": None, "zebra": None})]
+    assert answers[0] == answers[1]
+    assert backend.prompts[0] == backend.prompts[1]
+    assert answers[0]["choice"] == "apple"
+
+
+def test_canonical_choice_mode_preserves_ordinal_score_semantics():
+    backend = StubReadout([.8, .2])
+    engine = DecisionEngine(backend, canonical_choices=True)
+    engine.answer("x", {"type": "score", "instructions": "rate", "criteria": ["z low", "a high"]})
+    assert backend.prompts[0].index("z low") < backend.prompts[0].index("a high")
+
+
 def test_real_typesafe_sdk_over_http():
     # Exercise the installed SDK's serialization, route and response parsing.
     # A deterministic backend isolates protocol correctness from model quality.

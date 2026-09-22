@@ -61,10 +61,12 @@ class Readout(Protocol):
 
 
 class DecisionEngine:
-    def __init__(self, backend: Readout, calibration=Calibration(), *, model_id=MODEL_ID):
+    def __init__(self, backend: Readout, calibration=Calibration(), *, model_id=MODEL_ID,
+                 canonical_choices=False):
         self.backend = backend
         self.calibration = calibration
         self.model_id = model_id
+        self.canonical_choices = canonical_choices
 
     def distribution(self, state, instructions, options):
         if len(options) <= len(LETTERS):
@@ -91,6 +93,8 @@ class DecisionEngine:
         kind = q["type"]
         if kind == "choice":
             options = list(q["criteria"].items())
+            if self.canonical_choices:
+                options.sort(key=lambda item: item[0])
         elif kind == "score":
             options = [(str(i), value) for i, value in enumerate(q["criteria"])]
             instructions = describe(instructions) + " Rate along the ordered levels below (lowest first)."
