@@ -176,6 +176,7 @@ def charts(result, output):
                          'axes.spines.top': False, 'axes.spines.right': False,
                          'savefig.dpi': 180, 'svg.hashsalt': 'shingi-v01'})
     colors = {'base': '#77818B', 'adapter': '#087F8C', '6000': '#087F8C', '4090': '#C66A2B'}
+    model_label = result['model'].replace('shingi-bonsai-2-27b-', 'Shingi ')
     figures = output / 'figures'; figures.mkdir()
     def export(fig, name):
         fig.savefig(figures / (name + '.png'), bbox_inches='tight')
@@ -184,25 +185,25 @@ def charts(result, output):
     models = result['quality']['6000']['models']
     sources = list(models['base']['calibrated']['by_source'])
     fig, ax = plt.subplots(figsize=(10, 9), layout='constrained')
-    for name, offset, label in [('base', -.13, 'Unchanged Bonsai'), ('adapter', .13, 'Shingi v0.1')]:
+    for name, offset, label in [('base', -.13, 'Unchanged Bonsai'), ('adapter', .13, model_label)]:
         metrics = models[name]['calibrated']['by_source']
         values = np.array([100 * metrics[s]['accuracy_failures_incorrect'] for s in sources])
         low = np.array([100 * metrics[s]['accuracy_wilson_95'][0] for s in sources])
         high = np.array([100 * metrics[s]['accuracy_wilson_95'][1] for s in sources])
         ax.errorbar(values, np.arange(len(sources)) + offset, xerr=[values-low, high-values],
                     fmt='o', markersize=5, capsize=2, color=colors[name], label=label, alpha=.95)
-    ax.set_yticks(np.arange(len(sources)), [LABELS[s] + (' *' if s in HELD else '') for s in sources])
+    ax.set_yticks(np.arange(len(sources)), [LABELS[s] + (' *' if s in result['held_out_sources'] else '') for s in sources])
     ax.invert_yaxis(); ax.set_xlim(0, 104); ax.set_xlabel('Accuracy (%) · Wilson 95% intervals')
     ax.grid(axis='x', alpha=.18); ax.legend(loc='lower left')
     base, adapter = [models[n]['calibrated']['overall']['accuracy_failures_incorrect'] * 100 for n in ('base','adapter')]
-    ax.set_title(f'Shingi v0.1: {adapter:.2f}% vs {base:.2f}% unchanged base\n'
+    ax.set_title(f'{model_label}: {adapter:.2f}% vs {base:.2f}% unchanged base\n'
                  'Fresh 1,500 decisions · 100 per source · RTX PRO 6000', loc='left', pad=20)
     fig.supxlabel('* Source excluded from adapter training, development and calibration.', fontsize=10)
     export(fig, 'accuracy')
 
     fig, axes = plt.subplots(1, 2, figsize=(12, 4.8), layout='constrained')
     axes[0].plot([0,1], [0,1], '--', color='#B9C0C5', label='Perfect calibration')
-    for name, label in [('base','Unchanged Bonsai'), ('adapter','Shingi v0.1')]:
+    for name, label in [('base','Unchanged Bonsai'), ('adapter',model_label)]:
         bins = models[name]['calibrated']['overall']['reliability_bins']
         nonempty = [b for b in bins if b['n']]
         axes[0].plot([b['probability'] for b in nonempty], [b['accuracy'] for b in nonempty],
@@ -232,7 +233,7 @@ def charts(result, output):
     axes[0].set(xlabel='Approximate prompt tokens · four choices', title='Context length')
     axes[1].set(xlabel='Choice count · short prompt', title='Choice count and extra forward passes')
     axes[0].legend(); axes[1].axvline(52, color='#899099', linestyle=':', alpha=.7)
-    fig.suptitle('Shingi v0.1 · Sequential CUDA decisions', fontsize=14)
+    fig.suptitle(model_label+' · Sequential CUDA decisions', fontsize=14)
     fig.supxlabel('Median lines; shaded to sample p95. Ten sequential repeats per case, after warmup. Model loading excluded.', fontsize=10)
     export(fig, 'latency')
 
@@ -250,7 +251,7 @@ def charts(result, output):
         axes[1].bar_label(bars, fmt='%.2f', padding=3)
     axes[1].set_xticks([0,1], labels); axes[1].set(ylabel='Sampled GPU allocation delta (GiB)', title='Memory including context and buffers'); axes[1].legend()
     axes[1].set_ylim(0, axes[1].get_ylim()[1]*1.24)
-    fig.suptitle('Shingi v0.1 · Measured CUDA latency and memory', fontsize=14)
+    fig.suptitle(model_label+' · Measured CUDA latency and memory', fontsize=14)
     fig.supxlabel('300 fixed records × three repeats; ten warmups. Memory sampled every 100 ms; these are not continuous peaks.', fontsize=10)
     export(fig, 'hardware')
 
@@ -345,11 +346,13 @@ def write_report(result, output):
     base, adapter = [models[n]['calibrated']['overall'] for n in ('base','adapter')]
     delta = result['paired']['6000']['overall']
     held = result['paired']['6000']['held_out_sources']
-    lines = ['# Shingi CUDA v0.1 evaluation', '',
+    model_label = result['model'].replace('shingi-bonsai-2-27b-', 'Shingi ')
+    held_count = len(result['held_out_sources'])
+    lines = ['# '+model_label+' CUDA evaluation', '',
              f"Fresh test: **{adapter['correct']}/1,500 ({100*adapter['accuracy_failures_incorrect']:.2f}%)** Shingi versus **{base['correct']}/1,500 ({100*base['accuracy_failures_incorrect']:.2f}%)** unchanged Bonsai on the RTX PRO 6000.", '',
-             f"The paired change is {delta['accuracy_delta_pp']:+.2f} percentage points, with a descriptive paired-bootstrap 95% interval [{delta['paired_bootstrap_95_pp'][0]:+.2f}, {delta['paired_bootstrap_95_pp'][1]:+.2f}]. The seven-source holdout change is {held['accuracy_delta_pp']:+.2f} points [{held['paired_bootstrap_95_pp'][0]:+.2f}, {held['paired_bootstrap_95_pp'][1]:+.2f}].", '',
+             f"The paired change is {delta['accuracy_delta_pp']:+.2f} percentage points, with a descriptive paired-bootstrap 95% interval [{delta['paired_bootstrap_95_pp'][0]:+.2f}, {delta['paired_bootstrap_95_pp'][1]:+.2f}]. The {held_count}-source holdout change is {held['accuracy_delta_pp']:+.2f} points [{held['paired_bootstrap_95_pp'][0]:+.2f}, {held['paired_bootstrap_95_pp'][1]:+.2f}].", '',
              '![Accuracy by source](figures/accuracy.png)', '',
-             '| Metric, calibrated | Unchanged Bonsai | Shingi v0.1 |', '|---|---:|---:|']
+             '| Metric, calibrated | Unchanged Bonsai | '+model_label+' |', '|---|---:|---:|']
     for key, title in [('nll','NLL'), ('brier_multiclass','Multiclass Brier'), ('brier_binary','Binary Brier'), ('score_mae','Expected-score MAE'), ('rps','Ordinal RPS'), ('human_tvd','Distance to human labels')]:
         lines.append(f"| {title} (n={adapter[key]['n']}) | {base[key]['mean']:.5f} | {adapter[key]['mean']:.5f} |")
     lines += [f"| Top-label ECE (n=1,500) | {base['ece_top_label']:.5f} | {adapter['ece_top_label']:.5f} |", '',
@@ -374,11 +377,29 @@ def write_report(result, output):
     for card in ('6000','4090'):
         speed = result['speed'][card]; m = speed['groups']['mixed']['wall_ms']; api = result['api'][card]['short_http_latency_ms']
         lines.append(f"| {card} | {m['median']:.1f} / {m['p95']:.1f} ms | {api['median']:.1f} / {api['p95']:.1f} ms | {speed['model_initialization_seconds']:.2f} s |")
+    if result['previous']:
+        lines += ['', '## Comparison with the frozen v0.1 adapter', '',
+                  'Both adapters use the same fresh test. Each retains its own frozen calibration. Raw probability comparisons are also recorded in the JSON.', '',
+                  '| GPU | v0.1 accuracy | New accuracy | Paired change, 95% interval |', '|---|---:|---:|---:|']
+        for card, previous in result['previous'].items():
+            old = previous['quality']['overall']; new = result['quality'][card]['models']['adapter']['calibrated']['overall']; change = previous['paired']
+            ci = change['paired_bootstrap_95_pp']
+            lines.append(f"| {card} | {100*old['accuracy_failures_incorrect']:.2f}% | {100*new['accuracy_failures_incorrect']:.2f}% | {change['accuracy_delta_pp']:+.2f} pp [{ci[0]:+.2f}, {ci[1]:+.2f}] |")
+        lines += ['', '### Measured regressions', '',
+                  'The following losses are retained even when the aggregate improves. Source slices contain 100 examples. Small changes can be sampling noise; these are descriptive measurements.', '',
+                  '| GPU | Scope | Metric | Previous | New |', '|---|---|---|---:|---:|']
+        for card, previous in result['previous'].items():
+            for loss in previous['regressions']:
+                lines.append(f"| {card} | {loss['scope']} | {loss['metric']} | {loss['previous']:.5f} | {loss['current']:.5f} |")
+        lines += ['', '| GPU | Mixed median, previous / new | Mixed p95, previous / new |', '|---|---:|---:|']
+        for card, previous in result['previous'].items():
+            old = previous['speed']['groups']['mixed']['wall_ms']; new = result['speed'][card]['groups']['mixed']['wall_ms']
+            lines.append(f"| {card} | {old['median']:.2f} / {new['median']:.2f} ms | {old['p95']:.2f} / {new['p95']:.2f} ms |")
     lines += ['', '![Latency curves](figures/latency.png)', '', '![Hardware measurements](figures/hardware.png)', '',
               '## Method and limits', '',
-              '- 100 fresh records from each of 15 sources; 6,930 prior IDs and state hashes excluded. The aggregate weights sources equally and is not a user-workload population estimate.',
-              '- Existing update-128 adapter; frozen development-selected readout and separate 240-record calibration. No release-test tuning. Upstream pretraining overlap is unknown.',
-              '- Choice sorting was selected with a predeclared development gate. Adapter development accuracy changed from 212/256 to 209/256; NLL from 0.509250 to 0.520816. It avoids caller map-order effects at this measured development tradeoff.',
+              f"- 100 fresh records from each of 15 sources; {result['data']['excluded_counts']['ids']:,} prior IDs and {result['data']['excluded_counts']['states']:,} state hashes excluded. The aggregate weights sources equally and is not a user-workload population estimate.",
+              f"- Frozen adapter and readout, with separate {result['protocol']['calibrations']['adapter']['fit_records']}-record calibration. No release-test tuning. Upstream pretraining overlap is unknown.",
+              '- Choice keys are sorted before inference. Checkpoint selection and calibration preceded this locked test.',
               '- Paired intervals use 20,000 bootstrap draws, seed 20260922; descriptive, without multiplicity correction. Source slices have only 100 records.',
               '- Mixed latency: 300 fixed records, 20/source, repeated three times after ten warmups. Synthetic curves: ten repetitions per case after warmup. Short HTTP: 30 localhost SDK requests after three warmups; one three-choice question.',
               '- Latency percentiles use sorted values at index round((n−1) × p). With ten repeats, the sample p95 is the maximum. Curves are workload measurements, not population tail-latency guarantees.',
