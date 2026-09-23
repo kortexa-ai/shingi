@@ -1,13 +1,13 @@
 {
   "parameters": {
-    "temperature": 1.25,
-    "noul_temperature": 1.2,
-    "noul_bias": -1.0
+    "temperature": 1.5,
+    "noul_temperature": 0.3333333333333333,
+    "noul_bias": 0.0
   },
   "objective": "hard-label NLL on validation records only",
-  "fit_records": 240,
-  "choice_score_records": 180,
-  "noul_records": 60,
+  "fit_records": 180,
+  "choice_score_records": 150,
+  "noul_records": 30,
   "grid": {
     "temperatures": [
       0.5,
@@ -34,22 +34,23 @@
     ]
   },
   "before": {
-    "choice_score_nll": 0.7455585483199546,
-    "noul_nll": 0.46458927324301175
+    "choice_score_nll": 0.8179194143183773,
+    "noul_nll": 0.1442123349088074
   },
   "after": {
-    "choice_score_nll": 0.718368351873375,
-    "noul_nll": 0.3858298538568696
+    "choice_score_nll": 0.7532700824899485,
+    "noul_nll": 0.08387616344906931
   },
   "limitations": "Global calibration only; validation fit is not held-out test performance. No weight changes.",
   "provenance": {
     "model_sha256": "3907dc1658db1f78a9826bf8d5bcb8dc65db0d466388937af57f2294fae62ec1",
-    "adapter_sha256": "d7ea6bf61f6ef5fe26bd82ca1ece4686c20d29a1937834a18239629bb6db31d4",
+    "adapter_sha256": "6f4c2b7434b5ef6e0bb83b6f9c196de00c850a79b9380175e06a1df2ae1b7dd2",
     "readout_version": "bonsai-sorted-choice-v2",
-    "calibration_data_sha256": "8daaae000bea1f4372db03ef1782d701e0ad813cfc22aeca2901301c031eb1e9",
-    "dataset_manifest_sha256": "6fadc5da66abf7d192fe5c30ac5c24860fe318bd77e18d5bdd21ea881e8130c0",
-    "predictions_sha256": "ff29990daacd3370b11ac4525b85e5a1e141e35639060b58e646f74632163df8",
-    "source_revision": "8fa854883c26739e2a073903797149678806b9fc",
+    "profile": "apache-v2",
+    "calibration_data_sha256": "14b7fdf1551697c853dbf6827f7a8d735d95daedfb068b5dd084c24c5a328a5b",
+    "dataset_manifest_sha256": "a1f373952deeacca5ba4b88bd751a37c07132171d481745f1cb71f1c043708b9",
+    "predictions_sha256": "ced4d98ea2a21740b49246ef443b93e8a2dbd49cdb4906a059369865595d9430",
+    "source_revision": "24802807da68ad2e0d8969c5b5b8a390d6f4ae2f",
     "dataset_revision": "002ad22de8db2df5e0eb898b3da8072dbd4af4de"
   }
 }
