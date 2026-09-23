@@ -122,3 +122,25 @@ def test_cross_device_comparison_validates_adaptive_prompt_paths():
     predictions[1]['adaptive']['traces'][-1]['prompt_sha256'] = 'not-the-replayed-prompt'
     with pytest.raises(ValueError, match='prompt differs'):
         cross_device_parity([row], *predictions, Calibration())
+
+
+def test_comparison_reports_probability_loss_even_when_accuracy_improves():
+    import copy
+    import sys
+    from pathlib import Path
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
+    from package_release import metric_changes
+    metrics = {'n':100, 'accuracy_failures_incorrect':.8, 'ece_top_label':.1}
+    for name in ('nll', 'brier_multiclass', 'brier_binary', 'score_mae', 'rps', 'human_tvd'):
+        metrics[name] = {'n':100, 'mean':.5}
+    previous = {'overall':metrics, 'by_source':{'example':copy.deepcopy(metrics)}}
+    current = copy.deepcopy(previous)
+    current['overall']['accuracy_failures_incorrect'] = .85
+    current['overall']['nll']['mean'] = .6
+    current['by_source']['example']['accuracy_failures_incorrect'] = .79
+    changes = metric_changes(previous, current)
+    losses = {(r['scope'], r['metric']) for r in changes if r['worse']}
+    assert losses == {('overall', 'nll'), ('example', 'accuracy_failures_incorrect')}
+    current['overall']['n'] = 99
+    with pytest.raises(ValueError, match='denominators differ'):
+        metric_changes(previous, current)

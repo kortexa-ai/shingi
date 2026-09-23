@@ -17,6 +17,7 @@ from shingi.gpu import gpu_snapshot
 from shingi.metrics import report, probabilities, wilson
 from shingi.probes import probe_at_tokens
 from shingi.release import artifact_identity, sha256, BASE_SHA256, ADAPTER_SHA256, require_release_environment
+from prepare_training_data import APACHE_SOURCES
 
 
 def ordered_rows(records, canonical):
@@ -74,23 +75,28 @@ def parity(records, actual, expected):
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument('--phase', choices=('development', 'test'), required=True)
+    p.add_argument('--phase', choices=('development', 'calibration', 'test'), required=True)
     p.add_argument('--model', type=Path, required=True)
     p.add_argument('--adapter', type=Path, required=True)
     p.add_argument('--executable', type=Path, default=Path('artifacts/bin/readout'))
     p.add_argument('--data', type=Path, required=True)
     p.add_argument('--previous-evaluation', type=Path)
     p.add_argument('--protocol', type=Path)
+    p.add_argument('--selection', type=Path)
+    p.add_argument('--historical-comparator', action='store_true')
     p.add_argument('--output', type=Path, required=True)
     a = p.parse_args()
     require_release_environment()
     if subprocess.check_output(['git', 'status', '--porcelain'], text=True).strip():
         raise RuntimeError('commit source before evaluation')
     identity = artifact_identity(a.model, a.adapter)
-    if identity['model_sha256'] != BASE_SHA256 or identity['adapter_sha256'] != ADAPTER_SHA256:
+    adapter_hash = identity['adapter_sha256']
+    if identity['model_sha256'] != BASE_SHA256:
         raise ValueError('release candidate weights differ')
+    if a.phase == 'development' and adapter_hash != ADAPTER_SHA256:
+        raise ValueError('legacy development candidate differs')
     data_manifest = json.loads((a.data / 'manifest.json').read_text())
-    splits = ('dev', 'calibration') if a.phase == 'development' else ('test', 'shuffle')
+    splits = ('test', 'shuffle') if a.phase == 'test' else ('dev', 'calibration')
     records = {}
     for split in splits:
         path = a.data / (split + '.jsonl')
@@ -100,8 +106,22 @@ def main():
     protocol = None
     if a.phase == 'test':
         protocol = json.loads(a.protocol.read_text())
-        if protocol['adapter_sha256'] != ADAPTER_SHA256 or protocol['model_sha256'] != BASE_SHA256:
+        if protocol['adapter_sha256'] != adapter_hash or protocol['model_sha256'] != BASE_SHA256:
             raise ValueError('protocol weights differ')
+        if not a.historical_comparator and data_manifest['candidate_adapter_sha256'] != adapter_hash:
+            raise ValueError('locked test candidate differs')
+    elif a.phase == 'calibration':
+        if a.selection is None: p.error('calibration requires a frozen training selection')
+        selected = json.loads(a.selection.read_text())
+        training = json.loads((a.selection.parent/'run.json').read_text())
+        if (selected.get('test_seen') is not False or not selected.get('development_gate_passed')
+                or selected['selected']['native_sha256'] != adapter_hash
+                or training['dataset_manifest_sha256'] != sha256(a.data/'manifest.json')):
+            raise ValueError('training selection or data differs')
+        if data_manifest.get('profile') != 'apache-v2' or set(data_manifest['train_sources']) != set(APACHE_SOURCES):
+            raise ValueError('calibration requires audited Apache fitting data')
+        if any(r['source'] not in APACHE_SOURCES for group in records.values() for r in group):
+            raise ValueError('non-allowlisted calibration/development source')
     elif a.previous_evaluation is None:
         p.error('development requires --previous-evaluation')
     a.output.mkdir(parents=True, exist_ok=False)
@@ -123,7 +143,35 @@ def main():
             result, _ = engine.answer({'selected_key': 'blue'}, canary)
             if result['choice'] != 'blue':
                 raise RuntimeError('native batch-one canary failed')
-            if a.phase == 'development':
+            if a.phase == 'calibration':
+                engine = DecisionEngine(backend, canonical_choices=True)
+                canonical_dev = ordered_rows(records['dev'], True)
+                native = infer(engine, canonical_dev, dest/'dev-canonical.jsonl')
+                metrics = report(canonical_dev, native)
+                if metrics['overall']['valid'] != len(canonical_dev): raise RuntimeError('invalid native development')
+                step = selected['selected']['update'] if adapter else 0
+                differentiable = json.loads((a.selection.parent/f'dev-predictions-{step:04}.json').read_text())
+                agreements, tvds = [], []
+                for row in canonical_dev:
+                    x = probabilities(row, native[row['id']]['answer'])
+                    y = probabilities(row, differentiable[row['id']]['answer'])
+                    agreements.append(max(x, key=x.get) == max(y, key=y.get))
+                    tvds.append(sum(abs(x[k]-y[k]) for k in x)/2)
+                check = {'n':len(tvds), 'argmax_agreement':sum(agreements)/len(tvds),
+                         'mean_tvd':sum(tvds)/len(tvds), 'max_tvd':max(tvds)}
+                development[name] = {'canonical':metrics, 'training_native_parity':check}
+                summary['models'][name] = development[name]
+                calibration_rows = ordered_rows(records['calibration'], True)
+                predictions = infer(engine, calibration_rows, dest/'calibration-canonical.jsonl')
+                fitted = fit(calibration_rows, predictions)
+                fitted['provenance'] = {'model_sha256':BASE_SHA256, 'adapter_sha256':adapter_hash if adapter else None,
+                    'readout_version':'bonsai-sorted-choice-v2', 'profile':'apache-v2',
+                    'calibration_data_sha256':data_manifest['calibration_sha256'],
+                    'dataset_manifest_sha256':receipt['data_manifest_sha256'],
+                    'predictions_sha256':sha256(dest/'calibration-canonical.jsonl'),
+                    'source_revision':receipt['source_revision'], 'dataset_revision':data_manifest['revision']}
+                (dest/'calibration-canonical.json').write_text(json.dumps(fitted, indent=2)+'\n')
+            elif a.phase == 'development':
                 native = infer(engine, records['dev'], dest / 'dev-input.jsonl')
                 previous = {r['id']: r for r in read_jsonl(a.previous_evaluation / name / 'dev.jsonl')}
                 check = parity(records['dev'], native, previous)
@@ -196,7 +244,22 @@ def main():
         finally:
             backend.close()
         (a.output / 'summary.json').write_text(json.dumps(summary, indent=2) + '\n')
-    if a.phase == 'development':
+    if a.phase == 'calibration':
+        base, candidate = [development[name]['canonical']['overall'] for name in ('base', 'adapter')]
+        if (candidate['nll']['mean'] >= base['nll']['mean']
+                or candidate['accuracy_failures_incorrect'] < base['accuracy_failures_incorrect']-.02):
+            raise RuntimeError('native development gate failed; test remains locked')
+        protocol = {'model_sha256':BASE_SHA256, 'adapter_sha256':adapter_hash,
+                    'choice_order':'canonical', 'readout_version':'bonsai-sorted-choice-v2', 'profile':'apache-v2',
+                    'train_sources':list(APACHE_SOURCES), 'adapter_license':'apache-2.0',
+                    'selection':'Fresh LoRA selected by uncalibrated canonical development NLL; fixed readout.',
+                    'training_selection_sha256':sha256(a.selection),
+                    'dev_summary_sha256':sha256(a.output/'summary.json'), 'calibrations':{}}
+        for name in ('base', 'adapter'):
+            protocol['calibrations'][name] = json.loads((a.output/name/'calibration-canonical.json').read_text())
+        (a.output/'protocol.json').write_text(json.dumps(protocol, indent=2)+'\n')
+        print(json.dumps({'native_development_gate_passed':True, 'models':development}, indent=2))
+    elif a.phase == 'development':
         x, y = [development['adapter'][mode]['overall'] for mode in ('input', 'canonical')]
         accepted = accept_canonical(x, y)
         mode = 'canonical' if accepted else 'input'

@@ -34,13 +34,13 @@ def save(path, value):
     Path(path).write_text(json.dumps(value, indent=2) + '\n')
 
 
-def validate_receipt(receipt, card, protocol_hash, data_hash):
+def validate_receipt(receipt, card, protocol_hash, data_hash, adapter_hash=ADAPTER_SHA256):
     if receipt['protocol_sha256'] != protocol_hash:
         raise ValueError('run protocol differs')
     if receipt.get('data_manifest_sha256', receipt.get('dataset_manifest_sha256')) != data_hash:
         raise ValueError('run data manifest differs')
     identity = receipt['identity']
-    if identity['model_sha256'] != BASE_SHA256 or identity['adapter_sha256'] != ADAPTER_SHA256:
+    if identity['model_sha256'] != BASE_SHA256 or identity['adapter_sha256'] != adapter_hash:
         raise ValueError('run weights differ')
     if card not in receipt['gpu']['name']:
         raise ValueError('run GPU differs')
@@ -103,6 +103,68 @@ def replay_matches(actual, expected):
     if isinstance(actual, (int, float)) and isinstance(expected, (int, float)):
         return math.isclose(actual, expected, rel_tol=1e-12, abs_tol=1e-12)
     return actual == expected
+
+
+def metric_changes(previous, current):
+    """Expose every measured regression; do not hide losses behind an aggregate."""
+    changes = []
+    for scope in ('overall', *sorted(previous['by_source'])):
+        old = previous['overall'] if scope == 'overall' else previous['by_source'][scope]
+        new = current['overall'] if scope == 'overall' else current['by_source'][scope]
+        if old['n'] != new['n']: raise ValueError('comparison denominators differ')
+        for metric in ('accuracy_failures_incorrect', 'nll', 'brier_multiclass', 'brier_binary',
+                       'score_mae', 'rps', 'human_tvd', 'ece_top_label'):
+            x, y = old[metric], new[metric]
+            if isinstance(x, dict):
+                if x['n'] != y['n']: raise ValueError('comparison metric denominators differ')
+                x, y = x['mean'], y['mean']
+            if x is None or y is None: continue
+            delta = y-x
+            worse = delta < -1e-12 if metric == 'accuracy_failures_incorrect' else delta > 1e-12
+            changes.append({'scope':scope, 'metric':metric, 'previous':x, 'current':y,
+                            'delta':delta, 'worse':worse, 'n':old['n']})
+    return changes
+
+
+def compare_previous(a, card, records, candidate_predictions, candidate_metrics, candidate_speed, calibration):
+    directory = getattr(a, 'previous_evaluation_'+card)
+    speed_dir = getattr(a, 'previous_speed_'+card)
+    previous_protocol = read(a.previous_protocol)
+    summary = read(directory/'summary.json'); speed = read(speed_dir/'summary.json')
+    for receipt in (summary['receipt'], speed['receipt']):
+        validate_receipt(receipt, card, sha256(a.previous_protocol), sha256(a.data/'manifest.json'),
+                         previous_protocol['adapter_sha256'])
+    if previous_protocol['choice_order'] != 'canonical': raise ValueError('previous readout differs')
+    predictions = load_predictions(directory/'adapter/test.jsonl', records)
+    metrics = quality_report(records, predictions)
+    if not replay_matches(metrics, summary['models']['adapter']['calibrated']):
+        raise ValueError('previous summary differs from raw predictions')
+    if speed['receipt']['mixed_ids'] != candidate_speed['receipt']['mixed_ids']:
+        raise ValueError('previous speed workload differs')
+    differences = metric_changes(metrics, candidate_metrics)
+    uncalibrated = {}
+    for name, values in (('previous', predictions), ('current', candidate_predictions)):
+        raw = {row['id']:{'answer':replay(row, values[row['id']], Calibration())} for row in records}
+        uncalibrated[name] = quality_report(records, raw)
+    uncalibrated['metric_changes'] = metric_changes(uncalibrated['previous'], uncalibrated['current'])
+    latency = []
+    for group, stats in candidate_speed['groups'].items():
+        for metric in ('median', 'p95'):
+            x, y = speed['groups'][group]['wall_ms'][metric], stats['wall_ms'][metric]
+            latency.append({'group':group, 'metric':metric, 'previous_ms':x, 'current_ms':y,
+                            'delta_ms':y-x, 'delta_percent':100*(y/x-1), 'worse':y>x})
+    result = {'previous_protocol':previous_protocol, 'quality':metrics, 'speed':speed,
+              'paired':paired(records, {'base':predictions, 'adapter':candidate_predictions},
+                 {'base':Calibration(**previous_protocol['calibrations']['adapter']['parameters']), 'adapter':calibration}),
+              'metric_changes':differences, 'regressions':[r for r in differences if r['worse']],
+              'uncalibrated':uncalibrated,
+              'latency_changes':latency,
+              'order_previous':summary['models']['adapter']['order'],
+              'source_revision':summary['receipt']['source_revision'],
+              'inputs':{str(path):sha256(path) for path in (a.previous_protocol, directory/'summary.json',
+                  directory/'adapter/test.jsonl', speed_dir/'summary.json', speed_dir/'observations.jsonl', speed_dir/'memory-samples.json')},
+              'interpretation':'Paired accuracy interval is descriptive. Small per-source and timing changes can be sampling noise; no tuning followed this test.'}
+    return result
 
 
 def charts(result, output):
@@ -200,7 +262,8 @@ def report_release(a):
     records = ordered_rows(read_jsonl(a.data / 'test.jsonl'), protocol['choice_order']=='canonical')
     result = {'model': RELEASE_MODEL_ID, 'protocol': protocol, 'data': manifest,
               'report_generator_sha256': sha256(Path(__file__)),
-              'quality': {}, 'speed': {}, 'api': {}, 'cross_device': {}, 'paired': {}, 'inputs': {}}
+              'held_out_sources':sorted(set(LABELS)-set(protocol['train_sources'])) if 'train_sources' in protocol else sorted(HELD),
+              'quality': {}, 'speed': {}, 'api': {}, 'cross_device': {}, 'paired': {}, 'inputs': {}, 'previous': {}}
     predictions = {}
     for card in ('6000','4090'):
         quality = getattr(a, 'evaluation_' + card)
@@ -244,7 +307,16 @@ def report_release(a):
             raise ValueError('sampled memory headroom gate failed')
         calibrations = {name: Calibration(**protocol['calibrations'][name]['parameters']) for name in ('base','adapter')}
         result['paired'][card] = {'overall': paired(records, predictions[card], calibrations),
-            'held_out_sources': paired([r for r in records if r['source'] in HELD], predictions[card], calibrations)}
+            'held_out_sources': paired([r for r in records if r['source'] in result['held_out_sources']], predictions[card], calibrations)}
+        if protocol.get('profile') == 'apache-v2':
+            if not a.previous_protocol or not getattr(a, 'previous_evaluation_'+card) or not getattr(a, 'previous_speed_'+card):
+                raise ValueError('Apache replacement requires matched previous-adapter measurements')
+            current = result['quality'][card]['models']['adapter']['calibrated']
+            base = result['quality'][card]['models']['base']['calibrated']['overall']
+            if current['overall']['accuracy_failures_incorrect'] <= base['accuracy_failures_incorrect'] or current['overall']['nll']['mean'] >= base['nll']['mean']:
+                raise ValueError('locked-test quality gate against unchanged base failed')
+            result['previous'][card] = compare_previous(a, card, records, predictions[card]['adapter'], current,
+                                                       speed_result, calibrations['adapter'])
     if len({result[kind][card]['receipt']['source_revision'] for kind in ('quality','speed') for card in ('6000','4090')}) != 1:
         raise ValueError('measurement source revisions differ')
     for name in ('base','adapter'):
@@ -263,7 +335,7 @@ def report_release(a):
         for card in ('6000','4090'):
             for name in ('base','adapter'):
                 for source, m in result['quality'][card]['models'][name]['calibrated']['by_source'].items():
-                    writer.writerow([source,source in HELD,card,name,m['n'],m['correct'],m['accuracy_failures_incorrect'],*m['accuracy_wilson_95'],m['nll']['mean']])
+                    writer.writerow([source,source in result['held_out_sources'],card,name,m['n'],m['correct'],m['accuracy_failures_incorrect'],*m['accuracy_wilson_95'],m['nll']['mean']])
     write_report(result, a.output)
     print(json.dumps({'paired': result['paired'], 'cross_device': result['cross_device']}, indent=2))
 
@@ -413,6 +485,9 @@ def main():
     for card in ('6000','4090'):
         for kind in ('evaluation','speed','api'):
             r.add_argument('--'+kind+'-'+card, type=Path, required=True)
+        for kind in ('evaluation', 'speed'):
+            r.add_argument('--previous-'+kind+'-'+card, type=Path)
+    r.add_argument('--previous-protocol', type=Path)
     r.add_argument('--data', type=Path, required=True); r.add_argument('--protocol', type=Path, default=Path('release/manifest.json'))
     r.add_argument('--output', type=Path, required=True)
     b = commands.add_parser('bundle'); b.add_argument('--adapter', type=Path, required=True)

@@ -12,9 +12,9 @@ from shingi.release import sha256, ADAPTER_SHA256
 SEED = "shingi-cuda-v01-release-20260922"
 
 
-def select_fresh(pool, count, excluded_ids, excluded_states):
+def select_fresh(pool, count, excluded_ids, excluded_states, seed=SEED):
     selected = []
-    for row in sorted(pool, key=lambda r: digest(SEED + "|test|" + r["id"])):
+    for row in sorted(pool, key=lambda r: digest(seed + "|test|" + r["id"])):
         if row["id"] in excluded_ids or row["state_sha256"] in excluded_states:
             continue
         selected.append(row)
@@ -30,19 +30,23 @@ def main():
     p.add_argument("--baseline", type=Path, required=True)
     p.add_argument("--training-data", type=Path, required=True)
     p.add_argument("--output", type=Path, required=True)
+    p.add_argument("--prior-data", type=Path, action='append', default=[])
+    p.add_argument("--seed", default=SEED)
+    p.add_argument("--adapter", type=Path)
     a = p.parse_args()
     old, exclusions = [], {}
-    for directory, splits in ((a.baseline, ("test", "calibration")),
-                              (a.training_data, ("train", "dev", "calibration", "test"))):
+    directories = [a.baseline, a.training_data] + a.prior_data
+    for directory in directories:
         manifest = json.loads((directory / "manifest.json").read_text())
         if manifest["revision"] != REVISION:
             raise ValueError("prior data revision differs")
-        for split in splits:
+        for split in ('train', 'dev', 'calibration', 'test'):
+            if split+'_sha256' not in manifest: continue
             path = directory / (split + ".jsonl")
             if sha256(path) != manifest[split + "_sha256"]:
                 raise ValueError("prior split changed: " + str(path))
             old.extend(read_jsonl(path))
-            exclusions[directory.name + "/" + path.name] = sha256(path)
+            exclusions[str(path)] = sha256(path)
     ids, states = {r["id"] for r in old}, {r["state_sha256"] for r in old}
     excluded_counts = {"ids": len(ids), "states": len(states)}
     prior_ids, prior_states = ids.copy(), states.copy()
@@ -55,15 +59,15 @@ def main():
             raise ValueError("pinned public data changed: " + relative)
         files[relative] = baseline_manifest["files"][relative]
         pool = [decode_row(r) for r in read_jsonl(path)]
-        test.extend(select_fresh(pool, 100, ids, states))
+        test.extend(select_fresh(pool, 100, ids, states, a.seed))
     shuffled = []
-    for row in sorted(test, key=lambda r: digest(SEED + "|shuffle|" + r["id"])):
+    for row in sorted(test, key=lambda r: digest(a.seed + "|shuffle|" + r["id"])):
         if row["primitive"] != "choice":
             continue
         row = copy.deepcopy(row)
         options = list(row["question"]["criteria"].items())
         original = list(options)
-        random.Random(SEED + "|order|" + row["id"]).shuffle(options)
+        random.Random(a.seed + "|order|" + row["id"]).shuffle(options)
         if options == original:
             options = options[1:] + options[:1]
         row["question"]["criteria"] = dict(options)
@@ -79,12 +83,12 @@ def main():
     a.output.mkdir(parents=True, exist_ok=False)
     write_jsonl(a.output / "test.jsonl", test)
     write_jsonl(a.output / "shuffle.jsonl", shuffled)
-    manifest = {"dataset": REPO, "revision": REVISION, "seed": SEED,
+    manifest = {"dataset": REPO, "revision": REVISION, "seed": a.seed,
                 "counts": {"test": len(test), "shuffle": len(shuffled)},
                 "by_source": dict(Counter(r["source"] for r in test)),
                 "excluded_splits": exclusions, "excluded_counts": excluded_counts,
                 "overlap": overlap, "files": files,
-                "candidate_adapter_sha256": ADAPTER_SHA256,
+                "candidate_adapter_sha256": sha256(a.adapter) if a.adapter else ADAPTER_SHA256,
                 "test_sha256": sha256(a.output / "test.jsonl"),
                 "shuffle_sha256": sha256(a.output / "shuffle.jsonl"),
                 "records": [{k: r[k] for k in ("id", "source", "state_sha256", "input_sha256")} for r in test],
