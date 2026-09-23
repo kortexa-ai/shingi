@@ -36,22 +36,30 @@ https://huggingface.co/datasets/Praveenrajus/jev-bench/tree/002ad22de8db2df5e0eb
 The underlying sources retain their own licenses. Training uses human targets,
 not hosted Jev predictions. The release does not redistribute dataset rows.
 
+The apache-v2 fitting profile uses these six sources for training, development
+selection, and calibration. They were also part of the first adapter's data:
+
 - Banking77: PolyAI, Casanueva et al.; CC BY 4.0.
   https://huggingface.co/datasets/PolyAI/banking77
 - CLINC150: Larson et al., CLINC; CC BY 3.0.
   https://huggingface.co/datasets/clinc/clinc_oos
 - MMLU: Hendrycks et al.; MIT.
   https://huggingface.co/datasets/cais/mmlu
-- ARC Challenge: Peter Clark et al., Allen Institute for AI; CC BY-SA 4.0.
-  https://huggingface.co/datasets/allenai/ai2_arc
 - HelpSteer2: Zhilin Wang et al., NVIDIA; CC BY 4.0.
   https://huggingface.co/datasets/nvidia/HelpSteer2
 - Measuring Hate Speech: Kennedy et al., UC Berkeley D-Lab; CC BY 4.0.
   https://huggingface.co/datasets/ucberkeley-dlab/measuring-hate-speech
-- BoolQ: Christopher Clark et al., Google; CC BY-SA 3.0.
-  https://huggingface.co/datasets/google/boolq
 - Civil Comments: Jigsaw / Civil Comments; CC0 1.0.
   https://huggingface.co/datasets/google/civil_comments
+
+The first adapter additionally used the following sources in fitting. They
+are evaluation-only in apache-v2. The first adapter retains its CC BY-SA 4.0
+license; the fresh fitting profile does not relicense earlier weights:
+
+- ARC Challenge: Peter Clark et al., Allen Institute for AI; CC BY-SA 4.0.
+  https://huggingface.co/datasets/allenai/ai2_arc
+- BoolQ: Christopher Clark et al., Google; CC BY-SA 3.0.
+  https://huggingface.co/datasets/google/boolq
 
 Shingi transforms the benchmark records into candidate-letter prompts, uses
 paired randomized option orders during training, selects a LoRA checkpoint on
