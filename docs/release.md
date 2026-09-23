@@ -98,8 +98,9 @@ fixed canonical Choice readout. Its data contains no test split.
 
 Prepare the new test only after weights and calibration are frozen. Supply
 `prepare_release_data.py` with the new fitting directory, every prior dataset
-directory through `--prior-data`, a new fixed `--seed`, and the selected
-`--adapter`. Record all exclusion hashes. A frozen earlier adapter can be
+directory through `--prior-data`, a new fixed `--seed`, the selected
+`--adapter`, and the frozen `--protocol`. The Apache profile requires all prior
+exclusion hashes and a matching weight/calibration identity. A frozen earlier adapter can be
 evaluated on that same test with `--historical-comparator` and its own frozen
 protocol. It must never influence fitting or selection. The report compares
 both raw and calibrated probabilities and retains per-source and latency

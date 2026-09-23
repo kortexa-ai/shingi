@@ -105,11 +105,14 @@ def main():
         records[split] = read_jsonl(path)
     protocol = None
     if a.phase == 'test':
+        if a.protocol is None: p.error('test requires a frozen --protocol')
         protocol = json.loads(a.protocol.read_text())
         if protocol['adapter_sha256'] != adapter_hash or protocol['model_sha256'] != BASE_SHA256:
             raise ValueError('protocol weights differ')
         if not a.historical_comparator and data_manifest['candidate_adapter_sha256'] != adapter_hash:
             raise ValueError('locked test candidate differs')
+        if not a.historical_comparator and data_manifest.get('protocol_sha256') not in (None, sha256(a.protocol)):
+            raise ValueError('locked test protocol differs')
     elif a.phase == 'calibration':
         if a.selection is None: p.error('calibration requires a frozen training selection')
         selected = json.loads(a.selection.read_text())

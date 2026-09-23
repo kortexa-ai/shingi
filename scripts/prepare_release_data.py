@@ -33,7 +33,16 @@ def main():
     p.add_argument("--prior-data", type=Path, action='append', default=[])
     p.add_argument("--seed", default=SEED)
     p.add_argument("--adapter", type=Path)
+    p.add_argument("--protocol", type=Path)
     a = p.parse_args()
+    fitting_manifest = json.loads((a.training_data/'manifest.json').read_text())
+    if fitting_manifest.get('profile') == 'apache-v2':
+        if a.adapter is None or a.protocol is None or a.seed == SEED:
+            p.error('Apache test requires --adapter, frozen --protocol, and a new --seed')
+        protocol = json.loads(a.protocol.read_text())
+        if (protocol.get('profile') != 'apache-v2' or protocol['adapter_sha256'] != sha256(a.adapter)
+                or protocol['calibrations']['adapter']['provenance']['calibration_data_sha256'] != fitting_manifest['calibration_sha256']):
+            raise ValueError('frozen Apache weights/calibration differ')
     old, exclusions = [], {}
     directories = [a.baseline, a.training_data] + a.prior_data
     for directory in directories:
@@ -47,6 +56,10 @@ def main():
                 raise ValueError("prior split changed: " + str(path))
             old.extend(read_jsonl(path))
             exclusions[str(path)] = sha256(path)
+    if fitting_manifest.get('profile') == 'apache-v2':
+        required = set(fitting_manifest['excluded_splits'].values())
+        if not required <= set(exclusions.values()):
+            raise ValueError('include every prior project split with --prior-data')
     ids, states = {r["id"] for r in old}, {r["state_sha256"] for r in old}
     excluded_counts = {"ids": len(ids), "states": len(states)}
     prior_ids, prior_states = ids.copy(), states.copy()
@@ -89,6 +102,7 @@ def main():
                 "excluded_splits": exclusions, "excluded_counts": excluded_counts,
                 "overlap": overlap, "files": files,
                 "candidate_adapter_sha256": sha256(a.adapter) if a.adapter else ADAPTER_SHA256,
+                "protocol_sha256": sha256(a.protocol) if a.protocol else None,
                 "test_sha256": sha256(a.output / "test.jsonl"),
                 "shuffle_sha256": sha256(a.output / "shuffle.jsonl"),
                 "records": [{k: r[k] for k in ("id", "source", "state_sha256", "input_sha256")} for r in test],
