@@ -60,6 +60,54 @@ redownload datasets must follow their respective source terms.
 
 ## Measurement contract
 
+### Non-share-alike retraining profile
+
+The `apache-v2` preparation profile restricts training, development selection,
+and calibration to Banking77, CLINC150, MMLU, HelpSteer2 helpfulness, Measuring
+Hate Speech, and Civil Comments. The primary publisher card revisions and
+hashes are in [`results/training-v2/provenance.json`](../results/training-v2/provenance.json).
+ARC and BoolQ remain evaluation-only for this profile. The first adapter's
+CC BY-SA packaging and measurements remain historical records; changing the
+training recipe does not change that adapter's license.
+
+Start a fresh LoRA on the unchanged base. Never initialize from the first
+adapter or reuse its fitted calibration. Permitted prior training records may
+recur, but every published validation/test state and prior project evaluation
+record is excluded from training. New development and calibration splits also
+exclude prior training records. The profile checks source membership and split
+overlap before fitting. Tokenization excludes prompts over 1,024 tokens without
+truncation. The default legacy preparation profile is retained for historical
+reproduction and must not be used for an Apache-targeted run.
+
+```bash
+uv run --locked python scripts/prepare_training_data.py \
+  --profile apache-v2 --baseline artifacts/benchmark-v1 \
+  --previous-training artifacts/decision-v2 \
+  --previous-release artifacts/release-v0.1/data \
+  --output artifacts/apache-v2/data
+uv run --locked python scripts/prepare_training_tokens.py \
+  --model /path/to/Ternary-Bonsai-2-27B-PQ2_0.gguf \
+  --data artifacts/apache-v2/data
+```
+
+Run the numerical/backward canary before the fresh trainer on an authorized GPU.
+The trainer selects minimum uncalibrated development NLL, including the base,
+and records a selection receipt. The `evaluate_release.py --phase calibration`
+path requires that receipt, checks the audited data identity, and uses the
+fixed canonical Choice readout. Its data contains no test split.
+
+Prepare the new test only after weights and calibration are frozen. Supply
+`prepare_release_data.py` with the new fitting directory, every prior dataset
+directory through `--prior-data`, a new fixed `--seed`, and the selected
+`--adapter`. Record all exclusion hashes. A frozen earlier adapter can be
+evaluated on that same test with `--historical-comparator` and its own frozen
+protocol. It must never influence fitting or selection. The report compares
+both raw and calibrated probabilities and retains per-source and latency
+regressions. Calibration differences are part of the packaged-model comparison,
+not evidence of a weight-only change.
+
+### Locked evaluation
+
 Freeze adapter, decision prompt, choice-order method and calibration before
 release test inference. Exclude every prior experiment split by both record ID
 and canonical state hash. Report the fresh 1,500-record result separately from
