@@ -4,6 +4,26 @@ import sys
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]/'scripts'))
 from prepare_training_data import select, training_prompt
+from prepare_training_data import APACHE_SOURCES
+from train_decision_adapter import validate_fitting_sources
+import pytest
+
+
+def test_apache_fitting_rejects_share_alike_sources():
+    manifest = {'profile':'apache-v2', 'train_sources':list(APACHE_SOURCES)}
+    validate_fitting_sources(manifest, [{'source':'mmlu'}], [{'source':'civil_comments'}])
+    for source in ('arc_challenge', 'boolq', 'unknown'):
+        with pytest.raises(ValueError, match='non-allowlisted'):
+            validate_fitting_sources(manifest, [{'source':source}], [])
+        with pytest.raises(ValueError, match='non-allowlisted'):
+            validate_fitting_sources(manifest, [], [{'source':source}])
+    manifest['train_sources'].append('boolq')
+    with pytest.raises(ValueError, match='exact audited'):
+        validate_fitting_sources(manifest, [], [])
+
+
+def test_empty_available_source_does_not_select_a_record():
+    assert select([{'id':'one','state_sha256':'one'}], 0, set(), set(), 'empty') == []
 
 
 def test_exclude_duplicate_state_across_different_record_ids():

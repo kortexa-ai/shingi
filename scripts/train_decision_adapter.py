@@ -17,6 +17,7 @@ from shingi.metrics import report
 from shingi.native_tokenizer import NativeTokenizer
 from shingi.ternary_training import BASE_SHA256, load_bonsai, attach_lora
 from training_canary import export_adapter
+from prepare_training_data import APACHE_SOURCES
 
 
 def sha(path):
@@ -25,6 +26,14 @@ def sha(path):
 
 def rows(path):
     with Path(path).open() as f:return [json.loads(line) for line in f if line.strip()]
+
+
+def validate_fitting_sources(manifest, prepared, dev):
+    if manifest.get('profile') != 'apache-v2': return
+    if set(manifest['train_sources']) != set(APACHE_SOURCES):
+        raise ValueError('Apache profile requires the exact audited source allowlist')
+    if any(r['source'] not in APACHE_SOURCES for r in prepared + dev):
+        raise ValueError('non-allowlisted fitting source')
 
 
 def main():
@@ -48,13 +57,15 @@ def main():
     excluded=token_manifest['excluded']
     tokenizer=NativeTokenizer('artifacts/bin/readout',a.model)
     dev=rows(a.data/'dev.jsonl')
+    validate_fitting_sources(manifest, prepared, dev)
+    apache = manifest.get('profile') == 'apache-v2'
     if not prepared:raise RuntimeError('no training records')
     (a.output/'excluded-length.json').write_text(json.dumps(excluded,indent=2)+'\n')
     import torch
     from safetensors.torch import save_file
     from shingi import gpu as rails
     rails.require_training_gpu()
-    torch.set_num_threads(12);torch.manual_seed(20260922)
+    torch.set_num_threads(12);torch.manual_seed(20260923 if apache else 20260922)
     started=time.monotonic();stop=False
     def request_stop(*unused):
         nonlocal stop
@@ -65,6 +76,7 @@ def main():
     optimizer=torch.optim.AdamW(params,lr=5e-5,betas=(.9,.95),weight_decay=.01,eps=1e-8)
     scaler=torch.amp.GradScaler('cuda',init_scale=1.0,growth_interval=1000000)
     accumulation=8;updates=math.ceil(len(prepared)/accumulation)
+    if apache: updates = min(updates, 640)
     provenance={'code_revision':subprocess.check_output(['git','rev-parse','HEAD'],text=True).strip(),
                 'model_sha256':BASE_SHA256,'canary_sha256':sha(a.canary),'dataset_manifest_sha256':sha(a.data/'manifest.json'),
                 'trainable_parameters':sum(p.numel() for p in params),'prepared_prompts':len(prepared),'excluded_prompts':len(excluded),
@@ -72,6 +84,10 @@ def main():
                 'gradient_accumulation':accumulation,'max_context':1024,'max_seconds':a.max_seconds,
                 'planned_updates':updates,'loss':'candidate cross entropy against human distribution when available, otherwise gold label',
                 'checkpoint_selection':'lowest uncalibrated development NLL; test and calibration not read during training',
+                'initialization':'fresh zero-output LoRA; immutable base; no previous adapter or optimizer',
+                'choice_order':'canonical' if apache else 'input',
+                'profile':manifest.get('profile', 'original-v1'),
+                'early_stop_patience':2 if apache else None,
                 'loader':info,'checkpoints':[],'skipped_optimizer_steps':0}
     def save_run():
         (a.output/'run.json').write_text(json.dumps(provenance,indent=2)+'\n')
@@ -90,7 +106,7 @@ def main():
             rails.assert_post_first_backward_free()
             return {'logits':out,'input_tokens':r['input_tokens'],'candidate_ids':r['candidate_ids'],
                     'prefill_ms':1000*(time.monotonic()-t),'prompt_sha256':hashlib.sha256(prompt.encode()).hexdigest()}
-    backend=Backend();engine=DecisionEngine(backend)
+    backend=Backend();engine=DecisionEngine(backend, canonical_choices=apache)
     best_nll=float('inf');best_path=None
     def evaluate(step):
         nonlocal best_nll,best_path
@@ -115,7 +131,7 @@ def main():
         provenance['selected']=best_path;save_run();print(json.dumps(record),flush=True)
         model.train();model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={'use_reentrant':False})
     evaluate(0)
-    trained=0;loss_sum=0.;last_eval=0
+    trained=0;loss_sum=0.;last_eval=0;stale_evaluations=0
     try:
         with (a.output/'steps.jsonl').open('x') as log:
             for step in range(updates):
@@ -152,15 +168,25 @@ def main():
                         'seconds':time.monotonic()-before,'memory':memory}
                 log.write(json.dumps(record)+'\n');log.flush()
                 if (step+1)%16==0:print(json.dumps(record),flush=True)
-                if (step+1)%128==0:
-                    evaluate(step+1);last_eval=step+1
                 provenance['completed_updates']=step+1;provenance['processed_prompts']=trained
+                if (step+1)%128==0:
+                    previous_best = best_nll
+                    evaluate(step+1);last_eval=step+1
+                    stale_evaluations = stale_evaluations+1 if best_nll >= previous_best else 0
+                    if apache and stale_evaluations >= 2:
+                        provenance['stop_reason']='two development evaluations without improvement'
+                        break
             completed=provenance.get('completed_updates',0)
             if completed!=last_eval:evaluate(completed)
         provenance['status']='finished' if completed==updates else 'bounded-stop'
         provenance['elapsed_seconds']=time.monotonic()-started;save_run()
         # Immutable selection receipt before any calibration or test inference.
-        (a.output/'selection.json').write_text(json.dumps({'selected':best_path,'reason':'minimum development NLL','test_seen':False},indent=2)+'\n')
+        baseline = provenance['checkpoints'][0]
+        accepted = (best_path['update'] > 0 and best_path['dev_nll'] < baseline['dev_nll']
+                    and best_path['dev_accuracy'] >= baseline['dev_accuracy']-.02)
+        (a.output/'selection.json').write_text(json.dumps({'selected':best_path,'reason':'minimum development NLL',
+            'test_seen':False, 'development_gate_passed':accepted,
+            'gate':'NLL improves unchanged base and accuracy loses at most 2 percentage points'},indent=2)+'\n')
     except BaseException as exc:
         provenance['status']='failed';provenance['failure']=f'{type(exc).__name__}: {exc}';save_run();raise
     finally:tokenizer.close()

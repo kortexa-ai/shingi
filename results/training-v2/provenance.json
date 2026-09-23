@@ -1,0 +1,75 @@
+{
+  "audit_date": "2026-09-23",
+  "purpose": "Apache-2.0 adapter retraining source audit",
+  "sources": {
+    "banking77": {
+      "repository": "PolyAI/banking77",
+      "revision": "90d4e2ee5521c04fc1488f065b8b083658768c57",
+      "stated_license": [
+        "cc-by-4.0"
+      ],
+      "card_url": "https://huggingface.co/datasets/PolyAI/banking77/resolve/90d4e2ee5521c04fc1488f065b8b083658768c57/README.md",
+      "card_sha256": "b494ae99274ad98adfedfefcb504469197a8732f9726f678320f4aaafc5502bf"
+    },
+    "clinc150": {
+      "repository": "clinc/clinc_oos",
+      "revision": "155b9c710419136e17307b80d0a13e68cd46b4ec",
+      "stated_license": [
+        "cc-by-3.0"
+      ],
+      "card_url": "https://huggingface.co/datasets/clinc/clinc_oos/resolve/155b9c710419136e17307b80d0a13e68cd46b4ec/README.md",
+      "card_sha256": "e28704a3c04f6b05c286ca2a8891bbf32c69c000dedfc5825d6e1713369b7a89"
+    },
+    "mmlu": {
+      "repository": "cais/mmlu",
+      "revision": "c30699e8356da336a370243923dbaf21066bb9fe",
+      "stated_license": [
+        "mit"
+      ],
+      "card_url": "https://huggingface.co/datasets/cais/mmlu/resolve/c30699e8356da336a370243923dbaf21066bb9fe/README.md",
+      "card_sha256": "665eef35ecd8a89037c1e4f1e1a0d7fd4c154edc04c81cea5634ace2d3e96953"
+    },
+    "helpsteer2_helpfulness": {
+      "repository": "nvidia/HelpSteer2",
+      "revision": "990b2711a36180dd19d9c94b8627844866f8982a",
+      "stated_license": "cc-by-4.0",
+      "card_url": "https://huggingface.co/datasets/nvidia/HelpSteer2/resolve/990b2711a36180dd19d9c94b8627844866f8982a/README.md",
+      "card_sha256": "835effb9e7d9cd0e8b7b8c1816d1d97a8961a036543108e4a0b6a5e22712ff7b"
+    },
+    "measuring_hate_speech": {
+      "repository": "ucberkeley-dlab/measuring-hate-speech",
+      "revision": "5468f6e118396646b02a2f691e771f6b6d9502ea",
+      "stated_license": [
+        "cc-by-4.0"
+      ],
+      "card_url": "https://huggingface.co/datasets/ucberkeley-dlab/measuring-hate-speech/resolve/5468f6e118396646b02a2f691e771f6b6d9502ea/README.md",
+      "card_sha256": "310b4713d2aa78d239664f4613328a532483ace32525f17860fca02daf29aa8c"
+    },
+    "civil_comments": {
+      "repository": "google/civil_comments",
+      "revision": "f2970eb3a55777454c94069077cc8d9b5866312d",
+      "stated_license": "cc0-1.0",
+      "card_url": "https://huggingface.co/datasets/google/civil_comments/resolve/f2970eb3a55777454c94069077cc8d9b5866312d/README.md",
+      "card_sha256": "8ce0fee0cce0d54ddd5daaad7ba7cd5ed31d78b8e8f2d5cd2345b0dd015932c6"
+    }
+  },
+  "transformation": {
+    "repository": "Praveenrajus/jev-bench",
+    "revision": "002ad22de8db2df5e0eb898b3da8072dbd4af4de",
+    "card_sha256": "d146973ad2368aa80df9772ac3f327af966815950e95cdf331017d48d8fa7318",
+    "manifest_sha256": "eace4223d323a91f6554c13aaa501785d60d8f6c7e173bd4d7c284fb5f52209b",
+    "terms": "Upstream source licenses; repackaging adds no restrictions."
+  },
+  "excluded_from_fitting": [
+    "arc_challenge",
+    "boolq",
+    "ledgar",
+    "go_emotions",
+    "mnli",
+    "sst5",
+    "fever_evidence",
+    "sms_spam",
+    "chaosnli"
+  ],
+  "limitations": "Publisher-stated source terms, not an assertion of ownership of every underlying right. No raw dataset redistribution."
+}
