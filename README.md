@@ -75,6 +75,10 @@ and need multiple passes. Questions run sequentially. Context is capped at
 
 ## Evidence and scope
 
+- [Frozen external benchmarks](results/external-v1/REPORT.md): 8,122 questions
+  from This/That, DecisionBench Medium/Hard and public JevBench, with unchanged
+  v0.2 weights and calibration. Includes attributed Jev-Omni reported scores
+  and the limits of that comparison.
 - [CUDA v0.2 release measurements](results/cuda-v0.2/REPORT.md): matched fresh
   base/adapter results on both GPUs, source holdouts, calibration, order and
   context checks, repeated latency/memory measurements, and live SDK checks.
