@@ -131,10 +131,15 @@ def compare_previous(a, card, records, candidate_predictions, candidate_metrics,
     directory = getattr(a, 'previous_evaluation_'+card)
     speed_dir = getattr(a, 'previous_speed_'+card)
     previous_protocol = read(a.previous_protocol)
+    if previous_protocol['adapter_sha256'] != LEGACY_ADAPTER_SHA256:
+        raise ValueError('historical comparison requires the frozen v0.1 adapter')
     summary = read(directory/'summary.json'); speed = read(speed_dir/'summary.json')
     for receipt in (summary['receipt'], speed['receipt']):
         validate_receipt(receipt, card, sha256(a.previous_protocol), sha256(a.data/'manifest.json'),
                          previous_protocol['adapter_sha256'])
+        for key in ('source_revision', 'executable_sha256'):
+            if receipt[key] != candidate_speed['receipt'][key]:
+                raise ValueError('previous and current measurement '+key+' differ')
     if previous_protocol['choice_order'] != 'canonical': raise ValueError('previous readout differs')
     predictions = load_predictions(directory/'adapter/test.jsonl', records)
     metrics = quality_report(records, predictions)
@@ -321,6 +326,8 @@ def report_release(a):
                                                        speed_result, calibrations['adapter'])
     if len({result[kind][card]['receipt']['source_revision'] for kind in ('quality','speed') for card in ('6000','4090')}) != 1:
         raise ValueError('measurement source revisions differ')
+    if len({result[kind][card]['receipt']['executable_sha256'] for kind in ('quality','speed') for card in ('6000','4090')}) != 1:
+        raise ValueError('measurement runtime binaries differ')
     for name in ('base','adapter'):
         result['cross_device'][name] = cross_device_parity(records, predictions['6000'][name], predictions['4090'][name],
                                                          Calibration(**protocol['calibrations'][name]['parameters']))

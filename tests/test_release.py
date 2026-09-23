@@ -175,3 +175,29 @@ def test_bundle_cannot_relicense_the_legacy_adapter_as_apache(tmp_path, monkeypa
     with pytest.raises(ValueError, match='cannot relabel the legacy adapter'):
         package.assemble(SimpleNamespace(adapter=tmp_path/'old.gguf', report=tmp_path/'report', output=tmp_path/'bundle'))
     assert not (tmp_path/'bundle').exists()
+
+
+@pytest.mark.parametrize('changed', ['adapter_sha256', 'source_revision', 'executable_sha256'])
+def test_previous_comparison_rejects_substituted_weights_or_harness(tmp_path, changed):
+    import sys
+    from pathlib import Path
+    from types import SimpleNamespace
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
+    import package_release as package
+    protocol = tmp_path/'protocol.json'
+    protocol.write_text(json.dumps({'adapter_sha256':
+        'substituted' if changed == 'adapter_sha256' else package.LEGACY_ADAPTER_SHA256}))
+    data, quality, speed = [tmp_path/name for name in ('data', 'quality', 'speed')]
+    for path in (data, quality, speed): path.mkdir()
+    (data/'manifest.json').write_text('{}')
+    receipt = {'protocol_sha256':sha256(protocol), 'data_manifest_sha256':sha256(data/'manifest.json'),
+        'identity':{'model_sha256':package.BASE_SHA256, 'adapter_sha256':package.LEGACY_ADAPTER_SHA256},
+        'gpu':{'name':'RTX PRO 6000'}, 'kv':'q8_0', 'context_tokens':16384,
+        'source_revision':'same-source', 'executable_sha256':'same-runtime'}
+    candidate = {'receipt':dict(receipt)}
+    if changed != 'adapter_sha256': receipt[changed] = 'different'
+    for path in (quality, speed): (path/'summary.json').write_text(json.dumps({'receipt':receipt}))
+    args = SimpleNamespace(previous_protocol=protocol, previous_evaluation_6000=quality,
+                           previous_speed_6000=speed, data=data)
+    with pytest.raises(ValueError, match='frozen v0.1 adapter|previous and current measurement'):
+        package.compare_previous(args, '6000', [], {}, {}, candidate, Calibration())
