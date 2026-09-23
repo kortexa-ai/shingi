@@ -419,6 +419,23 @@ def write_report(result, output):
     (output / 'REPORT.md').write_text('\n'.join(lines))
 
 
+def validate_external_evidence(directory):
+    summary = read(directory / 'summary.json')
+    receipt = summary['receipt']
+    audit = read(directory / 'validation.json')['audit']
+    identity = receipt['identity']
+    if (identity['model'] != RELEASE_MODEL_ID
+            or identity['model_sha256'] != BASE_SHA256
+            or identity['adapter_sha256'] != ADAPTER_SHA256
+            or receipt['calibration_sha256'] != sha256(Path('release/calibration.json'))):
+        raise ValueError('external evaluation model or calibration differs')
+    if (audit['summary_sha256'] != sha256(directory / 'summary.json')
+            or audit['manifest_sha256'] != sha256(directory / 'provenance.json')
+            or receipt['data_manifest_sha256'] != audit['manifest_sha256']
+            or audit['failures']):
+        raise ValueError('external evaluation audit differs or failed')
+
+
 def assemble(a):
     if subprocess.check_output(['git','status','--porcelain'], text=True).strip():
         raise ValueError('commit release sources before assembling')
@@ -438,16 +455,20 @@ def assemble(a):
     validation_path = Path('results')/evidence/'validation.json'
     if read(validation_path)['evaluation_summary_sha256'] != sha256(a.report / 'summary.json'):
         raise ValueError('publication audit belongs to a different report')
+    external = Path('results/external-v1')
+    validate_external_evidence(external)
     a.output.mkdir(parents=True, exist_ok=False)
     for source, dest in [(a.adapter,'adapter.gguf'), (Path('release/calibration.json'),'calibration.json'),
                          (Path('release/manifest.json'),'protocol.json'), (Path('release/README.md'),'README.md'),
-                         (Path('NOTICE'),'NOTICE')]:
+                         (Path('NOTICE'),'NOTICE'),
+                         (Path('release/shingi-three-stage-selection.png'),'shingi-three-stage-selection.png')]:
         shutil.copyfile(source, a.output / dest)
     # The checked-in card renders against repository evidence; the Hub bundle
     # carries those same figures and aggregate files beside the card.
     card = (a.output / 'README.md').read_text()
     card = card.replace('(../results/'+evidence+'/figures/', '(figures/')
     card = card.replace('(../results/'+evidence+'/', '(evaluation/')
+    card = card.replace('(../results/external-v1/', '(evaluation/external/')
     card = card.replace('(../NOTICE)', '(NOTICE)')
     (a.output / 'README.md').write_text(card)
     shutil.copytree(a.report / 'figures', a.output / 'figures')
@@ -455,6 +476,9 @@ def assemble(a):
     shutil.copyfile(validation_path, a.output / 'evaluation/validation.json')
     for name in ('summary.json','REPORT.md','accuracy.csv'):
         shutil.copyfile(a.report / name, a.output / 'evaluation' / name)
+    (a.output / 'evaluation/external').mkdir()
+    for name in ('summary.json', 'REPORT.md', 'provenance.json', 'validation.json'):
+        shutil.copyfile(external / name, a.output / 'evaluation/external' / name)
     # The report's figure links are relative to its evaluation/ directory.
     report_text = (a.output / 'evaluation/REPORT.md').read_text().replace('(figures/', '(../figures/')
     (a.output / 'evaluation/REPORT.md').write_text(report_text)

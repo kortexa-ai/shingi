@@ -209,6 +209,13 @@ protocol, model card, notices/licenses, aggregate evidence, and figures. Its
 manifest binds each file by byte count and SHA-256. Verification rejects missing,
 extra, corrupted, and externally linked files.
 
+The initial public v0.2 bundle also includes the frozen external results under
+`evaluation/external/`. Assembly checks their model, calibration, data and audit
+hashes against the released artifacts. The model card includes the supplied
+Shingi illustration. Source code remains on GitHub; it is not duplicated in the
+Hub model bundle. External benchmarks remain evaluation-only and do not change
+the frozen release protocol.
+
 The v0.1 evidence and bundle remain separate. To reproduce that historical
 package, use its source revision `262a004c849ffcd59bbe7dc3c0455c2de5023e8b`
 and preserved artifacts; current release constants identify the new adapter.

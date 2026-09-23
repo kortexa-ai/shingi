@@ -17,6 +17,8 @@ pipeline_tag: text-classification
 
 # Shingi — 審議 — Bonsai 2 27B decision adapter v0.2
 
+![三段階の審議 — Shingi: candidate paths passing through three selection rings](shingi-three-stage-selection.png)
+
 Shingi is an experimental local decision model for **request-defined choices,
 probabilities, and ordinal scores**. It reads all candidate logits from Bonsai
 and returns structured results without generating an explanation.
@@ -52,7 +54,7 @@ Python 3.11+, `uv`, Git, CMake, a C++17 compiler, the Hugging Face CLI, and CUDA
 12.8+ with a compatible driver. The measured build used CUDA 13.0.88.
 
 ```bash
-git clone https://github.com/kortexa-ai/shingi.git
+git clone --branch v0.2.0 https://github.com/kortexa-ai/shingi.git
 cd shingi
 uv sync --locked
 export PATH=/usr/local/cuda/bin:$PATH
@@ -61,7 +63,9 @@ hf download prism-ml/Ternary-Bonsai-2-27B-gguf \
   Ternary-Bonsai-2-27B-PQ2_0.gguf LICENSE NOTICE.txt \
   --revision 6ed5e12bf84b7a63069882c91dd9e9218647d17b \
   --local-dir artifacts/base
-# Place the supplied adapter bundle in artifacts/shingi-v0.2.
+hf download kortexa-ai/shingi-bonsai-2-27b-v0.2 \
+  --revision v0.2.0 \
+  --local-dir artifacts/shingi-v0.2
 nvidia-smi --query-gpu=name,uuid,memory.free --format=csv
 export CUDA_VISIBLE_DEVICES=GPU-YOUR-FULL-UUID
 uv run --locked shingi \
@@ -173,6 +177,48 @@ denominators, intervals and per-source results. The
 uncalibrated old/new comparisons. Score accuracy uses the modal level;
 expected-score error and distance to human vote targets are reported separately.
 
+## External benchmarks
+
+The same frozen weights, calibration and prompt answered all **8,122 questions**
+from three additional evaluation-only suites on the RTX PRO 6000. These results
+did not select or tune the release.
+
+| Benchmark | Correct / total | Question micro | State/group macro |
+|---|---:|---:|---:|
+| This/That spatial | 3694/7305 | 50.57% | 48.31% |
+| DecisionBench Medium | 233/293 | 79.52% | 79.21% |
+| DecisionBench Hard | 193/293 | 65.87% | 61.24% |
+| JevBench public subset | 198/231 | 85.71% | 83.85% |
+
+Spatial reasoning remains weak: This/That's `only_way` family scores 23.37%,
+`plan_survives` 30.60%, and `distance_band` 32.20%. Across its 500 stochastic
+questions, analytic expected accuracy is 51.01%, versus a Bayes ceiling of
+85.88%; the full-set uniform-random baseline is 34.76%.
+
+The [Jev-Omni model card](https://huggingface.co/akhilaaa3/Jev-Omni/blob/c050d51354147985d13286cf4acf90f562f2c631/README.md)
+reports 87.57% macro on DecisionBench Medium and 86.15% macro on public JevBench.
+Those are third-party reports, not our measurements. Its complete training
+corpus, frozen evaluation manifest, predictions and exact scoring code were
+not available in that release. The comparison does not establish protocol
+equivalence or statistical significance. No hosted Jev model was benchmarked.
+Public JevBench contains 231 of 534 full-suite tasks; this is not an official
+full-suite composite score.
+
+Choice and Score accuracy use argmax; Noul uses P(yes) ≥ 0.5. Rounding Score's
+expected level instead gives DecisionBench macro 80.50% Medium and 59.55% Hard;
+Jev-Omni's exact Score rule is unknown. Thirteen Choice questions per subset
+exceed 52 options and use the existing approximate readout, up to 120 options.
+Canonical map reversal has zero flips in 300 pairs; changing raw prompt order
+flips 28/100 This/That, 18/100 DecisionBench and 9/100 JevBench answers.
+
+The [external report](../results/external-v1/REPORT.md),
+[metrics](../results/external-v1/summary.json),
+[provenance](../results/external-v1/provenance.json) and
+[validation](../results/external-v1/validation.json) retain probability quality,
+latency, memory, source revisions, overlap checks and complete audit identities.
+No exact or normalized state overlap was found against 11 earlier Shingi data
+files; semantic overlap and upstream pretraining exposure remain unknown.
+
 ## CUDA latency and memory
 
 | GPU | Mixed median / p95 | Sampled inference allocation | Model initialization |
@@ -237,8 +283,8 @@ injection. Evaluate the model on your own domain before delegating decisions.
 Confidence fields describe distribution concentration, not a guarantee of
 correctness. Calibration can change under a new workload.
 
-Source samples contain only 100 records each, and the aggregate gives every
-source equal weight. Order sorting does not remove label or wording sensitivity.
+The original release test has only 100 records per source and gives every source
+equal weight. Order sorting does not remove label or wording sensitivity.
 The synthetic context tests check simple planted-fact retrieval, not real-document
 comprehension. More than 52 choices use an approximate probability composition.
 Images, audio and video are unsupported. No M3/M4 Mac performance, concurrency

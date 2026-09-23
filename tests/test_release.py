@@ -93,6 +93,28 @@ def test_bundle_verification_rejects_extra_files_and_corruption(tmp_path, monkey
         package_release.verify_bundle(tmp_path)
 
 
+def test_external_release_evidence_rejects_other_weights_and_changed_report(tmp_path):
+    import sys
+    import shutil
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[1]
+    sys.path.insert(0, str(root / 'scripts'))
+    from package_release import validate_external_evidence
+    for name in ('summary.json', 'validation.json', 'provenance.json'):
+        shutil.copyfile(root / 'results/external-v1' / name, tmp_path / name)
+    validate_external_evidence(tmp_path)
+    path = tmp_path / 'summary.json'
+    original = path.read_text()
+    summary = json.loads(original)
+    summary['receipt']['identity']['adapter_sha256'] = 'other-weights'
+    path.write_text(json.dumps(summary))
+    with pytest.raises(ValueError, match='model or calibration differs'):
+        validate_external_evidence(tmp_path)
+    path.write_text(original + '\n')
+    with pytest.raises(ValueError, match='audit differs'):
+        validate_external_evidence(tmp_path)
+
+
 def test_cross_device_comparison_validates_adaptive_prompt_paths():
     import hashlib
     import sys
