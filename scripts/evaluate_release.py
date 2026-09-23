@@ -16,7 +16,7 @@ from shingi.decision import Calibration, DecisionEngine
 from shingi.gpu import gpu_snapshot
 from shingi.metrics import report, probabilities, wilson
 from shingi.probes import probe_at_tokens
-from shingi.release import artifact_identity, sha256, BASE_SHA256, ADAPTER_SHA256, require_release_environment
+from shingi.release import artifact_identity, sha256, BASE_SHA256, LEGACY_ADAPTER_SHA256, require_release_environment
 from prepare_training_data import APACHE_SOURCES
 
 
@@ -93,7 +93,7 @@ def main():
     adapter_hash = identity['adapter_sha256']
     if identity['model_sha256'] != BASE_SHA256:
         raise ValueError('release candidate weights differ')
-    if a.phase == 'development' and adapter_hash != ADAPTER_SHA256:
+    if a.phase == 'development' and adapter_hash != LEGACY_ADAPTER_SHA256:
         raise ValueError('legacy development candidate differs')
     data_manifest = json.loads((a.data / 'manifest.json').read_text())
     splits = ('test', 'shuffle') if a.phase == 'test' else ('dev', 'calibration')
@@ -191,7 +191,7 @@ def main():
                     predictions = infer(engine, calibration_rows, dest / ('calibration-' + mode + '.jsonl'))
                     fitted = fit(calibration_rows, predictions)
                     fitted['provenance'] = {'model_sha256': BASE_SHA256,
-                        'adapter_sha256': ADAPTER_SHA256 if adapter else None,
+                        'adapter_sha256': adapter_hash if adapter else None,
                         'readout_version': 'bonsai-sorted-choice-v2' if mode == 'canonical' else 'bonsai-letter-v1',
                         'calibration_data_sha256': data_manifest['calibration_sha256'],
                         'dataset_manifest_sha256': receipt['data_manifest_sha256'],
@@ -266,7 +266,7 @@ def main():
         x, y = [development['adapter'][mode]['overall'] for mode in ('input', 'canonical')]
         accepted = accept_canonical(x, y)
         mode = 'canonical' if accepted else 'input'
-        protocol = {'model_sha256': BASE_SHA256, 'adapter_sha256': ADAPTER_SHA256,
+        protocol = {'model_sha256': BASE_SHA256, 'adapter_sha256': adapter_hash,
                     'choice_order': mode, 'readout_version': 'bonsai-sorted-choice-v2' if accepted else 'bonsai-letter-v1',
                     'selection': 'Development NLL regression <=0.05 and accuracy regression <=2 percentage points.',
                     'dev_summary_sha256': sha256(a.output / 'summary.json'), 'calibrations': {}}
