@@ -6,17 +6,19 @@ Shingi (Japanese for deliberation) adapts **Bonsai 2 27B** for request-defined
 decisions. Give it context, a question, and possible answers. It reads every
 candidate's logit directly, without generating an explanation or parsing prose.
 
-CUDA v0.1 combines the original compact ternary base with a **132.03 MiB decision
-adapter**. On the [fresh release test](results/cuda-v0.1/REPORT.md), calibrated
-accuracy is **73.87% versus 68.20%** for unchanged Bonsai across 1,500 decisions on the RTX PRO 6000.
-The paired gain is **+5.67 percentage points** (descriptive 95% interval:
-+3.87 to +7.47). Probability and ordinal-score errors also improve.
+CUDA v0.2 combines the compact ternary base with a **132.03 MiB decision
+adapter**, freshly trained without share-alike fitting datasets. On the
+[fresh 1,500-record test](results/cuda-v0.2/REPORT.md), accuracy is **74.93%**
+versus **66.80% for the base** and **74.47% for the old adapter** on the RTX PRO
+6000. The new adapter scores **75.00% on the RTX 4090**.
 
-![Accuracy by source](results/cuda-v0.1/figures/accuracy.png)
+NLL and ordinal-score error improve over the old adapter, but calibration error
+worsens. HelpSteer2, SMS Spam and ChaosNLI lose correct answers. The small
+aggregate accuracy gain over v0.1 has a paired interval that includes zero.
+This is an experimental model; GoEmotions remains weak at 27%. See the
+[model card](release/README.md) for the full tradeoffs and limitations.
 
-This is an experimental model. GoEmotions remains weak at 28%, two source slices
-lose one correct answer, and benchmark gains do not guarantee reliability on a
-new workload. See the [model card](release/README.md) and full measurement report.
+![Accuracy by source](results/cuda-v0.2/figures/accuracy.png)
 
 ## Run locally
 
@@ -31,8 +33,8 @@ nvidia-smi -L
 export CUDA_VISIBLE_DEVICES=GPU-YOUR-FULL-UUID
 uv run --locked shingi \
   --model artifacts/base/Ternary-Bonsai-2-27B-PQ2_0.gguf \
-  --adapter artifacts/shingi-v0.1/adapter.gguf \
-  --calibration artifacts/shingi-v0.1/calibration.json
+  --adapter artifacts/shingi-v0.2/adapter.gguf \
+  --calibration artifacts/shingi-v0.2/calibration.json
 ```
 
 Use a complete UUID printed by `nvidia-smi`. The API listens on
@@ -43,15 +45,17 @@ infrastructure. The setup builds from public source; model files stay outside Gi
 
 | GPU | Mixed median / p95 | Sampled GPU allocation |
 |---|---:|---:|
-| RTX PRO 6000 Blackwell | 80 / 605 ms | 8.47 GiB |
-| RTX 4090 | 107 / 757 ms | 8.27 GiB |
+| RTX PRO 6000 Blackwell | 81 / 612 ms | 8.47 GiB |
+| RTX 4090 | 107 / 755 ms | 8.27 GiB |
 
 These are 900 sequential decisions from 300 fixed records, with loading
 excluded and a 16K context allocation. Longer prompts and larger option sets
-cost more; the [full curves and method](results/cuda-v0.1/REPORT.md) show both.
-Memory is sampled every 100 ms and can miss brief peaks.
+cost more; the [full curves and method](results/cuda-v0.2/REPORT.md) show both.
+Memory is sampled every 100 ms and can miss brief peaks. The 6000 retained
+six production services; the 4090 retained an unrelated GPU process. These
+measurements do not establish a speedup over v0.1.
 
-![Latency by context and choice count](results/cuda-v0.1/figures/latency.png)
+![Latency by context and choice count](results/cuda-v0.2/figures/latency.png)
 
 ## Interface
 
@@ -71,24 +75,27 @@ and need multiple passes. Questions run sequentially. Context is capped at
 
 ## Evidence and scope
 
-- [CUDA v0.1 release measurements](results/cuda-v0.1/REPORT.md): matched fresh
+- [CUDA v0.2 release measurements](results/cuda-v0.2/REPORT.md): matched fresh
   base/adapter results on both GPUs, source holdouts, calibration, order and
   context checks, repeated latency/memory measurements, and live SDK checks.
 - [Unchanged-base investigation](results/baseline-v1/REPORT.md): RTX 4090 feasibility
   and live SDK checks, 1,500 decisions, option-order and synthetic context tests.
+- [Fresh Apache adapter training](results/training-v2/REPORT.md): six fitting
+  sources, frozen development selection, independent calibration and native export checks.
+- [Historical v0.1 release](results/cuda-v0.1/REPORT.md): the first adapter and
+  its original test; those percentages use different records.
 - [First adapter experiment](results/training-v1/REPORT.md): matched base/adapter
   quality, calibration, source holdouts, native export agreement, RTX PRO 6000
   inference and training resource measurements.
 - [Evaluation protocol](docs/evaluation-protocol.md): data separation, exact
   candidate logits, failure accounting, and attributed third-party comparisons.
 
-The seven sources excluded from adaptation improve from 66.43% to 69.00% on
-this test (paired interval +0.43 to +4.71 points). Choice keys are sorted before
-inference, making map reordering deterministic; this does not establish learned
-invariance. A separate input-order diagnostic still changes 28/200 adapter
-answers. Renaming or rewording choices can affect decisions. Cross-GPU answers
-agree on 99.73% of the test, but the approximate multi-pass method has large
-individual probability differences; see the full report.
+Nine sources are excluded from v0.2 training, development and calibration.
+Choice keys are sorted before inference, making map reordering deterministic;
+this does not establish learned invariance. A separate input-order diagnostic
+still changes 14/200 adapter answers. Cross-GPU answers agree on 99.73% of the
+test, with mean probability TVD 0.00280. The approximate multi-pass method can
+produce large individual probability differences; see the full report.
 
 The original ternary scales and transforms are preserved. The adapter is
 separate FP32 LoRA weights; this is not a merged all-ternary model.
@@ -117,7 +124,8 @@ and locked evaluation data separate. Retain checkpoints and reproducible records
 
 ## License and attribution
 
-Repository code is [Apache-2.0](LICENSE). The release adapter is **CC BY-SA 4.0**.
+Repository code and the fresh v0.2 adapter are **[Apache-2.0](LICENSE)**.
+The historical v0.1 adapter retains CC BY-SA 4.0.
 Upstream model, runtime, and dataset licenses remain separate. See the [Bonsai base](https://huggingface.co/prism-ml/Ternary-Bonsai-2-27B-gguf),
 [Prism runtime](https://github.com/PrismML-Eng/llama.cpp), and
 [OpenJev](https://huggingface.co/openjev/openjev), whose public decision interface

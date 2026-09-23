@@ -1,5 +1,5 @@
 ---
-license: cc-by-sa-4.0
+license: apache-2.0
 language:
 - en
 base_model: prism-ml/Ternary-Bonsai-2-27B-gguf
@@ -15,7 +15,7 @@ tags:
 pipeline_tag: text-classification
 ---
 
-# Shingi — 審議 — Bonsai 2 27B decision adapter v0.1
+# Shingi — 審議 — Bonsai 2 27B decision adapter v0.2
 
 Shingi is an experimental local decision model for **request-defined choices,
 probabilities, and ordinal scores**. It reads all candidate logits from Bonsai
@@ -29,12 +29,17 @@ Transformers/PEFT adapter. Created using Bonsai by Prism ML.
 
 ## What changed
 
+Version 0.2 trains a fresh adapter using six sources with CC BY, MIT or CC0
+terms. ARC and BoolQ are excluded from training, development selection and
+calibration. No previous adapter weights, optimizer state or fitted calibration
+were reused. The **new adapter is Apache-2.0**; the historical v0.1 adapter keeps
+its CC BY-SA 4.0 license.
+
 Rank-8 LoRA with alpha 16 adds **34,603,008 trainable parameters** to the gate,
-up, and down MLP projections of all 64 layers. The original ternary base,
-quantization scales, and transforms remain unchanged. The release uses the
-selected update-128 checkpoint, separate probability calibration, and a
-canonical lexicographic ordering of Choice keys. No adapter merge or additional
-release quantization was performed.
+up and down MLP projections of all 64 layers. Original ternary weights, scales
+and transforms remain unchanged. The selected checkpoint is **update 559**,
+with separate probability calibration. No adapter merge or additional release
+quantization was performed.
 
 Choice-map reordering is stable because keys are sorted before inference.
 Renaming choices, changing their wording, or varying the underlying prompt
@@ -56,14 +61,13 @@ hf download prism-ml/Ternary-Bonsai-2-27B-gguf \
   Ternary-Bonsai-2-27B-PQ2_0.gguf LICENSE NOTICE.txt \
   --revision 6ed5e12bf84b7a63069882c91dd9e9218647d17b \
   --local-dir artifacts/base
-hf download kortexa-ai/shingi-bonsai-2-27b-v0.1 \
-  --local-dir artifacts/shingi-v0.1
+# Place the supplied adapter bundle in artifacts/shingi-v0.2.
 nvidia-smi --query-gpu=name,uuid,memory.free --format=csv
 export CUDA_VISIBLE_DEVICES=GPU-YOUR-FULL-UUID
 uv run --locked shingi \
   --model artifacts/base/Ternary-Bonsai-2-27B-PQ2_0.gguf \
-  --adapter artifacts/shingi-v0.1/adapter.gguf \
-  --calibration artifacts/shingi-v0.1/calibration.json
+  --adapter artifacts/shingi-v0.2/adapter.gguf \
+  --calibration artifacts/shingi-v0.2/calibration.json
 ```
 
 Use a complete GPU UUID from `nvidia-smi`. Startup verifies model and adapter
@@ -84,115 +88,146 @@ approximate chunk-and-anchor scoring with multiple passes.
 
 ## Training and data
 
-The selected checkpoint saw **1,024 prompts from 939 distinct records and
-227,768 input tokens**. The prepared pool had 3,084 records from eight sources:
-Banking77, CLINC150, MMLU, ARC Challenge, HelpSteer2 helpfulness, Measuring Hate
-Speech, BoolQ, and Civil Comments. JevBench supplies the benchmark transformations
-at revision `002ad22de8db2df5e0eb898b3da8072dbd4af4de`.
+The selected checkpoint saw **4,466 prompts from 2,233 distinct records and
+1,073,860 input tokens**. The prepared pool held 2,284 records from Banking77,
+CLINC150, MMLU, HelpSteer2 helpfulness, Measuring Hate Speech and Civil Comments.
+JevBench supplied transformations at revision
+`002ad22de8db2df5e0eb898b3da8072dbd4af4de`. The pool reused 378 permitted earlier
+training records. All published validation/test states and prior project
+evaluation records were excluded from training. New development and calibration
+data exclude every earlier project split by ID and canonical state hash.
 
-Training used candidate cross entropy against human vote distributions when
-available, otherwise the gold label; batch size 1, accumulation 8, AdamW,
-learning rate `5e-5`, 32 warmup updates, cosine decay, gradient clipping 1, and
-1,024-token prompts. Paired randomized option orders were prepared. The checkpoint
-was selected by lowest NLL on 256 development records. The run stopped after
-401 updates following development-based early stopping; later checkpoints were
-not selected. No hosted Jev predictions were training targets.
+Two deterministic option permutations were prepared per training record;
+102 prompts over 1,024 tokens were excluded without truncation. Training used
+candidate cross entropy against human vote distributions where available,
+otherwise the gold label: batch one, accumulation eight, AdamW, learning rate
+`5e-5`, 32 warmup updates, cosine decay and gradient clipping at 1. The run
+completed one prepared epoch, 559 updates, with zero skipped optimizer steps.
+No hosted Jev predictions were training targets.
 
-The release readout's sorting rule passed a predeclared development gate:
-accuracy changed from 212/256 to 209/256 and NLL from 0.509250 to 0.520816.
-Calibration uses a separate 240-record split. The adapter's global temperature
-is 1.25; Noul additionally divides by 1.2 and adds a log-odds bias of −1.
-The unchanged-base comparator has its own calibration from the same split.
+Checkpoint selection used minimum uncalibrated NLL on **192 development records**.
+Update 559 reduced development NLL to 0.626760. Its accuracy was 75.52%, below
+update 512's 76.56%; the selection rule used NLL and was set before training.
+Native development predictions agreed with the selected differentiable model
+on all 192 selected answers, with mean probability TVD 0.001770. This is measured
+agreement, not exact numerical equivalence. The
+[training record](https://github.com/kortexa-ai/shingi/blob/main/results/training-v2/REPORT.md)
+and bundled `training-provenance.json` retain source audit and measurements.
 
-The fresh release test has 1,500 records, 100 per source, and excludes all 6,930
-previous experiment IDs and state hashes. Seven sources are excluded from this
-adapter's training, development and calibration: LEDGAR, GoEmotions, MNLI,
-SST-5, FEVER Evidence, SMS Spam, and ChaosNLI. These source holdouts do not prove
-absence from upstream pretraining, whose overlap is unknown. No release-test
-result selected the adapter, readout or calibration.
+The canonical Choice readout was fixed before the run. Calibration uses a
+separate **180 records**: 150 Choice/Score and 30 Noul. The new adapter's global
+temperature is 1.5; Noul additionally divides by 1/3, with zero log-odds bias.
+The unchanged base has its own calibration. The old adapter retains its original
+240-record calibration for the matched comparison.
+
+Weights and calibration were frozen before drawing the fresh **1,500-record
+test**, 100 per source. It excludes **10,708 previous IDs and 10,708 state hashes**.
+Nine sources were excluded from every v0.2 fitting stage: ARC Challenge, BoolQ,
+LEDGAR, GoEmotions, MNLI, SST-5, FEVER Evidence, SMS Spam and ChaosNLI. Their
+absence from adaptation does not prove absence from upstream pretraining;
+that overlap is unknown. No test result selected or tuned the release.
 
 ## Accuracy and probability quality
 
-On the fresh 1,500-record release test, **Shingi scores 73.87% (1,108/1,500)**
-versus **68.20% (1,023/1,500)** for unchanged Bonsai, using matched calibrated
-readouts on the RTX PRO 6000. The paired change is **+5.67 percentage points**,
-with a descriptive 95% bootstrap interval of **+3.87 to +7.47 points**.
+On the fresh test, **Shingi v0.2 scores 1124/1,500 (74.93%)**
+versus **1002/1,500 (66.80%)** for unchanged Bonsai on the RTX PRO 6000.
+The paired gain is **+8.13 percentage points**, with a descriptive
+95% bootstrap interval of **+6.00 to +10.27 points**.
 
-| Calibrated metric | Unchanged Bonsai | Shingi v0.1 |
-|---|---:|---:|
-| Accuracy, 1,500 records | 68.20% | 73.87% |
-| NLL | 0.94049 | 0.78908 |
-| Multiclass Brier | 0.41873 | 0.34730 |
-| Expected-score MAE, 300 records | 0.82214 | 0.66682 |
-| Source-holdout accuracy, 700 records | 66.43% | 69.00% |
-| Choice-map order flips, 200 pairs | 0 | 0 |
-| Input-order diagnostic flips, 200 pairs | 40 | 28 |
-| Synthetic context probes through 15K | 12/12 | 12/12 |
+| Calibrated metric | Unchanged Bonsai | Shingi v0.1 | Shingi v0.2 |
+|---|---:|---:|---:|
+| Accuracy, 1,500 records | 66.80% | 74.47% | 74.93% |
+| NLL, 1500 records | 0.95619 | 0.78501 | 0.73016 |
+| Multiclass Brier, 1500 records | 0.43559 | 0.35008 | 0.32850 |
+| Expected-score MAE, 300 records | 0.80599 | 0.64199 | 0.56875 |
+| Distance to human labels, 400 records | 0.40500 | 0.35830 | 0.32314 |
+| Top-label ECE, 1,500 records | 0.05147 | 0.02697 | 0.04734 |
 
-![Accuracy by source](../results/cuda-v0.1/figures/accuracy.png)
+| GPU, same fresh test | v0.1 correct | v0.2 correct | Paired change, 95% interval |
+|---|---:|---:|---:|
+| RTX PRO 6000 | 1117/1,500 | 1124/1,500 | +0.47 pp [-0.93, +1.87] |
+| RTX 4090 | 1116/1,500 | 1125/1,500 | +0.60 pp [-0.80, +2.00] |
 
-The source-holdout change is +2.57 points, with a descriptive paired interval
-of +0.43 to +4.71. This is encouraging evidence on this slice, not a guarantee
-of unseen-domain performance. Per-source samples are small. CLINC150 and ARC
-each lose one correct answer; GoEmotions improves from 25% to 28% but remains
-weak. The largest gain is Measuring Hate Speech, a training source (47% to 80%).
+**The new adapter is not better on every metric.** ECE worsens on both cards.
+On the 6000, HelpSteer2 falls from 48 to 45 correct answers, SMS Spam from
+99 to 96, and ChaosNLI from 60 to 57, each out of 100. The 4090 has the same
+HelpSteer2 and SMS losses; ChaosNLI falls from 60 to 58. NLL, Brier and
+expected-score error improve overall. The accuracy intervals against v0.1
+include zero, so these small aggregate gains do not establish a clear advantage.
 
-![Calibration and score quality](../results/cuda-v0.1/figures/calibration.png)
+Each adapter retains its own frozen calibration; this compares the packaged
+models rather than isolating weight changes. No test-time adjustment was made.
 
-The full [evaluation report](../results/cuda-v0.1/REPORT.md) includes denominators,
-intervals, per-source results, order diagnostics, and measurement limitations.
-[Machine-readable evidence](../results/cuda-v0.1/summary.json) records revisions, data
-identifiers, calibration, and artifact hashes. Accuracy for Score uses its
-modal level; expected-score error is reported separately. Human vote targets
-are assessed with total variation distance where available.
+On the nine sources excluded from v0.2 fitting, accuracy improves from
+615/900 (68.33%) to 670/900 (74.44%) against the base
+(paired interval +3.67 to +8.56 points). This does not establish general
+unseen-domain reliability. GoEmotions remains weak at 27/100.
+
+![Accuracy by source](../results/cuda-v0.2/figures/accuracy.png)
+
+![Calibration and score quality](../results/cuda-v0.2/figures/calibration.png)
+
+The [full report](../results/cuda-v0.2/REPORT.md) retains every measured regression,
+denominators, intervals and per-source results. The
+[machine-readable evidence](../results/cuda-v0.2/summary.json) also includes
+uncalibrated old/new comparisons. Score accuracy uses the modal level;
+expected-score error and distance to human vote targets are reported separately.
 
 ## CUDA latency and memory
 
 | GPU | Mixed median / p95 | Sampled inference allocation | Model initialization |
 |---|---:|---:|---:|
-| RTX PRO 6000 Blackwell | 80.1 / 604.6 ms | 8.47 GiB | 1.24 s |
-| RTX 4090 | 107.0 / 757.2 ms | 8.27 GiB | 9.09 s |
+| RTX PRO 6000 | 81.1 / 612.3 ms | 8.47 GiB | 1.17 s |
+| RTX 4090 | 107.5 / 755.3 ms | 8.27 GiB | 9.11 s |
 
-![Latency curves](../results/cuda-v0.1/figures/latency.png)
+| GPU | Old / new mixed median | Old / new mixed p95 | Short SDK median / p95, new |
+|---|---:|---:|---:|
+| 6000 | 81.50 / 81.12 ms | 613.75 / 612.26 ms | 51.0 / 58.0 ms |
+| 4090 | 107.17 / 107.48 ms | 755.57 / 755.29 ms | 70.5 / 73.8 ms |
 
-![Hardware measurements](../results/cuda-v0.1/figures/hardware.png)
+![Latency curves](../results/cuda-v0.2/figures/latency.png)
 
-Short localhost SDK requests measured 51.3 ms median / 53.4 ms p95 on the
-6000 and 70.7 / 75.6 ms on the 4090 (30 requests after three warmups).
+![Hardware measurements](../results/cuda-v0.2/figures/hardware.png)
 
-The mixed workload uses 300 fixed records (20/source), three sequential repeats,
-and ten warmups. Synthetic curves have ten measured repeats per case. Request
-wall time includes tokenization, GPU memory checks and all candidate passes;
-loading is separate. Model initialization excludes artifact checksum hashing.
-The CPU is an Intel Core i9-14900K; CUDA is 13.0.88 and driver 610.43.02.
-Recorded power limits are 450 W (6000) and 480 W (4090).
+The mixed workload uses 300 fixed records, 20 per source, repeated three times
+after ten warmups. Synthetic curves use ten measured repeats per case. Short
+HTTP timings use 30 localhost SDK requests after three warmups. Request wall
+time includes tokenization, GPU memory checks and all candidate passes. Loading
+is separate; model initialization excludes artifact checksum hashing.
 
-Memory is the device allocation increase over the pre-load baseline, sampled
-every 100 ms with a 16,384-token context and Q8 KV cache. A brief peak can be
-missed; the figures are not process-isolated continuous peaks. Native host RSS
-was sampled only after readiness, and OS filesystem cache was uncontrolled.
-These are CUDA measurements, not evidence for a 24 GB unified-memory Mac.
+The RTX PRO 6000 retained six running production services during inference;
+the RTX 4090 retained one unrelated GPU process. Old and new adapters used the
+same source, native executable and workload, with sequential runs. Other
+workload activity and filesystem cache were uncontrolled. Small timing changes
+are not evidence of a speedup. Hardware was an Intel Core i9-14900K, CUDA
+13.0.88 and driver 610.43.02, with power limits of 450 W (6000) and 480 W (4090).
+
+Memory is the increase in device allocation over the pre-load baseline,
+sampled every 100 ms with a 16,384-token context and Q8 KV cache. A brief peak
+can be missed, and the measurements are not isolated to one process. Host RSS
+was sampled only after readiness, so it does not establish a host load-time
+peak. CUDA memory figures do not establish feasibility on a 24 GB Mac.
 
 ## Cross-GPU agreement
 
-The RTX 4090 scores **73.73% (1,106/1,500)** versus **68.00% (1,020/1,500)**
-for unchanged Bonsai on the same fresh inputs. Shingi agrees across GPUs on
-**1,496/1,500 decisions (99.73%)**; mean probability TVD is **0.00372**.
-The unchanged-base agreement is 99.47%, with mean TVD 0.00515. Both pass the
-predeclared 99% / 0.01 thresholds.
+The RTX 4090 scores **1,125/1,500 (75.00%)** versus **1,004/1,500 (66.93%)**
+for unchanged Bonsai. Shingi agrees across GPUs on
+**1496/1,500 decisions (99.73%)**, with mean probability TVD **0.00280**.
+The base agrees on 1493/1,500 (99.53%), with mean TVD 0.00485.
+Both pass the predeclared 99% agreement and 0.01 mean-TVD thresholds.
 
-This is not exact numerical equivalence. Six requests per model select a
+This is not exact numerical equivalence. Three requests per model select a
 different intermediate chunk winner and therefore a different final comparison
-prompt. All static prompts and candidate IDs match, and each adaptive path was
-independently verified by replay. Shingi's maximum individual probability TVD is
-**0.57183**, on a 77-choice Banking77 request. Small hardware-dependent logit
-changes can become large probability shifts in the approximate multi-pass
-method. The runtime and original thresholds were unchanged by this analysis.
+prompt. All static prompts and candidate token IDs match, and every adaptive
+path was checked by replay. The new adapter's maximum individual TVD is
+**0.34677**, on a 77-choice Banking77 request. Small hardware-dependent
+logit changes can produce large probability shifts in this approximate method.
 
 Both cards pass 12/12 synthetic context probes and all live SDK checks,
-including 52, 53, and 255 choices, map reordering, and explicit oversized-input
-errors. Raw input-order flips are 28/200 for the adapter on each card; canonical
-map reordering has zero flips on each.
+including 52, 53 and 255 choices, map reordering and explicit oversized-input
+errors. Raw input-order changes flip 14/200 new-adapter answers on each card.
+Canonical map reordering has zero flips on both cards; this is an interface
+property, not learned model invariance.
 
 ## Limitations
 
@@ -206,25 +241,26 @@ Source samples contain only 100 records each, and the aggregate gives every
 source equal weight. Order sorting does not remove label or wording sensitivity.
 The synthetic context tests check simple planted-fact retrieval, not real-document
 comprehension. More than 52 choices use an approximate probability composition.
-Images and screenshots are unsupported. No M3/M4 Mac performance, concurrency
+Images, audio and video are unsupported. No M3/M4 Mac performance, concurrency
 throughput, hosted Jev comparison, or generation-token speed is claimed.
 
 ## Files, identity and license
 
-- `adapter.gguf`: SHA-256 `d7ea6bf61f6ef5fe26bd82ca1ece4686c20d29a1937834a18239629bb6db31d4`.
+- `adapter.gguf`: SHA-256 `6f4c2b7434b5ef6e0bb83b6f9c196de00c850a79b9380175e06a1df2ae1b7dd2`.
 - Required base: `Ternary-Bonsai-2-27B-PQ2_0.gguf`, revision `6ed5e12bf84b7a63069882c91dd9e9218647d17b`, SHA-256 `3907dc1658db1f78a9826bf8d5bcb8dc65db0d466388937af57f2294fae62ec1`.
 - Native runtime: PrismML-Eng/llama.cpp revision `d8f26eec76da6d09bb708bcba51ef64b8cd868a3`.
 - `calibration.json` binds calibration to both weight hashes and the readout version.
 - `protocol.json` records the pre-test freeze; `manifest.json` lists every bundled file and checksum.
 - `evaluation/` contains aggregate metrics and data identifiers; `figures/` contains PNG and SVG charts. Raw datasets and prompts are not redistributed.
 
-The **adapter and Shingi-authored model documentation are CC BY-SA 4.0**. The
-software and unchanged Bonsai base are Apache-2.0; the Prism runtime is MIT.
-Third-party materials retain their stated licenses. Training sources have mixed
-terms, including ARC CC BY-SA 4.0 and BoolQ CC BY-SA 3.0. CC BY-SA is a conservative
-choice for this adapter, not an assertion that all trained models automatically
-inherit dataset licenses. The [source review](https://github.com/kortexa-ai/shingi/blob/main/docs/release.md),
-[NOTICE](../NOTICE), and `licenses/` preserve attribution and permissions.
+The **v0.2 adapter, Shingi-authored documentation and software are Apache-2.0**.
+The unchanged Bonsai base is Apache-2.0 and the Prism runtime is MIT. Third-party
+materials retain their own terms. The six fitting sources use CC BY 4.0,
+CC BY 3.0, MIT or CC0; their attribution and pinned license documents are retained.
+Evaluation-only datasets have separate terms. The historical v0.1 weights
+remain CC BY-SA 4.0. See the
+[source review](https://github.com/kortexa-ai/shingi/blob/main/docs/release.md),
+[NOTICE](../NOTICE) and bundled `licenses/`.
 
 Bonsai is by Prism ML, based on Qwen by Alibaba Cloud. JevBench transformations
 are by Praveenrajus / uspraveen and retain the underlying sources' attribution.

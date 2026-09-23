@@ -1,0 +1,138 @@
+{
+  "date": "2026-09-23",
+  "evaluation_summary_sha256": "942b8fdb89f6527737ef358f198d9d58bfe1bf343e4b0158242bcb4281ae4aac",
+  "measurement_source_revision": "24802807da68ad2e0d8969c5b5b8a390d6f4ae2f",
+  "native_executable_sha256": "36c772aa48526990781ef4a5e1a5333f73ef8c48557a76ddbf39af00d7b7efc5",
+  "prism_repository": "https://github.com/PrismML-Eng/llama.cpp",
+  "prism_revision": "d8f26eec76da6d09bb708bcba51ef64b8cd868a3",
+  "independent_installation": {
+    "public_source_build": true,
+    "cuda_toolkit": "13.0.88",
+    "cuda_architectures": [
+      89,
+      120
+    ],
+    "runtime_imports_private_projects": false,
+    "native_shared_libraries": "Independent Prism build, CUDA and system libraries only."
+  },
+  "cpu_tests": {
+    "passed": 71,
+    "linux_python": "3.14.3",
+    "macos_python": "3.12.13",
+    "tested_source_revision": "483ba64d84ac6b511d1a1eb6655335542b668e0e",
+    "uncommitted_changes_at_macos_test": "README and model-card text only.",
+    "warnings": "One upstream Starlette/AnyIO deprecation warning on each platform."
+  },
+  "live_sdk": {
+    "6000": {
+      "passed": true,
+      "exact_key_choices": [
+        52,
+        53,
+        255
+      ],
+      "invalid_choice_count_status": 422,
+      "oversized_context_status": 422,
+      "canonical_map_reorder_identical": true
+    },
+    "4090": {
+      "passed": true,
+      "exact_key_choices": [
+        52,
+        53,
+        255
+      ],
+      "invalid_choice_count_status": 422,
+      "oversized_context_status": 422,
+      "canonical_map_reorder_identical": true
+    }
+  },
+  "context": {
+    "6000": {
+      "correct": 12,
+      "n": 12
+    },
+    "4090": {
+      "correct": 12,
+      "n": 12
+    }
+  },
+  "cross_gpu_gates": {
+    "argmax_agreement_minimum": 0.99,
+    "mean_tvd_maximum": 0.01,
+    "passed": true,
+    "method": "Replay each adaptive path; require identical static prompts and candidate token IDs; compare saved final probabilities."
+  },
+  "source_audit": {
+    "runtime_private_dependency_matches": 0,
+    "tracked_model_files": 0,
+    "gitleaks_review": "Reviewed artifact-digest false positives against actual retained files; no credentials found. No broad allowlist.",
+    "incremental_scanned_history": "d5a6be2..483ba64; prior history reviewed during v0.1 and earlier v0.2 implementation.",
+    "false_positive_artifact_keys": [
+      "artifacts/apache-v2/data/tokenized.jsonl",
+      "artifacts/apache-v2/data/tokenized-manifest.json",
+      "6000/api",
+      "4090/api"
+    ],
+    "historical_machine_paths": "Retained as research provenance; not runtime dependencies."
+  },
+  "operator_blocks": {
+    "block-calibration-6000-01": {
+      "sha256": "2e83aa99e9d791a6bf9131997136414e712e76962542f26397b403408d2e9b38",
+      "stopped_count": 0,
+      "restored_count": 0,
+      "all_health_checks_passed": true,
+      "child_exit": 0,
+      "elapsed_seconds": 186.25666737556458
+    },
+    "block-test-4090-01": {
+      "sha256": "5e3f7c3b37dd5fa6b58aa66f229672a0741a73b289e8f7e704e135415ef08c9b",
+      "stopped_count": 3,
+      "restored_count": 3,
+      "all_health_checks_passed": true,
+      "child_exit": 0,
+      "elapsed_seconds": 2446.662216901779
+    },
+    "block-test-6000-01": {
+      "sha256": "8d5fa2f68696cafe3c20d0c2686f23e6381e5e6f818c0ce5c138877943e7b180",
+      "stopped_count": 0,
+      "restored_count": 0,
+      "all_health_checks_passed": true,
+      "child_exit": 0,
+      "elapsed_seconds": 1910.8251163959503
+    },
+    "block-training-01": {
+      "sha256": "624d75d2231a07aeea84715876fd8a972d11a1f205df5a07fab53f015d65c7d7",
+      "stopped_count": 6,
+      "restored_count": 6,
+      "all_health_checks_passed": true,
+      "child_exit": 0,
+      "elapsed_seconds": 10696.002606391907
+    }
+  },
+  "independent_final_health": {
+    "record_sha256": "5c10e30652e4b5dddda1c949590904f80ae3ce045a7448ec086b80dd0d7b267f",
+    "healthy_services": 9,
+    "all_http_statuses": 200,
+    "unrelated_gpu_process_id_preserved": 1204446
+  },
+  "measurement_conditions": {
+    "6000": "Six production services retained during native calibration and all test inference. All six restored after training.",
+    "4090": "Three selected production services stopped for the test block, then restored and health-checked; one unrelated GPU process remained throughout.",
+    "limitations": "Other workload activity and OS filesystem cache uncontrolled. Device allocation sampled every 100 ms, not continuously or in process isolation."
+  },
+  "figures_visually_inspected": [
+    "accuracy",
+    "calibration",
+    "latency",
+    "hardware"
+  ],
+  "distribution": {
+    "adapter_license": "apache-2.0",
+    "code_license": "apache-2.0",
+    "legacy_adapter_license_unchanged": "cc-by-sa-4.0",
+    "base_included": false,
+    "raw_datasets_included": false,
+    "publication_unit": "GGUF adapter, calibration, protocol, model card, notices/licenses, aggregate evidence, training provenance and figures."
+  }
+}
