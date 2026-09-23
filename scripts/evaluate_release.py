@@ -86,6 +86,8 @@ def main():
     p.add_argument('--historical-comparator', action='store_true')
     p.add_argument('--output', type=Path, required=True)
     a = p.parse_args()
+    if a.historical_comparator and a.phase != 'test':
+        p.error('--historical-comparator is evaluation-only')
     require_release_environment()
     if subprocess.check_output(['git', 'status', '--porcelain'], text=True).strip():
         raise RuntimeError('commit source before evaluation')
@@ -136,7 +138,10 @@ def main():
     (a.output / 'receipt.json').write_text(json.dumps(receipt, indent=2) + '\n')
     summary = {'receipt': receipt, 'models': {}}
     development = {}
-    for name, adapter in (('base', None), ('adapter', a.adapter)):
+    # The new release phase measures its matched base. The historical pass
+    # needs only the old adapter with its own frozen calibration.
+    models = (('adapter', a.adapter),) if a.historical_comparator else (('base', None), ('adapter', a.adapter))
+    for name, adapter in models:
         dest = a.output / name; dest.mkdir()
         backend = NativeReadout(a.executable, a.model, 16384, adapter=adapter)
         try:
