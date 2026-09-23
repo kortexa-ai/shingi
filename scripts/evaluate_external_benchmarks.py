@@ -13,9 +13,87 @@ from evaluate_release import infer
 from prepare_benchmark import read_jsonl
 from shingi.backend import NativeReadout
 from shingi.decision import DecisionEngine
+from shingi.decision import Calibration
 from shingi.external_benchmarks import digest, suite_report
 from shingi.gpu import gpu_snapshot
 from shingi.release import artifact_identity, load_calibration, RELEASE_MODEL_ID, require_release_environment, sha256
+
+
+def audit(data, run):
+    """Replay saved logits, verify exact prompts/answers, and retain raw prompts."""
+    import hashlib
+    import math
+    manifest = json.loads((data / "manifest.json").read_text())
+    summary = json.loads((run / "summary.json").read_text())
+    receipt = summary["receipt"]
+    if (sha256(data / "manifest.json") != receipt["data_manifest_sha256"]
+            or sha256(data / "records.jsonl") != manifest["records_sha256"]):
+        raise ValueError("audit input manifest mismatch")
+    rows = read_jsonl(data / "records.jsonl")
+    pairs = [r for r in rows if r["id"] in set(manifest["order_ids"])]
+    reversed_rows = copy.deepcopy(pairs)
+    for r in reversed_rows:
+        r["question"]["criteria"] = dict(reversed(list(r["question"]["criteria"].items())))
+    variants = [(suite, [r for r in rows if r["suite"] == suite], True)
+                for suite in ("decisionbench", "jevbench", "this-that")]
+    variants += [("canonical-reverse", reversed_rows, True), ("input-order", pairs, False),
+                 ("input-order-reverse", reversed_rows, False)]
+    count, failures, traces_count, max_tokens = 0, [], 0, 0
+    token_ids = {}
+    output = run / "verified-prompts.jsonl"
+    with output.open("x") as stream:
+        for variant, records, canonical in variants:
+            path = run / (variant+".jsonl")
+            if sha256(path) != summary["artifact_sha256"][path.name]:
+                raise ValueError("prediction artifact hash mismatch")
+            predictions = read_jsonl(path)
+            if [r["id"] for r in records] != [p["id"] for p in predictions]:
+                raise ValueError("prediction inventory/order mismatch")
+            for row, pred in zip(records, predictions):
+                if row["input_sha256"] != pred["input_sha256"]:
+                    raise ValueError("prediction input hash mismatch")
+                if pred.get("error"):
+                    failures.append({"variant": variant, "id": row["id"], "error": pred["error"]})
+                    continue
+
+                class Replay:
+                    index = 0
+
+                    def infer(self, prompt, labels):
+                        nonlocal traces_count, max_tokens
+                        trace = pred["traces"][self.index]
+                        h = hashlib.sha256(prompt.encode()).hexdigest()
+                        if h != trace["prompt_sha256"]:
+                            raise ValueError("reconstructed prompt mismatch")
+                        if (len(labels) != len(trace["logits"]) or len(labels) != len(trace["candidate_ids"])
+                                or len(set(trace["candidate_ids"])) != len(labels)
+                                or not all(math.isfinite(x) for x in trace["logits"])):
+                            raise ValueError("incomplete candidate logits")
+                        for label, candidate in zip(labels, trace["candidate_ids"]):
+                            if label in token_ids and token_ids[label] != candidate:
+                                raise ValueError("candidate token identity changed")
+                            token_ids[label] = candidate
+                        stream.write(json.dumps({"variant": variant, "id": row["id"], "step": self.index,
+                            "prompt": prompt, "letters": labels, **trace}, ensure_ascii=False)+"\n")
+                        self.index += 1
+                        traces_count += 1
+                        max_tokens = max(max_tokens, trace["input_tokens"])
+                        return trace
+
+                replay = Replay()
+                engine = DecisionEngine(replay, Calibration(**receipt["calibration"]), canonical_choices=canonical)
+                answer, _ = engine.answer(row["state"], row["question"])
+                if answer != pred["answer"] or replay.index != len(pred["traces"]):
+                    raise ValueError("saved answer does not match frozen logit replay")
+                count += 1
+    result = {"source_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
+              "main_questions": len(rows), "order_diagnostic_predictions": 3*len(pairs),
+              "replayed_answers": count, "verified_traces": traces_count, "failures": failures,
+              "candidate_token_ids": token_ids, "maximum_input_tokens": max_tokens,
+              "raw_prompts_sha256": sha256(output), "summary_sha256": sha256(run / "summary.json"),
+              "manifest_sha256": sha256(data / "manifest.json")}
+    (run / "audit.json").write_text(json.dumps(result, indent=2)+"\n")
+    return result
 
 
 def order_summary(rows, first, second):
