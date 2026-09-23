@@ -144,3 +144,34 @@ def test_comparison_reports_probability_loss_even_when_accuracy_improves():
     current['overall']['n'] = 99
     with pytest.raises(ValueError, match='denominators differ'):
         metric_changes(previous, current)
+
+
+def test_legacy_weights_keep_their_identity_after_a_new_release(tmp_path, monkeypatch):
+    import shingi.release as release
+    base, old, new = [tmp_path/name for name in ('base', 'old', 'new')]
+    for path in (base, old, new): path.write_text(path.name)
+    monkeypatch.setattr(release, 'BASE_SHA256', sha256(base))
+    monkeypatch.setattr(release, 'LEGACY_ADAPTER_SHA256', sha256(old))
+    monkeypatch.setattr(release, 'ADAPTER_SHA256', sha256(new))
+    monkeypatch.setattr(release, 'RELEASE_MODEL_ID', 'shingi-bonsai-2-27b-v0.2')
+    assert release.artifact_identity(base, old)['model'] == 'shingi-bonsai-2-27b-v0.1'
+    assert release.artifact_identity(base, new)['model'] == 'shingi-bonsai-2-27b-v0.2'
+
+
+def test_bundle_cannot_relicense_the_legacy_adapter_as_apache(tmp_path, monkeypatch):
+    import sys
+    from pathlib import Path
+    from types import SimpleNamespace
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
+    import package_release as package
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.setattr(package.subprocess, 'check_output', lambda *args, **kwargs: '')
+    monkeypatch.setattr(package, 'sha256', lambda path: package.LEGACY_ADAPTER_SHA256)
+    monkeypatch.setattr(package, 'ADAPTER_SHA256', package.LEGACY_ADAPTER_SHA256)
+    (tmp_path/'release').mkdir(); (tmp_path/'report').mkdir()
+    (tmp_path/'report/summary.json').write_text('{}')
+    (tmp_path/'release/manifest.json').write_text(json.dumps({'profile':'apache-v2',
+        'adapter_sha256':package.LEGACY_ADAPTER_SHA256, 'train_sources':list(package.APACHE_SOURCES)}))
+    with pytest.raises(ValueError, match='cannot relabel the legacy adapter'):
+        package.assemble(SimpleNamespace(adapter=tmp_path/'old.gguf', report=tmp_path/'report', output=tmp_path/'bundle'))
+    assert not (tmp_path/'bundle').exists()
