@@ -1,9 +1,10 @@
-# CUDA v0.1 publication preparation
+# CUDA v0.2 release preparation
 
 The publication unit is a native GGUF decision adapter plus its calibration,
 model card, checksums, and attribution. Users obtain the unchanged Bonsai base
-separately. Source code is Apache-2.0. The final bundle must state its weight
-license explicitly; the software license does not override dataset terms.
+separately. Source code and the freshly trained v0.2 adapter are Apache-2.0.
+The historical v0.1 adapter retains CC BY-SA 4.0. The software license does
+not override upstream model or dataset terms.
 
 ## License and provenance review
 
@@ -21,18 +22,16 @@ model weights. Shingi includes no OpenJev weights. The
 is MIT licensed. Its permission notice is retained in Shingi's `NOTICE`.
 
 JevBench is a collection with mixed source licenses. The exact transformed data
-revision is `002ad22de8db2df5e0eb898b3da8072dbd4af4de`. The eight training sources
-were checked against their primary dataset cards on 2026-09-22:
+revision is `002ad22de8db2df5e0eb898b3da8072dbd4af4de`. The six v0.2 fitting
+sources were checked against their primary dataset cards on 2026-09-23:
 
 | Source | Publisher's stated license | Primary source |
 |---|---|---|
 | Banking77 | CC BY 4.0 | [PolyAI](https://huggingface.co/datasets/PolyAI/banking77) |
 | CLINC150 | CC BY 3.0 | [CLINC](https://huggingface.co/datasets/clinc/clinc_oos) |
 | MMLU | MIT | [CAIS](https://huggingface.co/datasets/cais/mmlu) |
-| ARC Challenge | CC BY-SA 4.0 | [Allen AI](https://huggingface.co/datasets/allenai/ai2_arc) |
 | HelpSteer2 | CC BY 4.0 | [NVIDIA](https://huggingface.co/datasets/nvidia/HelpSteer2) |
 | Measuring Hate Speech | CC BY 4.0 | [UC Berkeley D-Lab](https://huggingface.co/datasets/ucberkeley-dlab/measuring-hate-speech) |
-| BoolQ | CC BY-SA 3.0 | [Google](https://huggingface.co/datasets/google/boolq) |
 | Civil Comments | CC0 1.0 | [Google](https://huggingface.co/datasets/google/civil_comments) |
 
 These cards establish stated source terms, not an assertion that a mirror owns
@@ -40,22 +39,21 @@ all underlying rights. The benchmark transformations and Shingi's adaptation
 are attributed in `NOTICE`. No raw dataset, prompt corpus, or human labels are
 redistributed in the model bundle.
 
-ARC and BoolQ have share-alike terms. The first adapter's proposed packaging uses
-CC BY-SA 4.0 for the separate adapter, while retaining Apache-2.0 for the software
-and unchanged base. This is a conservative release choice, not a claim that
-training automatically subjects all resulting weights to share-alike. CC BY-SA
-3.0 permits adaptations under a later version with the same license elements;
-see [section 4(b)](https://creativecommons.org/licenses/by-sa/3.0/legalcode.en).
-Creative Commons discusses the conditional application of license terms to AI
-training in its [AI FAQ](https://creativecommons.org/faq/#artificial-intelligence-and-cc-licenses).
+The first adapter also trained on ARC Challenge (CC BY-SA 4.0) and BoolQ
+(CC BY-SA 3.0). Its preserved CC BY-SA 4.0 package is a conservative release
+choice, not a claim that all training automatically transfers dataset licenses
+to weights. The v0.2 adapter starts from fresh zero-output LoRA weights on the
+unchanged base, with no old adapter, optimizer state, or fitted calibration.
+ARC and BoolQ are excluded from training, checkpoint selection and calibration.
+Changing the recipe does not relicense the historical weights.
 
-Seven additional sources are evaluation-only: LEDGAR, GoEmotions, MNLI, SST-5,
-FEVER Evidence, SMS Spam, and ChaosNLI. Their terms vary. In particular, the
+Nine sources are evaluation-only: ARC Challenge, BoolQ, LEDGAR, GoEmotions,
+MNLI, SST-5, FEVER Evidence, SMS Spam, and ChaosNLI. Their terms vary. In particular, the
 JevBench manifest records research-use or unspecified terms for some sources;
 FEVER's primary card also lists GPL-3.0 alongside CC BY-SA 3.0, and the SMS mirror
 labels its license unknown. The bundle includes aggregate measurements and data
-identifiers, not those datasets or source text. These sources are excluded from the current candidate's adapter training,
-development selection, and calibration. Reusers who
+identifiers, not those datasets or source text. These sources are excluded from
+v0.2 training, development selection, and calibration. Reusers who
 redownload datasets must follow their respective source terms.
 
 ## Measurement contract
@@ -107,6 +105,23 @@ both raw and calibrated probabilities and retains per-source and latency
 regressions. Calibration differences are part of the packaged-model comparison,
 not evidence of a weight-only change.
 
+The v0.2 run selected update 559. Its immutable training and native-export
+evidence is in [`results/training-v2/REPORT.md`](../results/training-v2/REPORT.md).
+After native calibration has produced `development-01/protocol.json`, prepare
+the frozen test with:
+
+```bash
+uv run --locked python scripts/prepare_release_data.py \
+  --baseline artifacts/benchmark-v1 \
+  --training-data artifacts/apache-v2/data \
+  --prior-data artifacts/decision-v2 \
+  --prior-data artifacts/release-v0.1/data \
+  --seed shingi-apache-v02-release-20260923 \
+  --adapter artifacts/apache-v2/run-01/adapter-0559.gguf \
+  --protocol artifacts/apache-v2/development-01/protocol.json \
+  --output artifacts/apache-v2/release-data
+```
+
 ### Locked evaluation
 
 Freeze adapter, decision prompt, choice-order method and calibration before
@@ -136,11 +151,10 @@ history for credentials, bulk data, model weights, and private runtime imports;
 and verify restoration of every borrowed production service.
 
 The source/history audit is recorded in
-[`results/cuda-v0.1/validation.json`](../results/cuda-v0.1/validation.json).
-Gitleaks matches on the training tokenization-manifest digest and the two API
-result digests were checked against the actual artifact files. They are
-SHA-256 records, not credentials. The redacted scan evidence is retained
-outside the distribution; no broad secret-scanner allowlist is used.
+[`results/cuda-v0.2/validation.json`](../results/cuda-v0.2/validation.json).
+Check any secret-scanner findings against the actual artifacts; reproducibility
+hashes can trigger detectors. Keep redacted scan evidence outside the
+distribution and do not add broad allowlists.
 
 Historical reports contain original machine paths and GPU identities as
 provenance. Those records are not dependencies of the public runtime. Product
@@ -149,29 +163,35 @@ private hosts, fixed GPU identities, and sibling repositories.
 
 ## Reproduce the release evidence
 
-Use the preserved `data`, `quality-6000-01`, `quality-4090-01`,
+Use the preserved `release-data`, `quality-6000-01`, `quality-4090-01`,
 `speed-6000-01`, `speed-4090-01`, `api-6000-01`, and `api-4090-01`
-directories beneath an artifact root. `data` contains the frozen manifest and
+directories beneath `artifacts/apache-v2`. `release-data` contains the frozen manifest and
 inputs; raw prediction files include every candidate's logits and token IDs.
 They are retained for audit and are not included in the public bundle.
 
 ```bash
 uv sync --locked --extra reporting
 uv run --locked --extra reporting python scripts/package_release.py report \
-  --data artifacts/release-v0.1/data \
-  --evaluation-6000 artifacts/release-v0.1/quality-6000-01 \
-  --evaluation-4090 artifacts/release-v0.1/quality-4090-01 \
-  --speed-6000 artifacts/release-v0.1/speed-6000-01 \
-  --speed-4090 artifacts/release-v0.1/speed-4090-01 \
-  --api-6000 artifacts/release-v0.1/api-6000-01 \
-  --api-4090 artifacts/release-v0.1/api-4090-01 \
-  --output artifacts/release-v0.1/report
+  --data artifacts/apache-v2/release-data \
+  --protocol artifacts/apache-v2/development-01/protocol.json \
+  --evaluation-6000 artifacts/apache-v2/quality-6000-01 \
+  --evaluation-4090 artifacts/apache-v2/quality-4090-01 \
+  --speed-6000 artifacts/apache-v2/speed-6000-01 \
+  --speed-4090 artifacts/apache-v2/speed-4090-01 \
+  --api-6000 artifacts/apache-v2/api-6000-01 \
+  --api-4090 artifacts/apache-v2/api-4090-01 \
+  --previous-evaluation-6000 artifacts/apache-v2/previous-quality-6000-01 \
+  --previous-evaluation-4090 artifacts/apache-v2/previous-quality-4090-01 \
+  --previous-speed-6000 artifacts/apache-v2/previous-speed-6000-01 \
+  --previous-speed-4090 artifacts/apache-v2/previous-speed-4090-01 \
+  --previous-protocol artifacts/apache-v2/previous-protocol.json \
+  --output artifacts/apache-v2/report
 uv run --locked --extra reporting python scripts/package_release.py bundle \
-  --adapter artifacts/training-v1/run-02/adapter-0128.gguf \
-  --report artifacts/release-v0.1/report \
-  --output artifacts/release-v0.1/hf-bundle
+  --adapter artifacts/apache-v2/run-01/adapter-0559.gguf \
+  --report artifacts/apache-v2/report \
+  --output artifacts/apache-v2/hf-bundle
 uv run --locked python scripts/package_release.py verify \
-  artifacts/release-v0.1/hf-bundle
+  artifacts/apache-v2/hf-bundle
 ```
 
 Use new output directories for each attempt. Report generation verifies the
@@ -189,9 +209,13 @@ protocol, model card, notices/licenses, aggregate evidence, and figures. Its
 manifest binds each file by byte count and SHA-256. Verification rejects missing,
 extra, corrupted, and externally linked files.
 
+The v0.1 evidence and bundle remain separate. To reproduce that historical
+package, use its source revision `262a004c849ffcd59bbe7dc3c0455c2de5023e8b`
+and preserved artifacts; current release constants identify the new adapter.
+
 ## Publication procedure
 
-The intended Hub repository is `kortexa-ai/shingi-bonsai-2-27b-v0.1`. Review the
+The intended Hub repository is `kortexa-ai/shingi-bonsai-2-27b-v0.2`. Review the
 verified bundle's README and manifest, then upload exactly that directory. Do
 not upload the surrounding artifact root. The unchanged base is obtained from
 Prism's pinned Hub revision separately. The source repository is

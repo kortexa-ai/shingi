@@ -1,6 +1,6 @@
 # API contract and CUDA v1 limits
 
-Reference date: 2026-09-22.
+Reference date: 2026-09-23.
 
 The interface is `POST /v1/systemone`, with `model`, `state`, and a map of named `questions`. It returns the actual Shingi model ID, matching `answers`, and token `usage`. Question IDs are routing keys; the model does not see them. All questions see the same state and are evaluated independently. The initial native backend serializes inference; it makes no claim of Jev's parallel latency.
 
@@ -12,11 +12,11 @@ The interface is `POST /v1/systemone`, with `model`, `state`, and a map of named
 
 State and instructions accept strings, objects, and arrays. The API rejects malformed requests with HTTP 422. Native backend failure returns 503. Output probabilities retain full floating-point precision and sum to one within floating-point tolerance. `output_tokens` is zero: the native backend reads logits without generating a token.
 
-`shingi`, `shingi-latest`, and the active model ID select the local model. The selected adapter is `shingi-bonsai-2-27b-v0.1`; the unchanged base is `shingi-bonsai-2-27b-baseline`. A custom weight pair reports `shingi-custom`. A different explicit model ID is rejected. For client migration, `jev-latest` and `openjev` are accepted aliases too; the response always names Shingi. This does not route to or impersonate either upstream provider.
+`shingi`, `shingi-latest`, and the active model ID select the local model. The selected adapter is `shingi-bonsai-2-27b-v0.2`; the unchanged base is `shingi-bonsai-2-27b-baseline`. A custom weight pair reports `shingi-custom`. A different explicit model ID is rejected. For client migration, `jev-latest` and `openjev` are accepted aliases too; the response always names Shingi. This does not route to or impersonate either upstream provider.
 
 ## Readout and confidence
 
-CUDA v0.1 sorts Choice keys lexicographically before assigning candidate letters
+CUDA v0.2 sorts Choice keys lexicographically before assigning candidate letters
 and chunks. Reordering the same JSON map therefore gives an identical prompt.
 Score criteria retain their ordinal list order; Noul remains yes/no. This is an
 interface guarantee, not learned resistance to all prompt or label changes.
@@ -30,7 +30,7 @@ For more than 52 options, Shingi uses the same mathematical approximation as Ope
 
 For K choices, confidence is `(K * max_probability - 1) / (K - 1)`, with confidence 1 for a singleton. Score confidence measures the mean distance from the modal level, normalized by a uniform distribution's mean distance from its center, then clipped below at zero. These follow the public TypeSafe adapter formulas. Confidence is a distribution statistic, not an empirical probability of correctness.
 
-Without `--calibration`, either weight configuration uses temperature 1 with no Noul bias adjustment. The model ID identifies the weights; `/v1/version` identifies the active calibration. Release measurements require the supplied calibration file. OpenJev's fitted calibration constants do not transfer automatically to Bonsai. The first investigation fitted calibration on 350 separate validation records. Pass a JSON file with `--calibration`; `/v1/version` reports the active parameters and file hash. Calibration must match both the base and adapter hashes. The trained release uses its own 240-record calibration, with temperature 1.25, additional Noul temperature divisor 1.2, and Noul bias -1.0; pass `--adapter` with `release/calibration.json`. See the [release measurements and tradeoffs](../results/cuda-v0.1/REPORT.md).
+Without `--calibration`, either weight configuration uses temperature 1 with no Noul bias adjustment. The model ID identifies the weights; `/v1/version` identifies the active calibration. Release measurements require the supplied calibration file. OpenJev's fitted calibration constants do not transfer automatically to Bonsai. The first investigation fitted calibration on 350 separate validation records. Pass a JSON file with `--calibration`; `/v1/version` reports the active parameters and file hash. Calibration must match both the base and adapter hashes. The v0.2 adapter uses a fresh 180-record calibration from the same six permitted sources as its training mixture. Its parameters and provenance are in `release/calibration.json`; pass that file with the matching `--adapter`. The historical v0.1 adapter keeps its separate 240-record calibration. See the [release measurements and tradeoffs](../results/cuda-v0.2/REPORT.md).
 
 ## Explicit limits
 

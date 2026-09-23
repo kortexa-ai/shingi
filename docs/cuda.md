@@ -30,22 +30,22 @@ hf download prism-ml/Ternary-Bonsai-2-27B-gguf \
 
 The Shingi release bundle supplies `adapter.gguf`, `calibration.json`, and its
 manifest. The base is downloaded separately. Put that bundle in
-`artifacts/shingi-v0.1`, then select a GPU and start the local API:
+`artifacts/shingi-v0.2`, then select a GPU and start the local API:
 
 ```bash
 nvidia-smi --query-gpu=name,uuid,memory.free --format=csv
 export CUDA_VISIBLE_DEVICES=GPU-YOUR-FULL-UUID
 uv run --locked shingi \
   --model artifacts/base/Ternary-Bonsai-2-27B-PQ2_0.gguf \
-  --adapter artifacts/shingi-v0.1/adapter.gguf \
-  --calibration artifacts/shingi-v0.1/calibration.json
+  --adapter artifacts/shingi-v0.2/adapter.gguf \
+  --calibration artifacts/shingi-v0.2/calibration.json
 ```
 
 Replace the UUID with one complete value printed by `nvidia-smi`. UUID selection
 avoids ambiguous device indices. The API listens on `127.0.0.1:8765` only. Model
 and adapter checksums are verified against calibration before loading. Omit
 both adapter and calibration to explore the uncalibrated base; its API identity
-will differ from Shingi v0.1. The repository's `release/calibration.json` is for
+will differ from Shingi v0.2. The repository's `release/calibration.json` is for
 the selected adapter only.
 
 ```bash
