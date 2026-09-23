@@ -71,5 +71,32 @@
     "sms_spam",
     "chaosnli"
   ],
-  "limitations": "Publisher-stated source terms, not an assertion of ownership of every underlying right. No raw dataset redistribution."
+  "limitations": "Publisher-stated source terms, not an assertion of ownership of every underlying right. No raw dataset redistribution.",
+  "license_documents": {
+    "datasets-CC-BY-4.0": {
+      "url": "https://creativecommons.org/licenses/by/4.0/legalcode.txt",
+      "sha256": "9ba9550ad48438d0836ddab3da480b3b69ffa0aac7b7878b5a0039e7ab429411",
+      "bytes": 18657
+    },
+    "datasets-CC-BY-3.0": {
+      "url": "https://creativecommons.org/licenses/by/3.0/legalcode.txt",
+      "sha256": "e6bc9e9c474700b708f568bac9e5a8a9bcb2b1dad53442f5ba449fcb848b8e76",
+      "bytes": 19467
+    },
+    "datasets-CC0-1.0": {
+      "url": "https://creativecommons.org/publicdomain/zero/1.0/legalcode.txt",
+      "sha256": "a2010f343487d3f7618affe54f789f5487602331c0a8d03f49e9a7c547cf0499",
+      "bytes": 7048
+    },
+    "MMLU-MIT": {
+      "url": "https://raw.githubusercontent.com/hendrycks/test/4450500f923c49f1fb1dd3d99108a0bd9717b660/LICENSE",
+      "sha256": "5d841b9eee8bf0d721359b79fbae956a8b426d3139bfefee32149c7d4f2a1a9c",
+      "bytes": 1070
+    },
+    "Apache-2.0": {
+      "url": "https://www.apache.org/licenses/LICENSE-2.0.txt",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    }
+  }
 }

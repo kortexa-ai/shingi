@@ -12,7 +12,8 @@ import urllib.request
 from evaluate_release import ordered_rows
 from prepare_benchmark import read_jsonl
 from shingi.decision import Calibration
-from shingi.release import sha256, BASE_SHA256, ADAPTER_SHA256, RELEASE_MODEL_ID
+from shingi.release import sha256, BASE_SHA256, ADAPTER_SHA256, RELEASE_MODEL_ID, LEGACY_ADAPTER_SHA256
+from prepare_training_data import APACHE_SOURCES
 from shingi.metrics import report as quality_report, probabilities
 from shingi.calibration import replay
 from summarize_training import paired
@@ -418,11 +419,16 @@ def assemble(a):
         raise ValueError('adapter checksum differs')
     report = read(a.report / 'summary.json')
     protocol = read('release/manifest.json')
+    apache = protocol.get('profile') == 'apache-v2'
+    if apache and (protocol['adapter_sha256'] == LEGACY_ADAPTER_SHA256
+                   or set(protocol['train_sources']) != set(APACHE_SOURCES)):
+        raise ValueError('cannot relabel the legacy adapter or use unaudited Apache fitting sources')
     if report['protocol'] != protocol:
         raise ValueError('report and packaged protocol differ')
     if read('release/calibration.json') != protocol['calibrations']['adapter']:
         raise ValueError('packaged calibration differs')
-    validation_path = Path('results/cuda-v0.1/validation.json')
+    evidence = 'cuda-'+RELEASE_MODEL_ID.rsplit('-', 1)[-1]
+    validation_path = Path('results')/evidence/'validation.json'
     if read(validation_path)['evaluation_summary_sha256'] != sha256(a.report / 'summary.json'):
         raise ValueError('publication audit belongs to a different report')
     a.output.mkdir(parents=True, exist_ok=False)
@@ -433,8 +439,8 @@ def assemble(a):
     # The checked-in card renders against repository evidence; the Hub bundle
     # carries those same figures and aggregate files beside the card.
     card = (a.output / 'README.md').read_text()
-    card = card.replace('(../results/cuda-v0.1/figures/', '(figures/')
-    card = card.replace('(../results/cuda-v0.1/', '(evaluation/')
+    card = card.replace('(../results/'+evidence+'/figures/', '(figures/')
+    card = card.replace('(../results/'+evidence+'/', '(evaluation/')
     card = card.replace('(../NOTICE)', '(NOTICE)')
     (a.output / 'README.md').write_text(card)
     shutil.copytree(a.report / 'figures', a.output / 'figures')
@@ -459,6 +465,16 @@ def assemble(a):
         'licenses/Prism-MIT': '94f29bbed6a22c35b992c5c6ebf0e7c92f13b836b90f36f461c9cf2f0f1d010d',
         'licenses/OpenJev-helper-Apache-2.0': 'cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30',
         'licenses/TypeSafe-MIT': '835f233f1d6ed84a9b9a351aba0689b47644a4137d6316911fc7957bde523b02'}
+    if apache:
+        source_audit = read('results/training-v2/provenance.json')
+        if set(source_audit['sources']) != set(APACHE_SOURCES): raise ValueError('source audit differs')
+        for name, record in source_audit['license_documents'].items():
+            target = 'LICENSE' if name == 'Apache-2.0' else 'licenses/'+name
+            licenses[target] = record['url']; license_hashes[target] = record['sha256']
+        if licenses['LICENSE'] != 'https://www.apache.org/licenses/LICENSE-2.0.txt':
+            raise ValueError('Apache adapter license document missing')
+        shutil.copyfile('results/training-v2/provenance.json', a.output/'training-provenance.json')
+        shutil.copyfile('results/training-v2/REPORT.md', a.output/'training-report.md')
     for name, url in licenses.items():
         path = a.output / name; path.parent.mkdir(parents=True, exist_ok=True)
         request = urllib.request.Request(url, headers={'User-Agent': 'Shingi-release/0.1 (+https://github.com/kortexa-ai/shingi)'})
@@ -466,7 +482,7 @@ def assemble(a):
         if hashlib.sha256(data).hexdigest() != license_hashes[name]:
             raise ValueError('upstream license changed: ' + name)
         path.write_bytes(data)
-    manifest = {'format_version': 1, 'model': RELEASE_MODEL_ID, 'adapter_license': 'cc-by-sa-4.0',
+    manifest = {'format_version': 1, 'model': RELEASE_MODEL_ID, 'adapter_license': 'apache-2.0' if apache else 'cc-by-sa-4.0',
                 'source_repository': 'https://github.com/kortexa-ai/shingi',
                 'source_revision': subprocess.check_output(['git','rev-parse','HEAD'], text=True).strip(),
                 'base': {'repository': 'prism-ml/Ternary-Bonsai-2-27B-gguf', 'revision': '6ed5e12bf84b7a63069882c91dd9e9218647d17b',

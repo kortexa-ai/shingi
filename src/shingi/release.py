@@ -7,7 +7,8 @@ from pathlib import Path
 from .decision import Calibration, MODEL_ID
 
 BASE_SHA256 = "3907dc1658db1f78a9826bf8d5bcb8dc65db0d466388937af57f2294fae62ec1"
-ADAPTER_SHA256 = "d7ea6bf61f6ef5fe26bd82ca1ece4686c20d29a1937834a18239629bb6db31d4"
+LEGACY_ADAPTER_SHA256 = "d7ea6bf61f6ef5fe26bd82ca1ece4686c20d29a1937834a18239629bb6db31d4"
+ADAPTER_SHA256 = LEGACY_ADAPTER_SHA256
 RELEASE_MODEL_ID = "shingi-bonsai-2-27b-v0.1"
 READOUT_VERSION = "bonsai-sorted-choice-v2"
 
@@ -27,6 +28,8 @@ def artifact_identity(model, adapter=None):
     adapter_hash = sha256(adapter) if adapter is not None else None
     if base_hash == BASE_SHA256 and adapter_hash == ADAPTER_SHA256:
         name = RELEASE_MODEL_ID
+    elif base_hash == BASE_SHA256 and adapter_hash == LEGACY_ADAPTER_SHA256:
+        name = 'shingi-bonsai-2-27b-v0.1'
     elif adapter is None and base_hash == BASE_SHA256:
         name = MODEL_ID
     else:
