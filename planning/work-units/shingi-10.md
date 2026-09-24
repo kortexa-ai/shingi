@@ -8,10 +8,11 @@ plan is in [docs/data-v3.md](../../docs/data-v3.md).
 
 ## Decisions
 
-- **Mix.** About 30,000 training records: 19,500 natural (65%) and 10,500
-  synthetic (35%), with one option order per record. Synthetic data is capped at
-  45% of training tokens (about 43% estimated; the first 40% guard was raised
-  instead of changing the family mix).
+- **Mix.** 26,850 training records, with one option order per record: 19,500
+  natural and 7,350 synthetic. The synthetic target is about 35% of training
+  tokens, which is about 27% of records, because synthetic prompts are longer.
+  Franci chose tokens over records on 2026-09-24. All families were scaled by
+  0.70, and tokenization enforces a 32–38% synthetic token share.
 - **Licenses.** Fitting uses only CC BY, CC0, MIT and Apache-2.0 sources.
   Share-alike, unspecified and research-use sources are evaluation-only.
   HellaSwag, WANLI, UltraFeedback, OpenBookQA, PIQA, AG News, SuperGLUE and Yelp

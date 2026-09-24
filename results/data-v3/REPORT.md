@@ -78,7 +78,8 @@ and 200 grid evaluation records.
 
 `scripts/prepare_data_v3.py` was run end to end twice.
 
-**Run 1: training host, earlier artifacts, stand-in synthetic files.**
+**Run 1: training host, earlier artifacts, stand-in synthetic files.** This
+run used the first mix of 30,000 records, 35% of them synthetic.
 - Counts: 30,000 training records, of which 35.0% synthetic; a 10,000-record
   pilot; a locked test of 3,200; out-of-distribution 2,200; development and
   calibration 1,050 each; transfer 1,000; long-context splits 300/50/200.
@@ -104,9 +105,18 @@ evaluation text:
 | MMLU | about 15 |
 | Other sources | 0–1 |
 
-**Token share.** Synthetic prompts are about 43% of training tokens, by a
-character estimate for both the pilot and the full set. The full set is about
-11.5M prompt tokens. Exact counts need the native tokenizer on the training host.
+**Token share.** The first mix, 35% synthetic by records, came to about 43% of
+training tokens by character estimate. On 2026-09-24 the target became 35% of
+tokens, and every synthetic family was scaled by 0.70. A rebuild with the real
+synthetic data measured:
+
+| Profile | Records | Synthetic share of records | Synthetic share of tokens (estimate) | Total prompt tokens |
+|---|---:|---:|---:|---:|
+| Full | 26,850 | 27.4% | 34.9% | about 10.0M |
+| Pilot | 8,950 | 27.4% | 34.9% | about 3.3M |
+
+Tokenization on the training host checks the exact share and must find it
+between 32% and 38%.
 
 The frozen build on the training host is still to run. It needs Hugging Face read
 access to the private synthetic dataset there.

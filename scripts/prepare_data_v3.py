@@ -282,8 +282,8 @@ def build(args):
         per_source[source] = chosen
     for source, count in SYNTHETIC.items():
         rows = synth[source, "train"]
-        if len(rows) != count:
-            raise ValueError(f"{source}: expected {count} synthetic training records, found {len(rows)}")
+        if len(rows) < count:
+            raise ValueError(f"{source}: need {count} synthetic training records, found {len(rows)}")
         per_source[source] = select(rows, count, forbidden_ids, forbidden_states, source + "/train", keep_train)
     splits["train"] = [r for rows in per_source.values() for r in rows]
     pilot = [r for rows in per_source.values() for r in rows[:round(len(rows) * PILOT_FRACTION)]]

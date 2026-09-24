@@ -34,8 +34,10 @@ FIT = {
 }
 
 # Proprietary synthetic families (kortexa-ai/shingi-synthetic): name -> training records.
-SYNTHETIC = {"synth_policy": 3000, "synth_routing": 2000, "synth_taxonomy": 2000,
-             "synth_state": 2500, "synth_rubric": 1000}
+# Sized for about 35% of training tokens: synthetic prompts are longer than natural ones,
+# so this is about 27% of records. Generated pools hold more; selection takes a subset.
+SYNTHETIC = {"synth_policy": 2100, "synth_routing": 1400, "synth_taxonomy": 1400,
+             "synth_state": 1750, "synth_rubric": 700}
 LONG_CONTEXT = "synth_longctx"
 
 # Evaluation-only sources. Share-alike and unclear licenses stay here; StrategyQA
