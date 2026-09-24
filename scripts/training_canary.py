@@ -67,7 +67,8 @@ def compare(actual, expected):
 
 def main():
     p=argparse.ArgumentParser();p.add_argument('--model',type=Path,required=True);p.add_argument('--prism',type=Path,required=True)
-    p.add_argument('--output',type=Path,required=True);a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
+    p.add_argument('--output',type=Path,required=True);p.add_argument('--context',type=int,default=1024)
+    a=p.parse_args();a.output.mkdir(parents=True,exist_ok=False)
     from shingi.gpu import selected_gpu
     selected_gpu()
     digest=hashlib.file_digest(a.model.open('rb'),'sha256').hexdigest()
@@ -115,7 +116,7 @@ def main():
     # Synthetic canary only: this gradient is never reused as a trained checkpoint.
     long_row={'tokenized':dict(rows[0]['tokenized'])}
     original=rows[0]['tokenized']['input_ids']
-    long_row['tokenized']['input_ids']=(original*20)[:1024]
+    long_row['tokenized']['input_ids']=(original*(a.context//len(original)+1))[:a.context]
     result['backward_context_tokens']=len(long_row['tokenized']['input_ids'])
     start=time.monotonic();logits=forward(long_row);loss=torch.nn.functional.cross_entropy(logits[None],torch.tensor([1],device='cuda'))
     scaler.scale(loss).backward();memory('first_backward')

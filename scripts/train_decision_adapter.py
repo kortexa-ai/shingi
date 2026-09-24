@@ -18,6 +18,7 @@ from shingi.native_tokenizer import NativeTokenizer
 from shingi.ternary_training import BASE_SHA256, load_bonsai, attach_lora
 from training_canary import export_adapter
 from prepare_training_data import APACHE_SOURCES
+from shingi.sources_v3 import FIT, SYNTHETIC
 
 
 def sha(path):
@@ -29,6 +30,11 @@ def rows(path):
 
 
 def validate_fitting_sources(manifest, prepared, dev):
+    if manifest.get('profile', '').startswith('v3-'):
+        allowed = set(FIT) | set(SYNTHETIC)
+        if set(manifest['train_sources']) - allowed or any(r['source'] not in allowed for r in prepared + dev):
+            raise ValueError('non-allowlisted data v3 fitting source')
+        return
     if manifest.get('profile') != 'apache-v2': return
     if set(manifest['train_sources']) != set(APACHE_SOURCES):
         raise ValueError('Apache profile requires the exact audited source allowlist')
@@ -40,11 +46,13 @@ def main():
     p=argparse.ArgumentParser();p.add_argument('--model',type=Path,required=True);p.add_argument('--prism',type=Path,required=True)
     p.add_argument('--canary',type=Path,required=True);p.add_argument('--data',type=Path,default=Path('artifacts/decision-v2'))
     p.add_argument('--output',type=Path,required=True);p.add_argument('--max-seconds',type=int,default=21600)
+    p.add_argument('--eval-every',type=int,default=128)
     a=p.parse_args()
     if subprocess.check_output(['git','status','--porcelain'],text=True).strip():raise RuntimeError('source must be committed')
     canary=json.loads(a.canary.read_text())
-    if not canary.get('passed') or canary['base_sha256']!=BASE_SHA256 or canary.get('backward_context_tokens')!=1024:
-        raise RuntimeError('successful matching 1024-token parity/backward canary required')
+    context=json.loads((a.data/'tokenized-manifest.json').read_text())['max_tokens']
+    if not canary.get('passed') or canary['base_sha256']!=BASE_SHA256 or canary.get('backward_context_tokens')!=context:
+        raise RuntimeError(f'successful matching {context}-token parity/backward canary required')
     if sha(a.model)!=BASE_SHA256:raise RuntimeError('base checksum mismatch')
     a.output.mkdir(parents=True,exist_ok=False)
     manifest=json.loads((a.data/'manifest.json').read_text())
@@ -59,13 +67,15 @@ def main():
     dev=rows(a.data/'dev.jsonl')
     validate_fitting_sources(manifest, prepared, dev)
     apache = manifest.get('profile') == 'apache-v2'
+    v3 = manifest.get('profile', '').startswith('v3-')
+    canonical = apache or v3
     if not prepared:raise RuntimeError('no training records')
     (a.output/'excluded-length.json').write_text(json.dumps(excluded,indent=2)+'\n')
     import torch
     from safetensors.torch import save_file
     from shingi import gpu as rails
     rails.require_training_gpu()
-    torch.set_num_threads(12);torch.manual_seed(20260923 if apache else 20260922)
+    torch.set_num_threads(12);torch.manual_seed(20260924 if v3 else 20260923 if apache else 20260922)
     started=time.monotonic();stop=False
     def request_stop(*unused):
         nonlocal stop
@@ -81,13 +91,13 @@ def main():
                 'model_sha256':BASE_SHA256,'canary_sha256':sha(a.canary),'dataset_manifest_sha256':sha(a.data/'manifest.json'),
                 'trainable_parameters':sum(p.numel() for p in params),'prepared_prompts':len(prepared),'excluded_prompts':len(excluded),
                 'train_by_source':dict(Counter(r['source'] for r in prepared)), 'rank':8,'alpha':16,'learning_rate':5e-5,
-                'gradient_accumulation':accumulation,'max_context':1024,'max_seconds':a.max_seconds,
+                'gradient_accumulation':accumulation,'max_context':context,'eval_every':a.eval_every,'max_seconds':a.max_seconds,
                 'planned_updates':updates,'loss':'candidate cross entropy against human distribution when available, otherwise gold label',
                 'checkpoint_selection':'lowest uncalibrated development NLL; test and calibration not read during training',
                 'initialization':'fresh zero-output LoRA; immutable base; no previous adapter or optimizer',
-                'choice_order':'canonical' if apache else 'input',
+                'choice_order':'canonical' if canonical else 'input',
                 'profile':manifest.get('profile', 'original-v1'),
-                'early_stop_patience':2 if apache else None,
+                'early_stop_patience':2 if canonical else None,
                 'loader':info,'checkpoints':[],'skipped_optimizer_steps':0}
     def save_run():
         (a.output/'run.json').write_text(json.dumps(provenance,indent=2)+'\n')
@@ -106,7 +116,7 @@ def main():
             rails.assert_post_first_backward_free()
             return {'logits':out,'input_tokens':r['input_tokens'],'candidate_ids':r['candidate_ids'],
                     'prefill_ms':1000*(time.monotonic()-t),'prompt_sha256':hashlib.sha256(prompt.encode()).hexdigest()}
-    backend=Backend();engine=DecisionEngine(backend, canonical_choices=apache)
+    backend=Backend();engine=DecisionEngine(backend, canonical_choices=canonical)
     best_nll=float('inf');best_path=None
     def evaluate(step):
         nonlocal best_nll,best_path
@@ -169,11 +179,11 @@ def main():
                 log.write(json.dumps(record)+'\n');log.flush()
                 if (step+1)%16==0:print(json.dumps(record),flush=True)
                 provenance['completed_updates']=step+1;provenance['processed_prompts']=trained
-                if (step+1)%128==0:
+                if (step+1)%a.eval_every==0:
                     previous_best = best_nll
                     evaluate(step+1);last_eval=step+1
                     stale_evaluations = stale_evaluations+1 if best_nll >= previous_best else 0
-                    if apache and stale_evaluations >= 2:
+                    if canonical and stale_evaluations >= 2:
                         provenance['stop_reason']='two development evaluations without improvement'
                         break
             completed=provenance.get('completed_updates',0)
