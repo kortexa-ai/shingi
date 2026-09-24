@@ -1,0 +1,112 @@
+# Data v3 preparation
+
+Issue: https://github.com/kortexa-ai/shingi/issues/10. Plan:
+[docs/data-v3.md](../../docs/data-v3.md). No model was trained or evaluated for
+this report. The GPU was not used.
+
+## License verification
+
+`licenses.json` records every dataset card at a pinned revision, with its stated
+license and SHA-256, plus pinned evidence documents.
+
+- **Cleared for fitting (12):** Banking77, CLINC150, MMLU, HelpSteer2,
+  Measuring Hate Speech, Civil Comments, GoEmotions, LEDGAR, MASSIVE, HelpSteer,
+  CommonsenseQA and WinoGrande.
+  - WinoGrande has no license field on its Hub card. It is cleared by the pinned
+    upstream README statement "The dataset is licensed under CC-BY".
+- **Evaluation only (11):** MNLI, ChaosNLI, SST-5, SMS Spam, BoolQ, FEVER, ARC,
+  PAWS, STS-B, and StrategyQA closed and grounded.
+- **Excluded (8):** HellaSwag, WANLI, UltraFeedback, OpenBookQA, PIQA, AG News,
+  Yelp and SuperGLUE.
+  - HellaSwag's exclusion rests on the 2026-09-14 wikiHow DMCA notice, which names
+    `rowanz/hellaswag`. That repository now returns HTTP 451 on GitHub.
+
+These are publisher-stated terms, not legal conclusions.
+
+## Stage 2 merge check on the v0.2 adapter
+
+`scripts/merge_check.py` ran on the CPU against the released v0.2 adapter
+(alpha 16, rank 8), covering all 192 adapted MLP tensors.
+
+| Tensor | Delta / weight norm | Naive merge: code flips | Naive merge: delta realized | Scale-only projection: cosine |
+|---|---:|---:|---:|---:|
+| ffn_gate | 0.21–0.42% | 0 | none | 0.0885 |
+| ffn_up | 0.19–0.44% | 0 | none | 0.0884 |
+| ffn_down | about 0.2–0.4% | 0 | none | 0.0885 |
+
+- **Naive merge.** Rounding the merged weights back to the existing ternary grid
+  changes no code, so the merged model equals the base.
+- **Scale-only projection.** The best per-block scale change reaches cosine 1/√128
+  with the delta. That is the value expected when the delta has no relation to a
+  block's single scale direction.
+
+Scale-only tuning therefore cannot copy this adapter in weight space. It may
+still find a different solution in function space, which only a GPU run can show.
+QAT is the expected stage 2 path. The full per-tensor JSON stays with the
+artifacts on the training host.
+
+## Synthetic data (private)
+
+The proprietary generators and data are in the private
+`kortexa-ai/shingi-synthetic` Hugging Face dataset, at revision
+`279e4ff851da820db3eabf89bcf204783ea302e5`. That revision contains generator
+v1.0.0, code commit `38153558`, and seed 20260924.
+
+**Counts.** The five families have exactly the planned train, development,
+calibration and transfer counts. Long context has 300 training, 50 development
+and 200 grid evaluation records.
+
+**Checks.**
+- The independent label checker agrees on 12,550 of 12,550 records.
+- 20 property tests pass, and the QA build reports 0 violations.
+- Exact-duplicate states: 0. Near duplicates (5-gram Jaccard at or above 0.95):
+  0.0% in every family.
+- No template exceeds 7.5% of a family's training split.
+- Every option-only, state-only and question-only probe stays within 10 points of
+  its baseline. Routing's option-overlap probe was first +7.6 points: queues
+  missing from the rule table were never correct. After a fix it is +0.4.
+- Hand spot audit: one random training record from each of the five families was
+  checked by hand, and every gold label is correct.
+
+**Known limits.**
+- Wording comes from finite templates, so held-out subfamilies test new domains
+  and resolution strategies rather than new writing styles.
+- Policies use only conjunctive conditions and withhold at most one fact.
+- Long-context filler is generic office text.
+
+## Build validation
+
+`scripts/prepare_data_v3.py` was run end to end twice.
+
+**Run 1: training host, earlier artifacts, stand-in synthetic files.**
+- Counts: 30,000 training records, of which 35.0% synthetic; a 10,000-record
+  pilot; a locked test of 3,200; out-of-distribution 2,200; development and
+  calibration 1,050 each; transfer 1,000; long-context splits 300/50/200.
+- Every pair of splits has zero shared state hashes.
+- 903 permitted earlier training records were reused.
+- No earlier evaluation record entered training.
+
+**Run 2: real synthetic data, without earlier artifacts.**
+- Synthetic 13-gram contamination is 0 in every family, including long context.
+  The check covers the locked test, out-of-distribution, development and
+  calibration text, and all 8,122 external benchmark states (This/That,
+  DecisionBench, JevBench).
+
+**Remaining natural overlap.** After the prompt-group and 20% near-duplicate
+exclusions, some natural training records still share at least one 13-gram with
+evaluation text:
+
+| Source | Records |
+|---|---:|
+| LEDGAR (contract boilerplate) | about 270 |
+| HelpSteer (instruction templates) | about 150 |
+| HelpSteer2 attributes | about 30–70 each |
+| MMLU | about 15 |
+| Other sources | 0–1 |
+
+**Token share.** Synthetic prompts are about 43% of training tokens, by a
+character estimate for both the pilot and the full set. The full set is about
+11.5M prompt tokens. Exact counts need the native tokenizer on the training host.
+
+The frozen build on the training host is still to run. It needs Hugging Face read
+access to the private synthetic dataset there.

@@ -91,6 +91,9 @@ and need multiple passes. Questions run sequentially. Context is capped at
 - [First adapter experiment](results/training-v1/REPORT.md): matched base/adapter
   quality, calibration, source holdouts, native export agreement, RTX PRO 6000
   inference and training resource measurements.
+- [Data v3 plan](docs/data-v3.md): the next training mix (30K records, audited
+  licenses, proprietary synthetic families), locked evaluation and the two-stage
+  path to a single ternary model. Not yet trained.
 - [Evaluation protocol](docs/evaluation-protocol.md): data separation, exact
   candidate logits, failure accounting, and attributed third-party comparisons.
 

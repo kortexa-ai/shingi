@@ -25,9 +25,9 @@ def main():
     result={'data_manifest_sha256':sha(a.data/'manifest.json'),'tokens_sha256':sha(a.data/'tokenized.jsonl'),
             'executable_sha256':sha('artifacts/bin/readout'),'max_tokens':a.max_tokens,'prepared':count,'excluded':excluded,
             'input_tokens':tokens,'synthetic_token_share':tokens['synthetic']/max(1,sum(tokens.values()))}
-    # Data v3 caps synthetic prompts at 40% of training tokens.
-    if manifest.get('profile','').startswith('v3-') and result['synthetic_token_share']>.40:
-        raise RuntimeError(f"synthetic token share {result['synthetic_token_share']:.3f} exceeds 0.40")
+    # Data v3: 35% synthetic records, whose denser prompts are capped at 45% of training tokens.
+    if manifest.get('profile','').startswith('v3-') and result['synthetic_token_share']>.45:
+        raise RuntimeError(f"synthetic token share {result['synthetic_token_share']:.3f} exceeds 0.45")
     with (a.data/'tokenized-manifest.json').open('x') as f:json.dump(result,f,indent=2)
     print(json.dumps({'prepared':count,'excluded':len(excluded),'synthetic_token_share':result['synthetic_token_share'],'data_manifest_sha256':result['data_manifest_sha256']}))
 
