@@ -15,9 +15,9 @@ from verify_licenses import REGISTRY, card_license
 def test_locked_mix_targets_thirty_five_percent_synthetic_tokens():
     natural = sum(count for _, count in FIT.values())
     synthetic = sum(SYNTHETIC.values())
-    assert natural == 19500 and synthetic == 7350
-    # Synthetic prompts average about 1.3x natural length, so 27% of records is about 35% of tokens.
-    assert synthetic / (natural + synthetic) == pytest.approx(.274, abs=.001)
+    assert natural == 19500 and synthetic == 6100
+    # Synthetic prompts average about 1.4x natural tokens, so 24% of records is about 35% of tokens.
+    assert synthetic / (natural + synthetic) == pytest.approx(.238, abs=.001)
 
 
 def test_fitting_and_evaluation_sources_are_disjoint_and_audited():

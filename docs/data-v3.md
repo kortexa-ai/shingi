@@ -6,7 +6,7 @@ status belong in the issues and `results/`, not here.
 
 ## Goals
 
-1. Expand training data from 2,233 records to about 27,000, weighted toward
+1. Expand training data from 2,233 records to about 25,600, weighted toward
    measured weaknesses.
 2. Keep a large locked evaluation corpus, including out-of-distribution sources,
    held-out synthetic families and external suites.
@@ -60,7 +60,7 @@ where a card is silent. The frozen record is `results/data-v3/licenses.json`.
 
 We may review the share-alike sources for fitting again after stage 1 results.
 
-## Training data: 26,850 records, one option order each
+## Training data: 25,600 records, one option order each
 
 ### Natural sources (19,500 records, about 65% of tokens)
 
@@ -90,7 +90,7 @@ into the same record schema:
   converted attributes therefore evaluate on a fixed quarter of the HelpSteer2
   training states that jev-bench never used.
 
-### Synthetic families (7,350 records, about 35% of tokens)
+### Synthetic families (6,100 records, about 35% of tokens)
 
 Code generates the synthetic data and labels in the private
 `kortexa-ai/shingi-synthetic` Hugging Face dataset. The generator code, design
@@ -98,25 +98,28 @@ details and data are proprietary and never enter this repository.
 
 | Family | Records | Target |
 |---|---:|---|
-| Policy application, including "not enough information" | 2,100 | rule reasoning |
-| Priority routing with conflicting rules | 1,400 | DecisionBench-style decisions |
-| Long-option taxonomies (20–52 options) | 1,400 | many-class choices |
-| Grid, graph, schedule and ledger state | 1,750 | This/That spatial weakness |
-| Rubric scoring | 700 | ordinal calibration |
+| Policy application, including "not enough information" | 1,750 | rule reasoning |
+| Priority routing with conflicting rules | 1,150 | DecisionBench-style decisions |
+| Long-option taxonomies (20–52 options) | 1,150 | many-class choices |
+| Grid, graph, schedule and ledger state | 1,450 | This/That spatial weakness |
+| Rubric scoring | 600 | ordinal calibration |
 
 This/That is not fully out-of-distribution for its spatial question families after
 this training, and reports must say so.
 
-The synthetic target is about 35% of training **tokens**. Synthetic prompts are
-longer than natural ones (taxonomy averages about 970 tokens, natural sources
-about 330), so 35% of tokens is about 27% of records. The first plan used 35% of
-records, which estimated at 43% of tokens. Every family was scaled by the same
-factor (0.70), so the family mix is unchanged. The generated pools keep the
+The synthetic target is about 35% of training **tokens**, measured with the
+exact Bonsai tokenizer. Synthetic prompts are longer than natural ones: taxonomy
+averages 1,135 tokens, natural sources 313. Synthetic text also packs fewer
+characters into each token (2.8–3.9, against 4.25 for natural text), because it
+is full of numbers, dates and IDs. So 35% of tokens is about 24% of records. The
+first plan used 35% of records. A character estimate put that at 43% of tokens,
+and the exact count at the first reduction was 39.1%. Every family was scaled by
+the same factor, so the family mix is unchanged. The generated pools keep the
 original sizes, and the build selects a deterministic subset. Tokenization fails
 unless the exact synthetic token share is between 32% and 38%.
 
 The pilot is a fixed one-third prefix of each source's deterministic selection
-order (about 8,950 records) with the same mix.
+order (about 8,530 records) with the same mix.
 
 ### Record filters
 
