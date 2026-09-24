@@ -43,7 +43,7 @@ def load_split(data, split):
     """Records of a frozen split after checking the manifest checksum."""
     manifest = json.loads((data / "manifest.json").read_text())
     path = data / f"{split}.jsonl"
-    if sha256(path) != manifest.get(f"{split}_sha256"):
+    if f"{split}_sha256" not in manifest or not path.exists() or sha256(path) != manifest[f"{split}_sha256"]:
         raise ValueError(f"frozen split changed: {split}")
     return read_jsonl(path), sha256(data / "manifest.json")
 
