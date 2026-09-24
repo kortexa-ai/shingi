@@ -28,8 +28,8 @@ FIT = {
     "measuring_hate_speech": ("jev", 1500),
     "civil_comments": ("jev", 1000),
     # jev-bench has only 285 MMLU training rows; the remainder moves to CommonsenseQA.
-    "mmlu": ("jev", 280),
-    "commonsense_qa": ("commonsense_qa", 1220),
+    "mmlu": ("jev", 270),
+    "commonsense_qa": ("commonsense_qa", 1230),
     "winogrande": ("winogrande", 1000),
 }
 
