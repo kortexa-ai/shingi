@@ -118,5 +118,41 @@ synthetic data measured:
 Tokenization on the training host checks the exact share and must find it
 between 32% and 38%.
 
-The frozen build on the training host is still to run. It needs Hugging Face read
-access to the private synthetic dataset there.
+## Frozen build
+
+Built on the training host at source commit `2bbb35a`, with synthetic revision
+`279e4ff8`, into `~/data/datasets/shingi/v3`:
+
+| Artifact | SHA-256 |
+|---|---|
+| Root manifest | `86849abf96ff17db1e8073b52e6e6ddca6cd1103fd583dc9170391f6f5068204` |
+| Locked test | `b40bb5bb7b6e4b8d9e6cf77ecbffe85416db2f79f1681f0564b4a95a42c3daca` |
+| Training records | `48a0a42a90dc13a99c3e7946a6d1fe74e737bb614ccbda80d60fa1d97854c675` |
+
+| Split | Records |
+|---|---:|
+| Training | 25,600 (19,500 natural, 6,100 synthetic) |
+| Pilot | 8,532 |
+| Locked test | 3,200 |
+| Out-of-distribution | 2,200 |
+| Development | 1,050 |
+| Calibration | 1,050 |
+| Synthetic transfer | 1,000 |
+| Long context | 300 training / 50 development / 200 evaluation |
+
+- Every pair of splits has zero shared state hashes.
+- 903 permitted earlier training records were reused.
+- No earlier evaluation record entered training.
+
+Exact native tokenization, with a 2,048-token limit and no truncation:
+
+| Profile | Prompts | Excluded as too long | Natural tokens | Synthetic tokens | Synthetic share |
+|---|---:|---:|---:|---:|---:|
+| Pilot | 8,532 | 0 | 2,043,994 | 1,087,833 | 34.7% |
+| Full | 25,597 | 3 | 6,110,342 | 3,247,408 | 34.7% |
+
+The mix was sized twice. The first cut (7,350 synthetic records) estimated 34.9%
+by characters, but measured 39.1% with the exact tokenizer, because synthetic
+text packs 2.8–3.9 characters into a token against 4.25 for natural text. The
+final sizes come from the exact token counts. The data is ready for the stage 1
+canary and pilot.
