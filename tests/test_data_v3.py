@@ -90,3 +90,12 @@ def test_v3_profile_allowlist_and_manifest(tmp_path):
     validate_fitting_sources(manifest, [record], [natural])
     with pytest.raises(ValueError, match='non-allowlisted'):
         validate_fitting_sources(manifest, [{'source': 'boolq'}], [])
+
+
+def test_plain_text_states_hash_without_json_parsing(tmp_path):
+    from prepare_data_v3 import parse_state
+    assert parse_state('Snake game on a board.') == 'Snake game on a board.'
+    assert parse_state('"quoted"') == 'quoted' and parse_state('{"a": 1}') == {'a': 1}
+    (tmp_path / 'records.jsonl').write_text(json.dumps({'id': 'x', 'state': 'Plain text state.'}) + '\n')
+    seen, _ = prior_records([tmp_path])
+    assert seen['eval'][0] == {'x'} and len(seen['eval'][1]) == 1

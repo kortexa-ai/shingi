@@ -19,7 +19,7 @@ from prepare_training_data import training_prompt
 from shingi.decision import describe
 from shingi.sources_v3 import (CALIBRATION_PER_SOURCE, DEV_PER_SOURCE, FIT, HELPSTEER_ATTRIBUTES, JEV_REPO,
                                JEV_REVISION, LONG_CONTEXT, OOD, OOD_PER_SOURCE, PILOT_FRACTION, SYNTHETIC,
-                               TEST_PER_SOURCE, UPSTREAM, commonsense_qa_record, helpsteer_record,
+                               TEST_PER_SOURCE, UPSTREAM, commonsense_qa_record, finish, helpsteer_record,
                                winogrande_record)
 
 SEED = "shingi-data-v3-20260924"
@@ -63,9 +63,19 @@ def prior_records(roots):
                 if isinstance(row.get("state_sha256"), str):
                     states.add(row["state_sha256"])
                 elif "state" in row:
-                    states.add(decode_row({"state": row["state"], "question": row.get("question")})["state_sha256"])
+                    states.add(digest(canonical(parse_state(row["state"]))))
             files[str(path)] = {"kind": kind, "sha256": sha256(path)}
     return seen, files
+
+
+def parse_state(state):
+    """jev-bench encodes states as JSON strings; other sources store plain text."""
+    if isinstance(state, str):
+        try:
+            return json.loads(state)
+        except json.JSONDecodeError:
+            return state
+    return state
 
 
 def words(text):
@@ -164,7 +174,8 @@ def synthetic_splits(directory):
             recorded = manifest["files"].get(f"{family}/{path.name}", {}).get("sha256")
             if recorded != sha256(path):
                 raise ValueError(f"synthetic file checksum differs: {path}")
-            splits["synth_" + family, path.stem] = [decode_row(r) for r in read_jsonl(path)]
+            # Synthetic states are stored as given (text or objects), never JSON-encoded strings.
+            splits["synth_" + family, path.stem] = [finish(r) for r in read_jsonl(path)]
     return manifest, splits
 
 
