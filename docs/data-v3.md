@@ -235,7 +235,7 @@ therefore `(alpha / rank) · B · H(A)` for folded tensors and
      scale bytes. Unit factors reproduce the base exactly.
    - Budget: at most 24 GPU-hours.
 3. **QAT, now the expected path.** On the v0.2 adapter, the merge check found:
-   - the delta is 0.19–0.44% of the weight norm;
+   - the delta is 0.11–0.44% of the weight norm;
    - a naive merge flips no codes and loses the whole adapter;
    - the best scale-only projection reaches cosine 0.0885 in every tensor. That is
      1/√128, the value expected for a delta unrelated to the block-scale

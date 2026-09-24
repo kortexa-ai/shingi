@@ -32,7 +32,7 @@ These are publisher-stated terms, not legal conclusions.
 |---|---:|---:|---:|---:|
 | ffn_gate | 0.21–0.42% | 0 | none | 0.0885 |
 | ffn_up | 0.19–0.44% | 0 | none | 0.0884 |
-| ffn_down | about 0.2–0.4% | 0 | none | 0.0885 |
+| ffn_down | 0.11–0.25% | 0 | none | 0.0884 |
 
 - **Naive merge.** Rounding the merged weights back to the existing ternary grid
   changes no code, so the merged model equals the base.
