@@ -25,6 +25,7 @@ from shingi.sources_v3 import (CALIBRATION_PER_SOURCE, DEV_PER_SOURCE, FIT, HELP
 SEED = "shingi-data-v3-20260924"
 TRAIN_PROMPT_CHARS = 7600  # about 1,900 tokens; tokenization later enforces 2,048 exactly
 EVAL_STATE_CHARS = 40000   # keeps evaluation prompts well inside the 16K context
+NEAR_DUPLICATE = .2        # shared 13-gram fraction; boilerplate stays, reworded duplicates go
 TRAIN_FILES = {"train.jsonl", "train-prompts.jsonl", "tokenized.jsonl"}
 SYNTH_FAMILIES = [name.removeprefix("synth_") for name in SYNTHETIC] + [LONG_CONTEXT.removeprefix("synth_")]
 
@@ -253,13 +254,28 @@ def build(args):
         if split != "train":
             forbidden_ids |= {r["id"] for r in rows}
             forbidden_states |= {r["state_sha256"] for r in rows}
+    # 13-gram contamination: synthetic data must not overlap evaluation text at all; natural
+    # records are dropped as near duplicates above NEAR_DUPLICATE and otherwise only reported.
+    evaluation_grams = set()
+    for name in ("test", "ood", "dev", "calibration"):
+        for row in splits[name]:
+            if not row["source"].startswith("synth_"):
+                evaluation_grams |= ngrams(record_text(row))
+    for path in args.external:
+        for row in read_jsonl(path):
+            if "state" in row:
+                evaluation_grams |= ngrams(describe(row["state"]))
     # A training response must not share its prompt with any evaluation record.
     forbidden_prompts = {prompt_group(r) for s in splits.values() for r in s} | {
         prompt_group(r) for (source, split), rows in pools.items() if split != "train" for r in rows}
     forbidden_prompts.discard(None)
     reused = 0
     per_source = {}
-    keep_train = lambda row: prompt_group(row) not in forbidden_prompts and prompt_chars(row) <= TRAIN_PROMPT_CHARS
+    def keep_train(row):
+        if prompt_group(row) in forbidden_prompts or prompt_chars(row) > TRAIN_PROMPT_CHARS:
+            return False
+        grams = ngrams(record_text(row))
+        return not grams or len(grams & evaluation_grams) / len(grams) <= NEAR_DUPLICATE
     for source, (_, count) in FIT.items():
         chosen = select(pools[source, "train"], count, forbidden_ids, forbidden_states, source + "/train", keep_train)
         reused += sum(r["id"] in prior["train"][0] for r in chosen)
@@ -291,16 +307,6 @@ def build(args):
     if prior_eval_hits:
         raise ValueError("earlier evaluation record entered training")
 
-    # 13-gram contamination: synthetic data against every evaluation text, natural training reported only.
-    evaluation_grams = set()
-    for name in ("test", "ood", "dev", "calibration"):
-        for row in splits[name]:
-            if not row["source"].startswith("synth_"):
-                evaluation_grams |= ngrams(record_text(row))
-    for path in args.external:
-        for row in read_jsonl(path):
-            if "state" in row:
-                evaluation_grams |= ngrams(describe(row["state"]))
     contamination = {}
     for source, rows in list(per_source.items()) + [(LONG_CONTEXT, long_splits["train"])]:
         hits = [r["id"] for r in rows if ngrams(record_text(r)) & evaluation_grams]
