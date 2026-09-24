@@ -78,6 +78,12 @@ def parse_state(state):
     return state
 
 
+def prompt_group(row):
+    """HelpSteer states pair one prompt with several responses; a prompt is one group."""
+    state = row["state"]
+    return digest(canonical(state["prompt"])) if isinstance(state, dict) and "prompt" in state else None
+
+
 def words(text):
     return re.findall(r"[a-z0-9]+", text.lower())
 
@@ -247,9 +253,13 @@ def build(args):
         if split != "train":
             forbidden_ids |= {r["id"] for r in rows}
             forbidden_states |= {r["state_sha256"] for r in rows}
+    # A training response must not share its prompt with any evaluation record.
+    forbidden_prompts = {prompt_group(r) for s in splits.values() for r in s} | {
+        prompt_group(r) for (source, split), rows in pools.items() if split != "train" for r in rows}
+    forbidden_prompts.discard(None)
     reused = 0
     per_source = {}
-    keep_train = lambda row: prompt_chars(row) <= TRAIN_PROMPT_CHARS
+    keep_train = lambda row: prompt_group(row) not in forbidden_prompts and prompt_chars(row) <= TRAIN_PROMPT_CHARS
     for source, (_, count) in FIT.items():
         chosen = select(pools[source, "train"], count, forbidden_ids, forbidden_states, source + "/train", keep_train)
         reused += sum(r["id"] in prior["train"][0] for r in chosen)

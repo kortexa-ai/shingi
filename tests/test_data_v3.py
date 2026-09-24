@@ -99,3 +99,10 @@ def test_plain_text_states_hash_without_json_parsing(tmp_path):
     (tmp_path / 'records.jsonl').write_text(json.dumps({'id': 'x', 'state': 'Plain text state.'}) + '\n')
     seen, _ = prior_records([tmp_path])
     assert seen['eval'][0] == {'x'} and len(seen['eval'][1]) == 1
+
+
+def test_helpsteer_prompt_groups_ignore_responses():
+    from prepare_data_v3 import prompt_group
+    a = {'state': {'prompt': 'Write a poem.', 'response': 'One.'}}
+    b = {'state': {'prompt': 'Write a poem.', 'response': 'Two.'}}
+    assert prompt_group(a) == prompt_group(b) and prompt_group({'state': 'text'}) is None
