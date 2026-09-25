@@ -23,46 +23,48 @@ class ReplayReadout:
         return trace
 
 
-def replay(record, prediction, calibration):
+def replay(record, prediction, calibration, canonical=False):
     if prediction.get("error") or prediction["input_sha256"] != record["input_sha256"]:
         raise ValueError("calibration prediction failed or input hash differs")
     backend = ReplayReadout(prediction["traces"])
-    answer, _ = DecisionEngine(backend, calibration).answer(record["state"], record["question"])
+    engine = DecisionEngine(backend, calibration, canonical_choices=canonical)
+    answer, _ = engine.answer(record["state"], record["question"])
     if next(backend.traces, None) is not None:
         raise ValueError("unused calibration traces")
     return answer
 
 
-def mean_nll(records, predictions, calibration):
+def mean_nll(records, predictions, calibration, canonical=False):
     if not records:
         raise ValueError("calibration group is empty")
     losses = []
     for record in records:
-        answer = replay(record, predictions[record["id"]], calibration)
+        answer = replay(record, predictions[record["id"]], calibration, canonical)
         p = probabilities(record, answer)
         losses.append(-math.log(max(p[str(record["label"])], 1e-12)))
     return sum(losses) / len(losses)
 
 
-def fit(records, predictions):
+def fit(records, predictions, *, frozen_calibration_split=False, canonical=False):
+    """Fit on validation records, or on a whole frozen calibration split whose checksum the caller verified."""
     if len({row["id"] for row in records}) != len(records):
         raise ValueError("duplicate calibration IDs")
-    if any(row.get("split") != "validation" for row in records):
+    if not frozen_calibration_split and any(row.get("split") != "validation" for row in records):
         raise ValueError("fit accepts validation records only, never test")
+    nll = lambda group, calibration: mean_nll(group, predictions, calibration, canonical)
     non_binary = [row for row in records if row["primitive"] != "noul"]
     binary = [row for row in records if row["primitive"] == "noul"]
-    trials = [(mean_nll(non_binary, predictions, Calibration(temperature=t)), t) for t in TEMPERATURES]
+    trials = [(nll(non_binary, Calibration(temperature=t)), t) for t in TEMPERATURES]
     _, temperature = min(trials, key=lambda pair: (pair[0], abs(pair[1] - 1)))
     binary_trials = []
     for effective_t in TEMPERATURES:
         for bias in BIASES:
             calibration = Calibration(temperature, effective_t / temperature, bias)
-            binary_trials.append((mean_nll(binary, predictions, calibration), calibration))
+            binary_trials.append((nll(binary, calibration), calibration))
     loss, selected = min(binary_trials, key=lambda pair: (pair[0], abs(pair[1].noul_bias), abs(pair[1].noul_temperature - 1)))
     return {"parameters": asdict(selected), "objective": "hard-label NLL on validation records only",
             "fit_records": len(records), "choice_score_records": len(non_binary), "noul_records": len(binary),
             "grid": {"temperatures": TEMPERATURES, "noul_biases": BIASES},
-            "before": {"choice_score_nll": mean_nll(non_binary, predictions, Calibration()),
-                       "noul_nll": mean_nll(binary, predictions, Calibration())},
+            "before": {"choice_score_nll": nll(non_binary, Calibration()), "noul_nll": nll(binary, Calibration())},
             "after": {"choice_score_nll": min(trials)[0], "noul_nll": loss},
             "limitations": "Global calibration only; validation fit is not held-out test performance. No weight changes."}

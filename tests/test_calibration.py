@@ -44,3 +44,11 @@ def test_calibration_reduces_overconfident_validation_loss():
     assert result["after"]["choice_score_nll"] < result["before"]["choice_score_nll"]
     assert result["after"]["noul_nll"] < result["before"]["noul_nll"]
     assert result["parameters"]["temperature"] > 1
+
+
+def test_frozen_split_fit_allows_non_validation_records_only_when_declared():
+    import pytest
+    from shingi.calibration import fit
+    records = [{'id': 'synth/policy/calibration/0', 'split': 'calibration', 'primitive': 'noul'}]
+    with pytest.raises(ValueError, match='validation records only'):
+        fit(records, {})

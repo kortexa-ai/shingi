@@ -24,7 +24,8 @@ def infer(engine, records, path):
     with path.open("x") as stream:
         for index, row in enumerate(records):
             started = time.perf_counter()
-            item = {"id": row["id"], "source": row["source"], "primitive": row["primitive"], "error": None}
+            item = {"id": row["id"], "source": row["source"], "primitive": row["primitive"],
+                    "input_sha256": row["input_sha256"], "error": None}
             try:
                 answer, traces = engine.answer(row["state"], row["question"])
                 item.update(answer=answer, traces=traces)

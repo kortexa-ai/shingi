@@ -11,7 +11,11 @@ def main():
     parser.add_argument("--benchmark", type=Path, default=Path("artifacts/benchmark-v1"))
     parser.add_argument("--run", type=Path, required=True)
     parser.add_argument("--output", type=Path, required=True)
+    parser.add_argument("--data", type=Path, help="data v3 directory; --run is then an evaluate_records.py output")
+    parser.add_argument("--split", default="calibration")
     args = parser.parse_args()
+    if args.data:
+        return fit_frozen_split(args)
     run = json.loads((args.run / "run.json").read_text())
     manifest = json.loads((args.benchmark / "manifest.json").read_text())
     data = (args.benchmark / "calibration.jsonl").read_bytes()
@@ -36,6 +40,30 @@ def main():
         json.dump(result, stream, indent=2)
         stream.write("\n")
     print(json.dumps(result, indent=2))
+
+
+def fit_frozen_split(args):
+    """Data v3: fit on the whole frozen calibration split, replayed in canonical choice order."""
+    from evaluate_records import load_split
+    records, manifest_sha = load_split(args.data, args.split)
+    receipt = json.loads((args.run / "receipt.json").read_text())
+    if receipt["split"] != args.split or receipt["data_manifest_sha256"] != manifest_sha or receipt["calibration_sha256"]:
+        raise SystemExit("run is not an uncalibrated evaluation of this frozen split")
+    with (args.run / "predictions.jsonl").open() as stream:
+        rows = [json.loads(line) for line in stream if line.strip()]
+    predictions = {row["id"]: row for row in rows}
+    if len(predictions) != len(rows) or set(predictions) != {row["id"] for row in records}:
+        raise SystemExit("calibration prediction ID inventory differs")
+    result = fit(records, predictions, frozen_calibration_split=True, canonical=True)
+    result["objective"] = f"hard-label NLL on the frozen data v3 {args.split} split only"
+    result["provenance"] = {"source_revision": receipt["source_revision"], "model_sha256": receipt["model_sha256"],
+                            "adapter_sha256": receipt["adapter_sha256"], "executable_sha256": receipt["executable_sha256"],
+                            "data_manifest_sha256": manifest_sha, "choice_order": "canonical",
+                            "predictions_sha256": hashlib.sha256((args.run / "predictions.jsonl").read_bytes()).hexdigest()}
+    with args.output.open("x") as stream:
+        json.dump(result, stream, indent=2)
+        stream.write("\n")
+    print(json.dumps({k: result[k] for k in ("parameters", "before", "after")}, indent=2))
 
 
 if __name__ == "__main__":
