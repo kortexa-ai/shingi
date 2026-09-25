@@ -252,7 +252,10 @@ therefore `(alpha / rank) · B · H(A)` for folded tensors and
    succeed only by finding a different solution in function space. It stays as
    the cheap first attempt because it keeps the file format and costs little. QAT
    is the planned follow-up:
-   - latent weights initialized from the decoded ternary values;
+   - latent weights initialized from the decoded ternary values. The published
+     `Ternary-Bonsai-2-27B-F16.gguf` holds exactly these values in F16, not
+     weights from before ternarization, so it is not used
+     ([check](../results/stage2/f16-check.md));
    - ternary rounding with a straight-through estimator in forward passes;
    - teacher distillation;
    - MLP layer groups trained in turn to fit memory.
