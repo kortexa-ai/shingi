@@ -114,6 +114,7 @@ def main():
     for name in ("data", "output", "model", "adapter", "executable", "calibration"):
         p.add_argument("--"+name, type=Path, required=True)
     p.add_argument("--manifest-sha256", required=True)
+    p.add_argument("--candidate", help="label for a non-release adapter; --calibration is then a plain fitted JSON")
     a = p.parse_args()
     require_release_environment()
     if sha256(a.data / "manifest.json") != a.manifest_sha256:
@@ -127,11 +128,20 @@ def main():
     if any(r["input_sha256"] != digest([r["state"], r["question"]]) for r in rows):
         raise ValueError("input hash mismatch")
     identity = artifact_identity(a.model, a.adapter)
-    if identity["model"] != RELEASE_MODEL_ID:
-        raise ValueError("this experiment requires current v0.2 release weights")
-    calibration, cal_hash = load_calibration(a.calibration, identity)
-    if cal_hash != "d9523c7a27aaf85fe34bd68bffe4c7b81c31d4a7e9036172394e3d461de52819":
-        raise ValueError("this experiment requires frozen v0.2 calibration")
+    if a.candidate:
+        # Candidate mode: the same frozen inventory and protocol for an unreleased adapter.
+        if identity["model"] == RELEASE_MODEL_ID:
+            raise ValueError("use release mode for the v0.2 weights")
+        identity["model"] = model_id = a.candidate
+        calibration = Calibration(**json.loads(a.calibration.read_text())["parameters"])
+        cal_hash = sha256(a.calibration)
+    else:
+        model_id = RELEASE_MODEL_ID
+        if identity["model"] != RELEASE_MODEL_ID:
+            raise ValueError("this experiment requires current v0.2 release weights")
+        calibration, cal_hash = load_calibration(a.calibration, identity)
+        if cal_hash != "d9523c7a27aaf85fe34bd68bffe4c7b81c31d4a7e9036172394e3d461de52819":
+            raise ValueError("this experiment requires frozen v0.2 calibration")
     a.output.mkdir(parents=True, exist_ok=False)
     started = time.perf_counter()
     receipt = {"started_at": datetime.now(timezone.utc).isoformat(), "identity": identity,
@@ -149,7 +159,7 @@ def main():
         backend = NativeReadout(a.executable, a.model, 16384, adapter=a.adapter)
         sampler.native_pid = backend.process.pid
         receipt["native"] = backend.info
-        engine = DecisionEngine(backend, calibration, model_id=RELEASE_MODEL_ID, canonical_choices=True)
+        engine = DecisionEngine(backend, calibration, model_id=model_id, canonical_choices=True)
         sampler.phase = "warmup"
         answer, traces = engine.answer({"selected_key": "blue"},
             {"type": "choice", "instructions": "Read the selected key.", "criteria": {"red": None, "blue": None}})
@@ -175,7 +185,7 @@ def main():
         for r in reversed_rows:
             r["question"]["criteria"] = dict(reversed(list(r["question"]["criteria"].items())))
         canonical_reverse = infer(engine, reversed_rows, a.output / "canonical-reverse.jsonl")
-        raw_engine = DecisionEngine(backend, calibration, model_id=RELEASE_MODEL_ID)
+        raw_engine = DecisionEngine(backend, calibration, model_id=model_id)
         raw_first = infer(raw_engine, pairs, a.output / "input-order.jsonl")
         raw_reverse = infer(raw_engine, reversed_rows, a.output / "input-order-reverse.jsonl")
         for suite in ("decisionbench", "jevbench", "this-that"):
