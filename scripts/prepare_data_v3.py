@@ -29,7 +29,7 @@ import urllib.request
 from prepare_benchmark import canonical, decode_row, digest, read_jsonl, write_jsonl
 from prepare_training_data import training_prompt
 from shingi.decision import describe
-from shingi.sources_v3 import (CALIBRATION_PER_SOURCE, DEV_PER_SOURCE, HELPSTEER_ATTRIBUTES, JEV_REPO, JEV_REVISION,
+from shingi.sources_v3 import (CALIBRATION_PER_SOURCE, DEV_PER_SOURCE, EVAL_COUNTS_V31, HELPSTEER_ATTRIBUTES, JEV_REPO, JEV_REVISION,
                                LONG_CONTEXT, OOD, OOD_PER_SOURCE, PILOT_FRACTION, PROFILES, TEST_PER_SOURCE, UPSTREAM,
                                YES_NO_GOLD_YES, YES_NO_MIN_RECORDS, YES_NO_MIN_SOURCES, YES_NO_PER_LABEL,
                                commonsense_qa_record, finish, gsm8k_judge_pool, helpsteer_record, license_source,
@@ -315,10 +315,13 @@ def build(args):
     ids = set(prior["train"][0] | prior["eval"][0])
     states = set(prior["train"][1] | prior["eval"][1])
     splits = {"test": [], "ood": [], "dev": [], "calibration": [], "transfer": [], "train": []}
+    eval_count = lambda source, split, count: EVAL_COUNTS_V31.get((source, split), count) if v31 else count
     for source in fit:
-        splits["test"] += select(eval_pool(source, "test"), TEST_PER_SOURCE, ids, states, source + "/test", keep_eval)
+        splits["test"] += select(eval_pool(source, "test"), eval_count(source, "test", TEST_PER_SOURCE), ids, states,
+                                 source + "/test", keep_eval)
     for source in OOD:
-        splits["ood"] += select(pools[source, "test"], OOD_PER_SOURCE, ids, states, source + "/ood", keep_eval)
+        splits["ood"] += select(pools[source, "test"], eval_count(source, "ood", OOD_PER_SOURCE), ids, states,
+                                source + "/ood", keep_eval)
     yes_no_summary = None
     if v31:
         # Calibration yes/no records are chosen first, so development cannot use up the scarce
@@ -340,6 +343,7 @@ def build(args):
         pool = eval_pool(source, "validation")
         splits["dev"] += select(pool, DEV_PER_SOURCE, ids, states, source + "/dev", keep_eval)
         count = CALIBRATION_PER_SOURCE if not v31 or any(not yes_no(r) for r in pool) else 0
+        count = eval_count(source, "calibration", count) if count else 0
         splits["calibration"] += select(pool, count, ids, states, source + "/calibration", other)
     for (source, split), rows in sorted(synth.items()):
         target = {"dev": "dev", "calibration": "calibration", "transfer": "transfer"}.get(split)

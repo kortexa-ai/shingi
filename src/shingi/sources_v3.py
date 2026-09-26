@@ -74,6 +74,12 @@ OOD_PER_SOURCE = 200
 DEV_PER_SOURCE = 50
 CALIBRATION_PER_SOURCE = 50
 PILOT_FRACTION = 1 / 3
+# v3.1 draws fresh evaluation splits, and these pools have fewer free states than the v3
+# per-source counts. HelpSteer2 helpfulness and verbosity rate the same responses, so they share
+# 200 free test states and 151 free validation states; SMS Spam has 187 free test records.
+EVAL_COUNTS_V31 = {("helpsteer2_helpfulness", "test"): 100, ("helpsteer2_verbosity", "test"): 100,
+                   ("helpsteer2_helpfulness", "calibration"): 25, ("helpsteer2_verbosity", "calibration"): 25,
+                   ("sms_spam", "ood"): 180}
 # v3.1 calibration: yes/no records balanced by gold label within each source.
 YES_NO_PER_LABEL = 40
 YES_NO_MIN_RECORDS = 150

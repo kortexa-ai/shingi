@@ -6,7 +6,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
 from prepare_data_v3 import balanced_yes_no, build, check_yes_no, ngrams, prior_records, select, write_profile
-from shingi.sources_v3 import (FIT, FIT_V31, HELPSTEER_ATTRIBUTES, OOD, PROFILES, SYNTHETIC, SYNTHETIC_V31, SkipRow,
+from shingi.sources_v3 import (EVAL_COUNTS_V31, FIT, FIT_V31, HELPSTEER_ATTRIBUTES, OOD, PROFILES, SYNTHETIC, SYNTHETIC_V31, SkipRow,
                                commonsense_qa_record, gsm8k_judge_pool, gsm8k_judge_record, gsm8k_variant,
                                helpsteer_record, license_source, winogrande_record)
 from train_decision_adapter import validate_fitting_sources
@@ -120,6 +120,13 @@ def test_v31_mix_changes_only_helpsteer_and_adds_gsm8k():
     assert PROFILES['v3'] == (FIT, SYNTHETIC)
     assert set(SYNTHETIC) < set(SYNTHETIC_V31) and set(SYNTHETIC_V31) - set(SYNTHETIC) == {
         'synth_judge', 'synth_severity', 'synth_arithmetic'}
+
+
+def test_v31_evaluation_count_exceptions_name_real_sources():
+    for (source, split), count in EVAL_COUNTS_V31.items():
+        assert source in (OOD if split == 'ood' else FIT_V31) and split in ('test', 'ood', 'calibration') and count > 0
+    # Helpfulness and verbosity share one pool of 200 free test states.
+    assert EVAL_COUNTS_V31['helpsteer2_helpfulness', 'test'] + EVAL_COUNTS_V31['helpsteer2_verbosity', 'test'] == 200
 
 
 def test_v31_build_refuses_until_synthetic_counts_are_set(tmp_path):
