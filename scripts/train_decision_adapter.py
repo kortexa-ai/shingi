@@ -18,7 +18,7 @@ from shingi.native_tokenizer import NativeTokenizer
 from shingi.ternary_training import BASE_SHA256, load_bonsai, attach_lora
 from training_canary import export_adapter
 from prepare_training_data import APACHE_SOURCES
-from shingi.sources_v3 import FIT, SYNTHETIC
+from shingi.sources_v3 import PROFILES
 
 
 def sha(path):
@@ -31,7 +31,12 @@ def rows(path):
 
 def validate_fitting_sources(manifest, prepared, dev):
     if manifest.get('profile', '').startswith('v3-'):
-        allowed = set(FIT) | set(SYNTHETIC)
+        # v3.1 manifests keep the v3 profile names and add data_version; older v3 manifests have none.
+        version = manifest.get('data_version', 'v3')
+        if version not in PROFILES:
+            raise ValueError(f'unknown data version {version!r}')
+        fit, synthetic = PROFILES[version]
+        allowed = set(fit) | set(synthetic)
         if set(manifest['train_sources']) - allowed or any(r['source'] not in allowed for r in prepared + dev):
             raise ValueError('non-allowlisted data v3 fitting source')
         return
@@ -68,6 +73,7 @@ def main():
     validate_fitting_sources(manifest, prepared, dev)
     apache = manifest.get('profile') == 'apache-v2'
     v3 = manifest.get('profile', '').startswith('v3-')
+    data_version = manifest.get('data_version', 'v3') if v3 else None
     canonical = apache or v3
     if not prepared:raise RuntimeError('no training records')
     (a.output/'excluded-length.json').write_text(json.dumps(excluded,indent=2)+'\n')
@@ -75,7 +81,7 @@ def main():
     from safetensors.torch import save_file
     from shingi import gpu as rails
     rails.require_training_gpu()
-    torch.set_num_threads(12);torch.manual_seed(20260924 if v3 else 20260923 if apache else 20260922)
+    torch.set_num_threads(12);torch.manual_seed(20260925 if data_version == 'v3.1' else 20260924 if v3 else 20260923 if apache else 20260922)
     started=time.monotonic();stop=False
     def request_stop(*unused):
         nonlocal stop
@@ -96,7 +102,7 @@ def main():
                 'checkpoint_selection':'lowest uncalibrated development NLL; test and calibration not read during training',
                 'initialization':'fresh zero-output LoRA; immutable base; no previous adapter or optimizer',
                 'choice_order':'canonical' if canonical else 'input',
-                'profile':manifest.get('profile', 'original-v1'),
+                'profile':manifest.get('profile', 'original-v1'),'data_version':data_version,
                 'early_stop_patience':2 if canonical else None,
                 'loader':info,'checkpoints':[],'skipped_optimizer_steps':0}
     def save_run():

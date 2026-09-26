@@ -51,3 +51,22 @@ def test_soft_noul_target_follows_semantic_option_after_permutation():
         p=training_prompt(row,variant)
         assert dict(zip(p['option_keys'],p['target']))=={'yes':.75,'no':.25}
         assert p['option_keys'][p['hard_target']]=='yes'
+
+
+def test_v3_fitting_allowlist_follows_the_data_version():
+    v31_only = {'source':'gsm8k_judge'}, {'source':'synth_judge'}, {'source':'synth_arithmetic'}
+    for manifest in ({'profile':'v3-full', 'train_sources':['banking77']},
+                     {'profile':'v3-pilot', 'data_version':'v3', 'train_sources':['banking77']}):
+        validate_fitting_sources(manifest, [{'source':'synth_policy'}], [{'source':'helpsteer'}])
+        for record in v31_only:
+            with pytest.raises(ValueError, match='non-allowlisted'):
+                validate_fitting_sources(manifest, [record], [])
+    manifest = {'profile':'v3-full', 'data_version':'v3.1', 'train_sources':['gsm8k_judge', 'synth_judge']}
+    validate_fitting_sources(manifest, list(v31_only), [{'source':'synth_severity'}, {'source':'banking77'}])
+    for record in ({'source':'boolq'}, {'source':'synth_longctx'}):
+        with pytest.raises(ValueError, match='non-allowlisted'):
+            validate_fitting_sources(manifest, [record], [])
+    with pytest.raises(ValueError, match='non-allowlisted'):
+        validate_fitting_sources({**manifest, 'train_sources':['boolq']}, [], [])
+    with pytest.raises(ValueError, match='unknown data version'):
+        validate_fitting_sources({**manifest, 'data_version':'v4'}, [], [])

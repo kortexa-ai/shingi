@@ -25,8 +25,11 @@ def main():
     result={'data_manifest_sha256':sha(a.data/'manifest.json'),'tokens_sha256':sha(a.data/'tokenized.jsonl'),
             'executable_sha256':sha('artifacts/bin/readout'),'max_tokens':a.max_tokens,'prepared':count,'excluded':excluded,
             'input_tokens':tokens,'synthetic_token_share':tokens['synthetic']/max(1,sum(tokens.values()))}
-    # Data v3 targets about 35% synthetic training tokens.
-    if manifest.get('profile','').startswith('v3-') and not .32<=result['synthetic_token_share']<=.38:
+    v3=manifest.get('profile','').startswith('v3-')
+    # v3.1 manifests keep the v3-pilot/v3-full names and add data_version; older v3 manifests have none.
+    if v3:result['data_version']=manifest.get('data_version','v3')
+    # Data v3 and v3.1 target about 35% synthetic training tokens.
+    if v3 and not .32<=result['synthetic_token_share']<=.38:
         raise RuntimeError(f"synthetic token share {result['synthetic_token_share']:.3f} is outside 0.32-0.38")
     with (a.data/'tokenized-manifest.json').open('x') as f:json.dump(result,f,indent=2)
     print(json.dumps({'prepared':count,'excluded':len(excluded),'synthetic_token_share':result['synthetic_token_share'],'data_manifest_sha256':result['data_manifest_sha256']}))

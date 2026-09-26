@@ -221,3 +221,89 @@ def test_calibration_yes_no_is_balanced_per_source():
     skewed = chosen + [r for r in yes_no_rows('e', 0, 10)]
     with pytest.raises(ValueError, match='gold yes'):
         check_yes_no(skewed, composition, minimum=16, sources=2)
+
+
+def fixture_record(source, key, kind='noul', label='1', split='train'):
+    """A tiny record whose state is unique to source and key, so shared keys share a state."""
+    from shingi.sources_v3 import finish
+    question = ({'type': 'noul', 'instructions': 'Is it so?', 'criteria': {'true': 'yes', 'false': 'no'}}
+                if kind == 'noul' else {'type': 'choice', 'instructions': 'Which?', 'criteria': {'a': 'A', 'b': 'B'}})
+    return finish({'id': f'{source}/{split}/{key}', 'source': source, 'primitive': kind, 'split': split,
+                   'state': f'{source} state {key}.', 'question': question,
+                   'label': label if kind == 'noul' else 'a', 'soft_label': None, 'meta': {}})
+
+
+def fixture_build(tmp_path, monkeypatch, profile):
+    """Run build() on tiny pools: one natural source, one OOD source, one synthetic family plus long context.
+
+    The prior root holds a v3-like dataset whose synthetic evaluation files are byte-identical to the
+    current ones, and whose natural test holds two of the natural test records.
+    """
+    from argparse import Namespace
+    from functools import partial
+    import prepare_data_v3 as build_module
+    from prepare_benchmark import write_jsonl
+    nat = {'train': [fixture_record('nat', f't{i}', 'choice') for i in range(6)],
+           'validation': [fixture_record('nat', f'v{i}', label=str(int(i < 4)), split='validation') for i in range(8)]
+                         + [fixture_record('nat', f'c{i}', 'choice', split='validation') for i in range(6)],
+           'test': [fixture_record('nat', f'e{i}', 'choice', split='test') for i in range(6)]}
+    pools = {('nat', split): rows for split, rows in nat.items()}
+    pools['ood', 'test'] = [fixture_record('ood', f'o{i}', 'choice', split='test') for i in range(3)]
+    judge = {'train': [fixture_record('synth_judge', f't{i}') for i in range(4)]
+                      # Share states with the calibration records (the balanced pool leaves some yes records
+                      # unselected) and with the v3 development record d0.
+                      + [fixture_record('synth_judge', key) for key in ('c0', 'c2', 'c3', 'c4', 'd0')],
+             'dev': [fixture_record('synth_judge', 'd0', split='dev')],
+             'calibration': [fixture_record('synth_judge', f'c{i}', label=str(int(i != 1)), split='calibration')
+                             for i in range(5)] + [fixture_record('synth_judge', 'cc', 'choice', split='calibration')],
+             'transfer': [fixture_record('synth_judge', 'x0', split='transfer')]}
+    longctx = {split: [fixture_record('synth_longctx', f'{split}0', split=split)]
+               for split in ('train', 'dev', 'transfer')}
+    synth = {('synth_judge', split): rows for split, rows in judge.items()}
+    synth |= {('synth_longctx', split): rows for split, rows in longctx.items()}
+    prior = tmp_path / 'v3'
+    (prior / 'longctx').mkdir(parents=True)
+    write_jsonl(prior / 'test.jsonl', nat['test'][:2])
+    write_jsonl(prior / 'train.jsonl', judge['train'][:1])
+    write_jsonl(prior / 'dev.jsonl', judge['dev'])
+    # The yes calibration records are new, as in a new family, so only this build's rule keeps them out of training.
+    write_jsonl(prior / 'calibration.jsonl', [r for r in judge['calibration'] if r['label'] != '1'])
+    write_jsonl(prior / 'transfer.jsonl', judge['transfer'])
+    write_jsonl(prior / 'longctx' / 'dev.jsonl', longctx['dev'])
+    write_jsonl(prior / 'longctx' / 'eval.jsonl', longctx['transfer'])
+    licenses = tmp_path / 'licenses.json'
+    licenses.write_text(json.dumps({'sources': {'nat': {'role': 'fit', 'cleared': True}}}))
+    monkeypatch.setitem(PROFILES, profile, ({'nat': ('jev', 2)}, {'synth_judge': 4}))
+    for name, value in (('OOD', ('ood',)), ('TEST_PER_SOURCE', 2), ('OOD_PER_SOURCE', 2), ('DEV_PER_SOURCE', 2),
+                        ('CALIBRATION_PER_SOURCE', 2), ('YES_NO_PER_LABEL', 2),
+                        ('check_yes_no', partial(check_yes_no, minimum=4, sources=2)),
+                        ('jev_pools', lambda raw, sources, files: dict(pools)),
+                        ('converted_pools', lambda *args: {}),
+                        ('synthetic_splits', lambda directory, synthetic: ({'files': {}}, synth))):
+        monkeypatch.setattr(build_module, name, value)
+    output = tmp_path / 'out'
+    build(Namespace(profile=profile, licenses=licenses, output=output, cache=tmp_path / 'cache',
+                    synthetic=tmp_path, synthetic_revision='rev', prior=[prior], external=[]))
+    read = lambda path: [json.loads(line) for line in path.read_text().splitlines()]
+    return {name: {r['id'] for r in read(output / f'{name}.jsonl')}
+            for name in ('train', 'test', 'dev', 'calibration', 'transfer')} | {
+        'longctx': {r['id'] for name in ('dev', 'eval') for r in read(output / 'longctx' / f'{name}.jsonl')}}
+
+
+def test_v31_reuses_synthetic_evaluation_and_draws_fresh_natural_evaluation(tmp_path, monkeypatch):
+    out = fixture_build(tmp_path, monkeypatch, 'v3.1')
+    # Natural evaluation is fresh: the two v3 test records are not drawn again.
+    assert len(out['test']) == 2 and not out['test'] & {'nat/test/e0', 'nat/test/e1'}
+    # Synthetic evaluation files are reused although v3 already evaluated on them.
+    assert out['dev'] >= {'synth_judge/dev/d0'} and out['transfer'] == {'synth_judge/transfer/x0'}
+    assert out['longctx'] == {'synth_longctx/dev/dev0', 'synth_longctx/transfer/transfer0'}
+    synthetic_calibration = {i for i in out['calibration'] if i.startswith('synth_judge/')}
+    # One yes and the only no (c1) from the balanced pool, plus the choice record.
+    assert len(synthetic_calibration) == 3 and {'synth_judge/calibration/cc', 'synth_judge/calibration/c1'} <= synthetic_calibration
+    # Training excludes every evaluation state: v3 evaluation, and synthetic records selected or not.
+    assert {i for i in out['train'] if i.startswith('synth_judge/')} == {f'synth_judge/train/t{i}' for i in range(4)}
+
+
+def test_v3_profile_still_excludes_earlier_synthetic_evaluation(tmp_path, monkeypatch):
+    with pytest.raises(ValueError, match='synth_judge/calibration: need 6, found 4'):
+        fixture_build(tmp_path, monkeypatch, 'v3')

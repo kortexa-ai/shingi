@@ -10,6 +10,12 @@ evaluation states. No model or GPU is used; raw data stays in ignored artifacts.
 and balances the calibration split's yes/no records by source and gold label.
 Its manifests keep the `v3-pilot` and `v3-full` training profile names, so the
 trainer applies the v3 recipe, and add `data_version: v3.1`.
+
+v3.1 draws fresh natural evaluation splits, disjoint from every earlier record.
+Synthetic evaluation files are generator-owned, and the old families' files are
+byte-identical to v3, so v3.1 reuses them: their selection ignores earlier
+evaluation records and excludes only earlier training records and this build's
+own selections. Training still excludes every evaluation state of v3 and v3.1.
 """
 import argparse
 from collections import Counter
@@ -131,6 +137,13 @@ def select(rows, count, ids, states, tag, keep=lambda row: True):
     if len(chosen) != count:
         raise ValueError(f"{tag}: need {count}, found {len(chosen)}")
     return chosen
+
+
+def synthetic_exclusions(prior, splits):
+    """v3.1 exclusion sets for synthetic evaluation files: earlier training records and this build's
+    selections, but not earlier evaluation records, which these generator-owned files may repeat."""
+    chosen = [r for rows in splits.values() for r in rows]
+    return prior["train"][0] | {r["id"] for r in chosen}, prior["train"][1] | {r["state_sha256"] for r in chosen}
 
 
 def yes_no(row):
@@ -310,12 +323,18 @@ def build(args):
     if v31:
         # Calibration yes/no records are chosen first, so development cannot use up the scarce
         # positives (39 of 500 in the Civil Comments validation pool). Development keeps the v3 selection.
-        yes_no_pools = {s: (eval_pool(s, "validation"), keep_eval) for s in fit}
-        yes_no_pools |= {s: (rows, lambda row: True) for (s, split), rows in sorted(synth.items())
-                         if split == "calibration" and s != LONG_CONTEXT}
-        calibration_yes_no, composition = balanced_yes_no(yes_no_pools, YES_NO_PER_LABEL, ids, states, "calibration")
-        yes_no_summary = check_yes_no(calibration_yes_no, composition)
+        natural_pools = {s: (eval_pool(s, "validation"), keep_eval) for s in fit}
+        synthetic_pools = {s: (rows, lambda row: True) for (s, split), rows in sorted(synth.items())
+                           if split == "calibration" and s != LONG_CONTEXT}
+        calibration_yes_no, composition = balanced_yes_no(natural_pools, YES_NO_PER_LABEL, ids, states, "calibration")
         splits["calibration"] += calibration_yes_no
+        synth_ids, synth_states = synthetic_exclusions(prior, splits)
+        synthetic_yes_no, synthetic_composition = balanced_yes_no(synthetic_pools, YES_NO_PER_LABEL, synth_ids,
+                                                                  synth_states, "calibration")
+        splits["calibration"] += synthetic_yes_no
+        ids |= {r["id"] for r in synthetic_yes_no}
+        states |= {r["state_sha256"] for r in synthetic_yes_no}
+        yes_no_summary = check_yes_no(calibration_yes_no + synthetic_yes_no, composition | synthetic_composition)
     other = (lambda row: keep_eval(row) and not yes_no(row)) if v31 else keep_eval
     for source in fit:
         pool = eval_pool(source, "validation")
@@ -327,7 +346,14 @@ def build(args):
         if target == "calibration" and v31:
             rows = [r for r in rows if not yes_no(r)]
         if target and source != LONG_CONTEXT:
-            splits[target] += select(rows, len(rows), ids, states, f"{source}/{split}")
+            if v31:
+                synth_ids, synth_states = synthetic_exclusions(prior, splits)
+                chosen = select(rows, len(rows), synth_ids, synth_states, f"{source}/{split}")
+                ids |= {r["id"] for r in chosen}
+                states |= {r["state_sha256"] for r in chosen}
+            else:
+                chosen = select(rows, len(rows), ids, states, f"{source}/{split}")
+            splits[target] += chosen
 
     # Training may reuse earlier training records, never any evaluation state.
     forbidden_ids = set(prior["eval"][0]) | {r["id"] for s in splits.values() for r in s}
@@ -336,6 +362,13 @@ def build(args):
         if split != "train":
             forbidden_ids |= {r["id"] for r in rows}
             forbidden_states |= {r["state_sha256"] for r in rows}
+    if v31:
+        # Unselected synthetic evaluation records (such as yes/no calibration records beyond the
+        # balanced cap) stay out of training too. Long context is excluded below by its own splits.
+        for (source, split), rows in synth.items():
+            if split != "train" and source != LONG_CONTEXT:
+                forbidden_ids |= {r["id"] for r in rows}
+                forbidden_states |= {r["state_sha256"] for r in rows}
     # 13-gram contamination: synthetic data must not overlap evaluation text at all; natural
     # records are dropped as near duplicates above NEAR_DUPLICATE and otherwise only reported.
     evaluation_grams = set()
@@ -372,8 +405,12 @@ def build(args):
 
     long_splits = {}
     for split, name in (("train", "train"), ("dev", "dev"), ("transfer", "eval")):
-        long_splits[name] = select(synth[LONG_CONTEXT, split], len(synth[LONG_CONTEXT, split]), forbidden_ids,
-                                   forbidden_states, f"{LONG_CONTEXT}/{split}")
+        exclude_ids, exclude_states = forbidden_ids, forbidden_states
+        if v31 and split != "train":
+            # The long-context evaluation files are byte-identical to v3's and are reused.
+            exclude_ids, exclude_states = synthetic_exclusions(prior, dict(splits, **long_splits))
+        long_splits[name] = select(synth[LONG_CONTEXT, split], len(synth[LONG_CONTEXT, split]), exclude_ids,
+                                   exclude_states, f"{LONG_CONTEXT}/{split}")
 
     # Isolation: no ID or state appears in two splits; nothing from earlier evaluation enters training.
     everything = dict(splits, **{"longctx-" + k: v for k, v in long_splits.items()})
