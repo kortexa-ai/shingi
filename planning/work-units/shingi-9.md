@@ -25,6 +25,12 @@ The plan is in [docs/data-v3.md](../../docs/data-v3.md). Stage 1 results are in
   shift is wrong for request-defined decisions whose base rates differ. The
   temperature-only fit selects the identity. This policy was chosen after the
   out-of-distribution result was seen; the report discloses that.
+- **ECE gate.** Franci accepted the locked-test ECE miss (0.040 against 0.035)
+  on 2026-09-26; accuracy is the program's priority, and NLL, Brier and
+  out-of-distribution ECE improve.
+- **Parallel work.** Data v3.1 (#11, CPU) and stage 2 method work on the stage 1
+  teacher (GPU) proceed in parallel. The stage 2 measurement is method
+  de-risking: it does not depend on which teacher is final.
 - **Stage 2 path.** The merge check shows a naive merge loses the whole adapter
   and a scale-only projection reaches cosine 0.088; QAT is the expected path.
   The published F16 Bonsai file is dequantized ternary and is not used.
