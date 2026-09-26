@@ -91,11 +91,12 @@ def tally(items):
             "difference": paired_interval(differences, 10000 if n >= 200 else 2000)}
 
 
-def grouped(items, key):
+def grouped(items, key, order=None):
     groups = defaultdict(list)
     for i in items:
         groups[key(i)].append(i)
-    return {str(k): tally(v) for k, v in sorted(groups.items(), key=lambda kv: str(kv[0]))}
+    keys = [k for k in order if k in groups] if order else sorted(groups, key=str)
+    return {str(k): tally(groups[k]) for k in keys}
 
 
 def spread(values):
@@ -158,8 +159,10 @@ def analyse(suite, rows, old, new):
         structure = {}
         for scope in ["all"] + (subsets if len(subsets) > 1 else []):
             selected = [i for i in items if scope == "all" or records[i["id"]]["subset"] == scope]
-            structure[scope] = {"by_options": grouped(selected, lambda i: option_bucket(i["n_options"])),
-                                "by_state_chars": grouped(selected, lambda i: state_bucket(i["state_chars"])),
+            structure[scope] = {"by_options": grouped(selected, lambda i: option_bucket(i["n_options"]),
+                                                      [b[2] for b in OPTION_BUCKETS]),
+                                "by_state_chars": grouped(selected, lambda i: state_bucket(i["state_chars"]),
+                                                          [b[2] for b in STATE_BUCKETS]),
                                 "group_consistency": consistency(selected, group_of)}
         result["structure"] = structure
     if suite == "this-that":

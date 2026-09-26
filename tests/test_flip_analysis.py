@@ -66,3 +66,9 @@ def test_inventory_mismatch_fails(tmp_path):
     (tmp_path / 'jevbench.jsonl').write_text(json.dumps(pred(rows[0], .9)) + '\n' + json.dumps(changed) + '\n')
     with pytest.raises(SystemExit, match='input hash'):
         load_run(tmp_path, rows, 'jevbench')
+
+
+def test_bucket_tables_keep_declared_order():
+    from flip_analysis import OPTION_BUCKETS, grouped
+    items = [{'old': 1, 'new': 1, 'n': n} for n in (30, 2, 4)]
+    assert list(grouped(items, lambda i: option_bucket(i['n']), [b[2] for b in OPTION_BUCKETS])) == ['2', '3-4', '25-52']
