@@ -4,6 +4,12 @@ Run on the host that holds earlier Shingi artifacts. Every earlier project recor
 is excluded from new evaluation splits by ID and state hash. Training also
 excludes every public validation/test state, selected or not, and all earlier
 evaluation states. No model or GPU is used; raw data stays in ignored artifacts.
+
+`--profile v3` (the default) reproduces the frozen v3 build and its manifests.
+`--profile v3.1` uses the v3.1 mix from sources_v3.PROFILES, adds GSM8K judging
+and balances the calibration split's yes/no records by source and gold label.
+Its manifests keep the `v3-pilot` and `v3-full` training profile names, so the
+trainer applies the v3 recipe, and add `data_version: v3.1`.
 """
 import argparse
 from collections import Counter
@@ -17,9 +23,10 @@ import urllib.request
 from prepare_benchmark import canonical, decode_row, digest, read_jsonl, write_jsonl
 from prepare_training_data import training_prompt
 from shingi.decision import describe
-from shingi.sources_v3 import (CALIBRATION_PER_SOURCE, DEV_PER_SOURCE, FIT, HELPSTEER_ATTRIBUTES, JEV_REPO,
-                               JEV_REVISION, LONG_CONTEXT, OOD, OOD_PER_SOURCE, PILOT_FRACTION, SYNTHETIC,
-                               TEST_PER_SOURCE, UPSTREAM, commonsense_qa_record, finish, helpsteer_record,
+from shingi.sources_v3 import (CALIBRATION_PER_SOURCE, DEV_PER_SOURCE, HELPSTEER_ATTRIBUTES, JEV_REPO, JEV_REVISION,
+                               LONG_CONTEXT, OOD, OOD_PER_SOURCE, PILOT_FRACTION, PROFILES, TEST_PER_SOURCE, UPSTREAM,
+                               YES_NO_GOLD_YES, YES_NO_MIN_RECORDS, YES_NO_MIN_SOURCES, YES_NO_PER_LABEL,
+                               commonsense_qa_record, finish, gsm8k_judge_pool, helpsteer_record, license_source,
                                winogrande_record)
 
 SEED = "shingi-data-v3-20260924"
@@ -27,7 +34,10 @@ TRAIN_PROMPT_CHARS = 7600  # about 1,900 tokens; tokenization later enforces 2,0
 EVAL_STATE_CHARS = 40000   # keeps evaluation prompts well inside the 16K context
 NEAR_DUPLICATE = .2        # shared 13-gram fraction; boilerplate stays, reworded duplicates go
 TRAIN_FILES = {"train.jsonl", "train-prompts.jsonl", "tokenized.jsonl"}
-SYNTH_FAMILIES = [name.removeprefix("synth_") for name in SYNTHETIC] + [LONG_CONTEXT.removeprefix("synth_")]
+
+
+def synth_families(synthetic):
+    return [name.removeprefix("synth_") for name in synthetic] + [LONG_CONTEXT.removeprefix("synth_")]
 
 
 def sha256(path):
@@ -102,8 +112,8 @@ def prompt_chars(row):
     return len(training_prompt(row, 0, SEED)["prompt"])
 
 
-def select(rows, count, ids, states, tag, keep=lambda row: True):
-    """Deterministic hash order; chosen IDs and states join the exclusion sets."""
+def take(rows, count, ids, states, tag, keep=lambda row: True):
+    """Up to count rows in deterministic hash order; chosen IDs and states join the exclusion sets."""
     chosen = []
     for row in sorted(rows, key=lambda r: digest(SEED + "|" + tag + "|" + r["id"])):
         if len(chosen) == count:
@@ -113,9 +123,54 @@ def select(rows, count, ids, states, tag, keep=lambda row: True):
         chosen.append(row)
         ids.add(row["id"])
         states.add(row["state_sha256"])
+    return chosen
+
+
+def select(rows, count, ids, states, tag, keep=lambda row: True):
+    chosen = take(rows, count, ids, states, tag, keep)
     if len(chosen) != count:
         raise ValueError(f"{tag}: need {count}, found {len(chosen)}")
     return chosen
+
+
+def yes_no(row):
+    return row["question"]["type"] == "noul"
+
+
+def balanced_yes_no(pools, per_label, ids, states, tag):
+    """Stratify yes/no records by source with equal gold yes and no in each source.
+
+    pools maps source -> (rows, keep). Each source gives min(per_label, available yes,
+    available no) records of each label, so a source short of one label still
+    contributes a balanced share.
+    """
+    chosen, composition = [], {}
+    for source, (rows, keep) in pools.items():
+        free = [r for r in rows if yes_no(r) and keep(r) and r["id"] not in ids and r["state_sha256"] not in states]
+        groups = {label: [r for r in free if r["label"] == label] for label in ("1", "0")}
+        available = {label: len({r["state_sha256"] for r in group}) for label, group in groups.items()}
+        if not any(available.values()):
+            continue
+        count = min(per_label, *available.values())
+        picked = {label: take(group, count, ids, states, f"{source}/{tag}/{label}") for label, group in groups.items()}
+        count = min(map(len, picked.values()))
+        rows = picked["1"][:count] + picked["0"][:count]
+        chosen += rows
+        composition[source] = {"records": len(rows), "gold_yes": count,
+                               "available_yes": available["1"], "available_no": available["0"]}
+    return chosen, composition
+
+
+def check_yes_no(records, composition, minimum=YES_NO_MIN_RECORDS, share=YES_NO_GOLD_YES, sources=YES_NO_MIN_SOURCES):
+    """The calibration yes/no gate; returns the summary recorded in the manifest."""
+    yes = sum(r["label"] == "1" for r in records)
+    used = sorted(s for s, c in composition.items() if c["records"])
+    summary = {"records": len(records), "gold_yes": yes, "gold_yes_share": yes / len(records) if records else 0,
+               "sources": len(used), "per_label_cap": YES_NO_PER_LABEL, "by_source": composition}
+    if len(records) < minimum or not share[0] <= summary["gold_yes_share"] <= share[1] or len(used) < sources:
+        raise ValueError(f"calibration yes/no pool fails its gate: {len(records)} records, "
+                         f"{summary['gold_yes_share']:.1%} gold yes, {len(used)} sources")
+    return summary
 
 
 def jev_pools(raw, sources, files):
@@ -143,7 +198,7 @@ def upstream_rows(raw, origin, split, files):
     return pq.read_table(dest).to_pylist()
 
 
-def converted_pools(raw, pools, files):
+def converted_pools(raw, pools, files, fit, stats):
     """Converted sources: (source, split) -> records, split in train/validation."""
     scales = {}
     for attribute in ("helpfulness", "verbosity"):
@@ -170,13 +225,19 @@ def converted_pools(raw, pools, files):
         for source, convert in (("commonsense_qa", commonsense_qa_record), ("winogrande", winogrande_record)):
             records = [convert(split, i, row) for i, row in enumerate(upstream_rows(raw, source, split, files))]
             out[source, split] = [r for r in records if r is not None]
+        if "gsm8k_judge" in fit:
+            records, skipped = gsm8k_judge_pool(split, upstream_rows(raw, "gsm8k", split, files), SEED)
+            out["gsm8k_judge", split] = records
+            stats[split] = {"records": len(records), "skipped": sum(skipped.values()),
+                            "variants": dict(sorted(Counter(r["meta"]["variant"] for r in records).items())),
+                            "skip_reasons": dict(sorted(skipped.items()))}
     return out
 
 
-def synthetic_splits(directory):
+def synthetic_splits(directory, synthetic):
     manifest = json.loads((directory / "manifest.json").read_text())
     splits = {}
-    for family in SYNTH_FAMILIES:
+    for family in synth_families(synthetic):
         for path in sorted((directory / family).glob("*.jsonl")):
             recorded = manifest["files"].get(f"{family}/{path.name}", {}).get("sha256")
             if recorded != sha256(path):
@@ -191,7 +252,7 @@ def training_prompts(rows):
     return sorted(prompts, key=lambda p: digest(SEED + "|order|" + p["id"]))
 
 
-def write_profile(directory, profile, train, dev, calibration, parent):
+def write_profile(directory, profile, train, dev, calibration, parent, extra=None):
     directory.mkdir()
     write_jsonl(directory / "train-prompts.jsonl", training_prompts(train))
     write_jsonl(directory / "dev.jsonl", dev)
@@ -202,7 +263,7 @@ def write_profile(directory, profile, train, dev, calibration, parent):
                 "train_sources": sorted(by_source), "train_by_source": dict(sorted(by_source.items())),
                 "train_records": len(train), "synthetic_record_share": synthetic / len(train),
                 "choice_order": "one seeded random order per record; inference sorts keys",
-                "max_context": 2048}
+                "max_context": 2048, **(extra or {})}
     for name in ("train-prompts", "dev", "calibration"):
         manifest[name + "_sha256"] = sha256(directory / (name + ".jsonl"))
     (directory / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
@@ -210,8 +271,14 @@ def write_profile(directory, profile, train, dev, calibration, parent):
 
 
 def build(args):
-    licenses = json.loads(args.licenses.read_text())
+    fit, synthetic = PROFILES[args.profile]
+    if None in synthetic.values():
+        raise SystemExit(f"{args.profile}: synthetic family counts are not set yet (TODO #11)")
+    v31 = args.profile == "v3.1"
+    licenses_path = args.licenses or Path(f"results/data-{args.profile}/licenses.json")
+    licenses = json.loads(licenses_path.read_text())
     blocked = [n for n, e in licenses["sources"].items() if e["role"] == "fit" and not e.get("cleared")]
+    blocked += [n for n in sorted({license_source(s) for s in fit}) if not licenses["sources"].get(n, {}).get("cleared")]
     if blocked:
         raise SystemExit(f"uncleared fitting sources: {blocked}")
     if args.output.exists():
@@ -219,14 +286,15 @@ def build(args):
     raw = args.cache
     files = {}
     prior, prior_files = prior_records(args.prior)
-    jev_sources = sorted({s for s, (origin, _) in FIT.items() if origin == "jev"} | set(OOD))
+    jev_sources = sorted({s for s, (origin, _) in fit.items() if origin == "jev"} | set(OOD))
     pools = jev_pools(raw, jev_sources, files)
-    pools.update(converted_pools(raw, pools, files))
-    synth_manifest, synth = synthetic_splits(args.synthetic)
+    gsm8k_stats = {}
+    pools.update(converted_pools(raw, pools, files, fit, gsm8k_stats))
+    synth_manifest, synth = synthetic_splits(args.synthetic, synthetic)
 
     def eval_pool(source, split):
         # Converted sources hide or lack official test labels; their validation split is the evaluation pool.
-        if FIT.get(source, ("jev",))[0] == "jev":
+        if fit.get(source, ("jev",))[0] == "jev":
             return pools[source, split]
         return pools[source, "validation"]
 
@@ -234,16 +302,30 @@ def build(args):
     ids = set(prior["train"][0] | prior["eval"][0])
     states = set(prior["train"][1] | prior["eval"][1])
     splits = {"test": [], "ood": [], "dev": [], "calibration": [], "transfer": [], "train": []}
-    for source in FIT:
+    for source in fit:
         splits["test"] += select(eval_pool(source, "test"), TEST_PER_SOURCE, ids, states, source + "/test", keep_eval)
     for source in OOD:
         splits["ood"] += select(pools[source, "test"], OOD_PER_SOURCE, ids, states, source + "/ood", keep_eval)
-    for source in FIT:
-        splits["dev"] += select(eval_pool(source, "validation"), DEV_PER_SOURCE, ids, states, source + "/dev", keep_eval)
-        splits["calibration"] += select(eval_pool(source, "validation"), CALIBRATION_PER_SOURCE, ids, states,
-                                        source + "/calibration", keep_eval)
+    yes_no_summary = None
+    if v31:
+        # Calibration yes/no records are chosen first, so development cannot use up the scarce
+        # positives (39 of 500 in the Civil Comments validation pool). Development keeps the v3 selection.
+        yes_no_pools = {s: (eval_pool(s, "validation"), keep_eval) for s in fit}
+        yes_no_pools |= {s: (rows, lambda row: True) for (s, split), rows in sorted(synth.items())
+                         if split == "calibration" and s != LONG_CONTEXT}
+        calibration_yes_no, composition = balanced_yes_no(yes_no_pools, YES_NO_PER_LABEL, ids, states, "calibration")
+        yes_no_summary = check_yes_no(calibration_yes_no, composition)
+        splits["calibration"] += calibration_yes_no
+    other = (lambda row: keep_eval(row) and not yes_no(row)) if v31 else keep_eval
+    for source in fit:
+        pool = eval_pool(source, "validation")
+        splits["dev"] += select(pool, DEV_PER_SOURCE, ids, states, source + "/dev", keep_eval)
+        count = CALIBRATION_PER_SOURCE if not v31 or any(not yes_no(r) for r in pool) else 0
+        splits["calibration"] += select(pool, count, ids, states, source + "/calibration", other)
     for (source, split), rows in sorted(synth.items()):
         target = {"dev": "dev", "calibration": "calibration", "transfer": "transfer"}.get(split)
+        if target == "calibration" and v31:
+            rows = [r for r in rows if not yes_no(r)]
         if target and source != LONG_CONTEXT:
             splits[target] += select(rows, len(rows), ids, states, f"{source}/{split}")
 
@@ -276,11 +358,11 @@ def build(args):
             return False
         grams = ngrams(record_text(row))
         return not grams or len(grams & evaluation_grams) / len(grams) <= NEAR_DUPLICATE
-    for source, (_, count) in FIT.items():
+    for source, (_, count) in fit.items():
         chosen = select(pools[source, "train"], count, forbidden_ids, forbidden_states, source + "/train", keep_train)
         reused += sum(r["id"] in prior["train"][0] for r in chosen)
         per_source[source] = chosen
-    for source, count in SYNTHETIC.items():
+    for source, count in synthetic.items():
         rows = synth[source, "train"]
         if len(rows) < count:
             raise ValueError(f"{source}: need {count} synthetic training records, found {len(rows)}")
@@ -322,7 +404,7 @@ def build(args):
     for name, rows in long_splits.items():
         write_jsonl(args.output / "longctx" / f"{name}.jsonl", rows)
     (args.output / "contamination.json").write_text(json.dumps(contamination, indent=2) + "\n")
-    manifest = {"seed": SEED, "licenses_sha256": sha256(args.licenses),
+    manifest = {"seed": SEED, "licenses_sha256": sha256(licenses_path),
                 "transformation": {"repository": JEV_REPO, "revision": JEV_REVISION},
                 "synthetic": {"repository": "kortexa-ai/shingi-synthetic", "revision": args.synthetic_revision,
                               "manifest": synth_manifest},
@@ -334,14 +416,19 @@ def build(args):
                 "reused_earlier_training_records": reused, "overlap_state_sha256": overlap,
                 "limits": {"train_prompt_chars": TRAIN_PROMPT_CHARS, "eval_state_chars": EVAL_STATE_CHARS},
                 "pretraining_contamination": "Unknown for natural sources."}
+    extra = None
+    if v31:
+        extra = {"data_version": "v3.1"}
+        manifest.update(profile="v3.1", fit=dict(fit), synthetic_counts=dict(synthetic),
+                        gsm8k_judge=gsm8k_stats, calibration_yes_no=yes_no_summary)
     for name in splits:
         manifest[name + "_sha256"] = sha256(args.output / f"{name}.jsonl")
     for name in long_splits:
         manifest["longctx-" + name + "_sha256"] = sha256(args.output / "longctx" / f"{name}.jsonl")
     (args.output / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")
     parent = sha256(args.output / "manifest.json")
-    profiles = {"pilot": write_profile(args.output / "pilot", "v3-pilot", pilot, splits["dev"], splits["calibration"], parent),
-                "full": write_profile(args.output / "full", "v3-full", splits["train"], splits["dev"], splits["calibration"], parent)}
+    profiles = {"pilot": write_profile(args.output / "pilot", "v3-pilot", pilot, splits["dev"], splits["calibration"], parent, extra),
+                "full": write_profile(args.output / "full", "v3-full", splits["train"], splits["dev"], splits["calibration"], parent, extra)}
     print(json.dumps({"counts": manifest["counts"], "synthetic_record_share": manifest["synthetic_record_share"],
                       "pilot": profiles["pilot"]["train_records"], "reused": reused,
                       "natural_13gram_hits": {k: v["13gram_hits"] for k, v in contamination.items() if not k.startswith("synth_")}},
@@ -356,7 +443,8 @@ def main():
     parser.add_argument("--synthetic-revision", required=True)
     parser.add_argument("--prior", type=Path, nargs="+", required=True, help="earlier artifact roots")
     parser.add_argument("--external", type=Path, nargs="*", default=[], help="external benchmark record files")
-    parser.add_argument("--licenses", type=Path, default=Path("results/data-v3/licenses.json"))
+    parser.add_argument("--profile", choices=sorted(PROFILES), default="v3")
+    parser.add_argument("--licenses", type=Path, help="default: results/data-<profile>/licenses.json")
     build(parser.parse_args())
 
 

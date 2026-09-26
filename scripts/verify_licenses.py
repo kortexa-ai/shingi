@@ -1,4 +1,7 @@
-"""Freeze license evidence for data v3 before any fitting data is prepared.
+"""Freeze license evidence for data v3 and v3.1 before any fitting data is prepared.
+
+The registry covers the fitting sources of every data profile. The output path
+defaults to the v3 record; v3.1 writes `--output results/data-v3.1/licenses.json`.
 
 Fetches each dataset card at its pinned revision, records the stated license
 and the card checksum, and fails when a fitting source lacks an explicit
@@ -14,7 +17,7 @@ from pathlib import Path
 import re
 import urllib.request
 
-from shingi.sources_v3 import FIT, JEV_REPO, JEV_REVISION, OOD
+from shingi.sources_v3 import JEV_REPO, JEV_REVISION, OOD, PROFILES, license_source
 
 PERMISSIVE = {"cc-by-4.0", "cc-by-3.0", "cc0-1.0", "mit", "apache-2.0"}
 HF = "https://huggingface.co/datasets"
@@ -43,6 +46,8 @@ REGISTRY = {
                    [("https://raw.githubusercontent.com/allenai/winogrande/727e837f77521ef38bcc56df3b275c8da43f45af/README.md",
                      r"The dataset is licensed under CC-BY")],
                    "converted here; the Hub card has no license field, upstream README states CC-BY"),
+    "gsm8k": ("fit", "openai/gsm8k", "740312add88f781978c0658806c59bc2815b9866", [],
+              "data v3.1; converted here into strict judging records with computed labels"),
     # Evaluation-only sources.
     "mnli": ("ood", "nyu-mll/multi_nli", "da70db2af9d09693783c3320c4249840212ee221", [], "mixed incl. share-alike"),
     "chaosnli": ("ood", None, None, [], "CC BY-SA 4.0 per jev-bench manifest"),
@@ -119,9 +124,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--output", type=Path, default=Path("results/data-v3/licenses.json"))
     args = parser.parse_args()
-    fit_names = {"helpsteer2" if n.startswith("helpsteer2_") else n for n in FIT}
+    fit_names = {license_source(n) for fit, _ in PROFILES.values() for n in fit}
     if fit_names != {n for n, s in REGISTRY.items() if s[0] == "fit"}:
-        raise SystemExit("fitting registry does not match sources_v3.FIT")
+        raise SystemExit("fitting registry does not match the sources_v3 profiles")
     ood_names = {"strategyqa" if n.startswith("strategyqa_") else n for n in OOD}
     if ood_names != {n for n, s in REGISTRY.items() if s[0] == "ood"}:
         raise SystemExit("evaluation registry does not match sources_v3.OOD")
