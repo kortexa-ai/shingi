@@ -64,7 +64,7 @@ FIT_V31 = {**FIT, "helpsteer2_helpfulness": ("jev", 700), "helpsteer2_verbosity"
 # Synthetic generator v1.1 (kortexa-ai/shingi-synthetic at 2a46d571). The proposal (judge 1,500,
 # severity 1,000, arithmetic 1,000, policy 1,300, routing 900, taxonomy 700, state 1,300, rubric 400)
 # measured 41% of exact Bonsai tokens; every family was scaled by 0.78 and rounded to 50s.
-# Predicted from the probe tokenization: 35.15% full, 34.95% pilot.
+# Measured on the frozen v3.1 build: 35.15% of exact tokens in full, 34.95% in the pilot.
 SYNTHETIC_V31 = {"synth_policy": 1000, "synth_routing": 700, "synth_taxonomy": 550, "synth_state": 1000,
                  "synth_rubric": 300, "synth_judge": 1150, "synth_severity": 800, "synth_arithmetic": 800}
 PROFILES = {"v3": (FIT, SYNTHETIC), "v3.1": (FIT_V31, SYNTHETIC_V31)}
