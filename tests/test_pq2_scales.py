@@ -76,14 +76,20 @@ def test_row_hadamard_matches_training_transform():
     np.testing.assert_allclose(a @ x, fwht_rows(a, signs, 1024) @ hx, atol=1e-4)
 
 
-def test_scaled_matmul_gradient_matches_autograd():
+def test_scaled_matmul_uses_rounded_forward_and_straight_through_factor_gradient():
     torch = pytest.importorskip('torch')
     from train_scales import scaled_matmul
     torch.manual_seed(0)
-    x = torch.randn(2, 5, 256, dtype=torch.float32)
+    x = torch.randn(2, 5, 256, dtype=torch.float32, requires_grad=True)
     weight = torch.randn(3, 256, dtype=torch.float16)
-    factors = torch.rand(3, 2, dtype=torch.float32, requires_grad=True)
-    reference = torch.rand_like(factors).requires_grad_(False).copy_(factors.detach()).requires_grad_(True)
-    scaled_matmul().apply(x, weight, factors).square().sum().backward()
-    (torch.nn.functional.linear(x, weight.float() * reference.repeat_interleave(128, 1))).square().sum().backward()
-    torch.testing.assert_close(factors.grad, reference.grad, rtol=1e-4, atol=1e-3)
+    factors = (1 + .01 * torch.randn(3, 2)).requires_grad_(True)
+    y = scaled_matmul().apply(x, weight, factors)
+    y.square().sum().backward()
+    rounded = (weight.float() * factors.detach().repeat_interleave(128, 1)).half().float()
+    torch.testing.assert_close(y, torch.nn.functional.linear(x.detach(), rounded))
+    g = 2 * y.detach().reshape(-1, 3)
+    flat = x.detach().reshape(-1, 256)
+    torch.testing.assert_close(x.grad, (g @ rounded).reshape(x.shape))
+    expected = ((g.T @ flat) * weight.float()).reshape(3, 2, 128).sum(-1)  # unrounded straight-through
+    assert expected.abs().min() > 0
+    torch.testing.assert_close(factors.grad, expected, rtol=1e-4, atol=1e-3)

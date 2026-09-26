@@ -6,7 +6,9 @@ import numpy as np
 import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'scripts'))
-from train_scales import check_wrapped, differing_bytes, native_parity, target_map, unit_parity
+from shingi.pq2_scales import scaled_bytes, split
+from shingi.ternary_training import decode_pq2
+from train_scales import changed_scales, check_wrapped, differing_bytes, native_parity, target_map, unit_parity
 
 FIELDS = {'qwen35.ssm.group_count': 2, 'qwen35.ssm.time_step_rank': 4, 'qwen35.ssm.state_size': 2,
           'qwen35.ssm.inner_size': 12, 'prism.hadamard.inverse_weight_names': ['token_embd.weight']}
@@ -99,3 +101,31 @@ def test_distill_loss_is_stationary_at_the_teacher():
     logits = teacher.clone().requires_grad_(True)
     distill_loss(logits, teacher, torch.tensor([0., 1., 0.]), 1.).backward()
     torch.testing.assert_close(logits.grad, torch.zeros(3))
+
+
+def ternary(rows=4, width=256, seed=0):
+    rng = np.random.default_rng(seed)
+    codes = rng.integers(0, 3, size=(rows, width), dtype=np.uint8)
+    bits = np.sum(codes.reshape(rows, width // 128, 32, 4) << np.arange(0, 8, 2, dtype=np.uint8), axis=-1).astype(np.uint8)
+    scales = rng.uniform(.001, .05, size=(rows, width // 128)).astype('<f2')
+    return np.concatenate((scales[..., None].view(np.uint8), bits), axis=-1).reshape(-1)
+
+
+def test_fp16_scaled_weight_equals_exported_ternary_weight():
+    torch = pytest.importorskip('torch')
+    from train_scales import effective
+    data = ternary(seed=3)
+    factors = (1 + .003 * np.random.default_rng(4).standard_normal((4, 2))).astype(np.float32)
+    scales, codes = split(data, 4, 256)
+    rounded = effective(torch.from_numpy(decode_pq2(data, 4, 256)), torch.from_numpy(factors)).numpy()
+    np.testing.assert_array_equal(rounded, (codes * (scales * factors).astype(np.float16)[..., None]).reshape(4, 256))
+    np.testing.assert_array_equal(rounded, decode_pq2(scaled_bytes(data, 4, 256, factors), 4, 256).astype(np.float32))
+
+
+def test_changed_scales_counts_fp16_visible_blocks():
+    data = ternary()
+    assert changed_scales(data, 4, 256, np.ones((4, 2))) == 0
+    assert changed_scales(data, 4, 256, np.full((4, 2), 1 + 1e-5)) == 0  # below FP16 resolution
+    factors = np.ones((4, 2))
+    factors[1, 0] = factors[3, 1] = 1.02
+    assert changed_scales(data, 4, 256, factors) == 2

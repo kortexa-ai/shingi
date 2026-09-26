@@ -9,6 +9,14 @@ Canary and training run only on an operator-authorized GPU with the adapter rail
 The (factor - 1)^2 penalty is a mean over tensors of per-tensor means, so under
 AdamW it is numerically inert; the effective bounds are the learning rate, the
 step count and development early stopping. The default is kept for comparability.
+
+FP16 resolution: the export stores fp16(scale x factor), so the forward pass uses the
+same FP16-rounded effective weights with a straight-through factor gradient. The
+trained model therefore equals the exported one, and latent factor changes below
+FP16 resolution (about 0.05-0.1% relative) have no effect until they accumulate.
+At the 2e-4 peak learning rate, AdamW moves a factor with a consistent gradient
+sign across a rounding boundary within about 2-5 updates, and up to about 0.1 over
+the pilot epoch, so the default is kept.
 """
 import argparse
 import gc
@@ -28,13 +36,17 @@ from shingi.backend import NativeReadout
 from shingi.decision import DecisionEngine
 from shingi.metrics import report
 from shingi.native_tokenizer import NativeTokenizer
-from shingi.pq2_scales import BLOCK, export_scaled, scaled_bytes
+from shingi.pq2_scales import BLOCK, blocks, export_scaled, scaled_bytes
 from shingi.ternary_training import BASE_SHA256, GLOBAL, MAPPING, decode_pq2, hadamard, load_bonsai, reorder_rows
 from train_decision_adapter import rows, sha, validate_fitting_sources
 
 TEACHER_WEIGHT, REGULARIZATION, LEARNING_RATE, ACCUMULATION, WARMUP = .7, 1e-3, 2e-4, 8, 32
 CANARY_CONTEXT = 2048
 CHUNK = 1 << 28  # FP32 elements expanded at once; only the 1.27B-element output matrix is split
+PERTURBATION = .01  # canary export-plumbing factors 1 +/- 1%, far above FP16 resolution
+FP16_RESOLUTION = ("forward uses FP16-rounded effective scales with a straight-through factor gradient, "
+                   "so the trained model equals the export; latent factor changes below FP16 resolution "
+                   "(about 0.05-0.1% relative) have no effect until they accumulate")
 NATIVE_GATE = {"argmax_agreement": .95, "mean_tvd": .03, "max_tvd": .10, "centered_logit_rmse": .30}
 
 
@@ -99,18 +111,24 @@ def spans(rows_, width, chunk):
     return [slice(s, min(s + step, rows_)) for s in range(0, rows_, step)]
 
 
+def effective(weight, factors):
+    """FP16-rounded scaled weight, as the export stores it."""
+    return (weight.float() * factors.repeat_interleave(BLOCK, dim=1)).half().float()
+
+
 def scaled_matmul(chunk=CHUNK):
     import torch
 
     class ScaledMatmul(torch.autograd.Function):
-        # y = x (W * f)^T with one factor per 128-weight block. Only f is trainable;
-        # the expanded FP32 matrix is transient and built in bounded row chunks.
+        # y = x fp16(W * f)^T with one factor per 128-weight block. Only f is trainable.
+        # Each stored weight is code x scale with code in {-1, 0, 1}, so fp16(W * f) equals
+        # code x fp16(scale x f): exactly the exported PQ2_0 weight. The factor gradient is
+        # straight-through (unrounded). The FP32 matrix is transient and built in row chunks.
         @staticmethod
         def forward(ctx, x, weight, factors):
             ctx.save_for_backward(x, weight, factors)
             x = x.float()
-            out = [torch.nn.functional.linear(x, weight[s].float() * factors[s].repeat_interleave(BLOCK, dim=1))
-                   for s in spans(*weight.shape, chunk)]
+            out = [torch.nn.functional.linear(x, effective(weight[s], factors[s])) for s in spans(*weight.shape, chunk)]
             return out[0] if len(out) == 1 else torch.cat(out, -1)
 
         @staticmethod
@@ -122,7 +140,7 @@ def scaled_matmul(chunk=CHUNK):
             grad_f = torch.empty_like(factors)
             for s in spans(*weight.shape, chunk):
                 w = weight[s].float()
-                grad_x += flat_g[:, s] @ (w * factors[s].repeat_interleave(BLOCK, dim=1))
+                grad_x += flat_g[:, s] @ effective(weight[s], factors[s])
                 grad_f[s] = ((flat_g[:, s].T @ flat_x) * w).reshape(w.shape[0], -1, BLOCK).sum(-1)
             return grad_x.reshape(x.shape), None, grad_f
 
@@ -213,6 +231,19 @@ def differing_bytes(a, b, chunk=1 << 28):
             if not p:
                 return count
             count += int(np.count_nonzero(np.frombuffer(p, np.uint8) != np.frombuffer(q, np.uint8)))
+
+
+def changed_scales(data, rows, width, factors):
+    """Blocks whose exported FP16 scale differs from the stored one."""
+    old = blocks(data, rows, width)[..., :2]
+    new = blocks(scaled_bytes(data, rows, width, factors), rows, width)[..., :2]
+    return int(np.count_nonzero((old != new).any(-1)))
+
+
+def visible_changes(base, factors, prism):
+    tensors = {t.name: t for t in gguf(prism, base).tensors}
+    return sum(changed_scales(np.asarray(tensors[n].data).reshape(-1), int(tensors[n].shape[1]), int(tensors[n].shape[0]), v)
+               for n, v in factors.items())
 
 
 def verify_export(base, output, factors, prism):
@@ -329,15 +360,22 @@ def canary_torch(args, prompts, result, save):
         raise RuntimeError("optimizer step did not change any factor")
     model.eval()
     model.gradient_checkpointing_disable()
-    trained = logits()
     stepped = stored_factors(modules)
+    # Export plumbing uses a deliberate +/-1% random-sign perturbation of every block,
+    # since one real step stays mostly below FP16 resolution.
+    generator = torch.Generator(device="cuda").manual_seed(20260926)
+    with torch.no_grad():
+        for p in params:
+            p.copy_(1 + PERTURBATION * (torch.randint(0, 2, p.shape, generator=generator, device="cuda") * 2 - 1))
+    perturbed_logits = logits()
+    perturbed = stored_factors(modules)
     with torch.no_grad():
         for p in params:
             p.fill_(1.)
     unit = stored_factors(modules)
     if not all((v == 1).all() for v in unit.values()):
         raise RuntimeError("factor reset failed")
-    return trained, stepped, unit
+    return stepped, perturbed, perturbed_logits, unit
 
 
 def canary(args):
@@ -345,7 +383,7 @@ def canary(args):
     args.output.mkdir(parents=True, exist_ok=False)
     result = {"passed": False, "code_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
               "native_kv": "f16", "learning_rate": LEARNING_RATE, "teacher_weight": TEACHER_WEIGHT,
-              "native_gate": NATIVE_GATE}
+              "native_gate": NATIVE_GATE, "perturbation": PERTURBATION, "fp16_resolution": FP16_RESOLUTION}
     save = lambda: (args.output / "parity.json").write_text(json.dumps(result, indent=2) + "\n")
     try:
         from shingi.gpu import selected_gpu
@@ -363,11 +401,15 @@ def canary(args):
                 p.update(tokenizer.encode(p["prompt"], p["labels"]))
         finally:
             tokenizer.close()
-        trained, stepped, unit = canary_torch(args, prompts, result, save)
+        stepped, perturbed, perturbed_logits, unit = canary_torch(args, prompts, result, save)
         import torch
         gc.collect()
         torch.cuda.empty_cache()
-        # 5. Unit export is byte-identical; a stepped export changes only scale bytes and loads natively.
+        # Information only: blocks whose exported FP16 scale the real step changed.
+        result["fp16_visible_factor_changes"] = visible_changes(args.model, stepped, args.prism)
+        del stepped
+        save()
+        # 5. Unit export is byte-identical; a perturbed export changes only scale bytes and loads natively.
         path = args.output / "unit.gguf"
         export_scaled(args.model, path, unit, args.prism)
         result["unit_export_sha256"] = sha(path)
@@ -375,12 +417,12 @@ def canary(args):
         if result["unit_export_sha256"] != BASE_SHA256:
             raise RuntimeError("unit-factor export is not byte-identical to the base")
         path = args.output / "canary.gguf"
-        export_scaled(args.model, path, stepped, args.prism)
+        export_scaled(args.model, path, perturbed, args.prism)
         try:
-            result["canary_export"] = verify_export(args.model, path, stepped, args.prism)
+            result["canary_export"] = verify_export(args.model, path, perturbed, args.prism)
             save()
             if not result["canary_export"]["changed_bytes"]:
-                raise RuntimeError("stepped export changed no scale bytes")
+                raise RuntimeError("perturbed export changed no scale bytes")
             native = NativeReadout("artifacts/bin/readout", path, 2048)
             try:
                 reloaded = [native.infer(p["prompt"], p["labels"])["logits"] for p in prompts]
@@ -388,9 +430,9 @@ def canary(args):
                 native.close()
         finally:
             path.unlink()
-        result["native_parity"] = native_parity(trained, reloaded)
+        result["native_parity"] = native_parity(perturbed_logits, reloaded)
         if not result["native_parity"]["passed"]:
-            raise RuntimeError("stepped export does not reproduce the differentiable logits natively")
+            raise RuntimeError("perturbed export does not reproduce the differentiable logits natively")
         result["passed"] = True
     except BaseException as exc:
         result["failure"] = f"{type(exc).__name__}: {exc}"
@@ -458,6 +500,7 @@ def train(args):
                                "learning_rate": args.learning_rate, "gradient_accumulation": ACCUMULATION,
                                "warmup_updates": WARMUP, "schedule": "linear warmup, cosine to 0.2 of peak",
                                "optimizer": "AdamW betas (0.9, 0.95), no weight decay", "gradient_clip": 1.},
+           "fp16_resolution": FP16_RESOLUTION,
            "loss": "cross entropy against teacher_weight x teacher softmax + (1 - teacher_weight) x label target",
            "checkpoint_selection": "lowest uncalibrated development NLL; test and calibration not read",
            "early_stop_patience": 2, "planned_updates": updates, "max_seconds": args.max_seconds,
