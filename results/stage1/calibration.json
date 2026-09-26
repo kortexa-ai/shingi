@@ -1,0 +1,65 @@
+{
+  "parameters": {
+    "temperature": 1.0,
+    "noul_temperature": 1.0,
+    "noul_bias": 0.0
+  },
+  "fit_records": 1050,
+  "choice_score_records": 977,
+  "noul_records": 73,
+  "grid": {
+    "temperatures": [
+      0.5,
+      0.65,
+      0.8,
+      1.0,
+      1.25,
+      1.5,
+      2.0,
+      2.5,
+      3.0,
+      4.0
+    ],
+    "noul_biases": [
+      0.0
+    ]
+  },
+  "before": {
+    "choice_score_nll": 0.692179429579995,
+    "noul_nll": 0.31156442043274174
+  },
+  "after": {
+    "choice_score_nll": 0.692179429579995,
+    "noul_nll": 0.31156442043274174
+  },
+  "limitations": "Global temperatures only; no weight changes. The yes/no bias is not fitted because the split's yes/no pool is small and its gold-yes share reflects a few sources.",
+  "objective": "hard-label NLL on the frozen data v3 calibration split only; temperatures only, yes/no bias fixed at 0",
+  "noul_pool": {
+    "records": 73,
+    "gold_yes": 15,
+    "gold_yes_share": 0.2054794520547945,
+    "by_source": {
+      "civil_comments": {
+        "records": 50,
+        "gold_yes": 6
+      },
+      "synth_policy": {
+        "records": 5,
+        "gold_yes": 2
+      },
+      "synth_state": {
+        "records": 18,
+        "gold_yes": 7
+      }
+    }
+  },
+  "provenance": {
+    "source_revision": "ed6d73c85211b01dbd77c5a3132a9c631a38b67f",
+    "model_sha256": "3907dc1658db1f78a9826bf8d5bcb8dc65db0d466388937af57f2294fae62ec1",
+    "adapter_sha256": "d22a1075c089982e350de00d97fc29028cb8b01f5f2261eff687b8e1c38a4e3a",
+    "executable_sha256": "dd71ef5ac08ac18e2028db3dd84dcca7864f12b904fb9a76379c12c0f034c2fb",
+    "data_manifest_sha256": "86849abf96ff17db1e8073b52e6e6ddca6cd1103fd583dc9170391f6f5068204",
+    "choice_order": "canonical",
+    "predictions_sha256": "9d14b36be85e2978533801c3149acde30eabaa44ac31d68aa2d105e0b3912b3e"
+  }
+}
