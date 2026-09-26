@@ -67,6 +67,16 @@ The plan is in [docs/data-v3.md](../../docs/data-v3.md). Stage 1 results are in
   2,048-token step 13.8 s; peak reserved 58.1 GiB with 36.1 GiB free.
 - Stage 2 teacher: full-2048 adapter, 8,532 pilot prompts; teacher on v3
   development 76.3%, NLL 0.617.
+- Stage 2 scale-only run (block 02, pilot profile, FP16 straight-through
+  forward): 857 updates in 41,618 s, stopped at the 39,600 s training cap with
+  development NLL still falling (0.763 → 0.708 → 0.684 → 0.678). Export
+  `shingi-ternary.gguf`, 7,206,168,928 bytes, SHA-256 `44e7e634…5914e`.
+- Ternary file on the locked test: 69.8% / NLL 0.829 / ECE 0.030; teacher 70.8%
+  / 0.793 / 0.040; v0.2 65.5% / 1.001 / 0.035. Versus teacher −1.03 points
+  [−1.97, −0.09]; versus v0.2 +4.3 [+3.1, +5.5] with no source regression. The
+  native development score (73.4% / 0.678) equals the training-time score of the
+  exported checkpoint. Stage 2 gates: interval and NLL pass; the 1.0-point
+  difference misses by 0.03.
 
 ## Incidents
 
