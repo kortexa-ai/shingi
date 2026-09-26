@@ -22,3 +22,13 @@ def test_load_split_requires_frozen_checksum(tmp_path):
         load_split(tmp_path, 'dev')
     with pytest.raises(ValueError, match='frozen split changed'):
         load_split(tmp_path, 'test')
+
+
+def test_model_identity_is_strict_unless_labeled():
+    from evaluate_records import model_identity
+    from shingi.release import BASE_SHA256
+    assert model_identity(BASE_SHA256, 7) == {'model_sha256': BASE_SHA256, 'model_label': 'base', 'model_bytes': 7}
+    with pytest.raises(ValueError, match='base checksum mismatch'):
+        model_identity('0' * 64, 7)
+    assert model_identity('0' * 64, 7, 'stage2-scales-01') == {
+        'model_sha256': '0' * 64, 'model_label': 'stage2-scales-01', 'model_bytes': 7}

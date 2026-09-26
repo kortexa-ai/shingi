@@ -1,5 +1,8 @@
 """Native evaluation of one frozen record split, base or adapter, with every trace kept.
 
+The model must be the pinned base unless --candidate-model labels another file,
+such as a stage 2 scale-only export; its actual checksum and size are recorded.
+
 Checks the split against its data manifest before loading, then scores with the
 canonical choice order used by v0.2 and data v3. Use only on an authorized GPU;
 this script never manages services.
@@ -49,10 +52,18 @@ def load_split(data, split):
     return read_jsonl(path), sha256(data / "manifest.json")
 
 
+def model_identity(digest, size, label=None):
+    """Receipt fields for the evaluated model; only a labeled candidate may differ from the base."""
+    if label is None and digest != BASE_SHA256:
+        raise ValueError("base checksum mismatch")
+    return {"model_sha256": digest, "model_label": label or "base", "model_bytes": size}
+
+
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--model", type=Path, required=True)
     p.add_argument("--adapter", type=Path)
+    p.add_argument("--candidate-model", metavar="LABEL", help="evaluate a non-base model file under this label")
     p.add_argument("--calibration", type=Path, help="frozen calibration JSON; raw logits when omitted")
     p.add_argument("--executable", type=Path, default=Path("artifacts/bin/readout"))
     p.add_argument("--data", type=Path, required=True, help="directory holding manifest.json and <split>.jsonl")
@@ -62,13 +73,12 @@ def main():
     require_release_environment()
     if subprocess.check_output(["git", "status", "--porcelain"], text=True).strip():
         raise RuntimeError("commit source before evaluation")
-    if sha256(a.model) != BASE_SHA256:
-        raise ValueError("base checksum mismatch")
+    identity = model_identity(sha256(a.model), a.model.stat().st_size, a.candidate_model)
     records, manifest_sha = load_split(a.data, a.split)
     calibration = Calibration(**json.loads(a.calibration.read_text())["parameters"]) if a.calibration else Calibration()
     a.output.mkdir(parents=True, exist_ok=False)
     receipt = {"split": a.split, "records": len(records), "data_manifest_sha256": manifest_sha,
-               "model_sha256": BASE_SHA256, "adapter_sha256": sha256(a.adapter) if a.adapter else None,
+               **identity, "adapter_sha256": sha256(a.adapter) if a.adapter else None,
                "calibration_sha256": sha256(a.calibration) if a.calibration else None,
                "executable_sha256": sha256(a.executable), "gpu": gpu_snapshot(),
                "source_revision": subprocess.check_output(["git", "rev-parse", "HEAD"], text=True).strip(),
