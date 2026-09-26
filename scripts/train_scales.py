@@ -33,6 +33,8 @@ def teacher(args):
     out = args.output
     if out.exists():
         raise SystemExit("preserve existing teacher logits")
+    if sha(args.model) != BASE_SHA256:
+        raise RuntimeError("base checksum mismatch")
     readout = NativeReadout("artifacts/bin/readout", args.model, 4096, adapter=args.adapter)
     try:
         with out.open("x") as stream:
@@ -41,7 +43,7 @@ def teacher(args):
                 stream.write(json.dumps({"id": row["id"], "logits": logits}) + "\n")
     finally:
         readout.close()
-    receipt = {"adapter_sha256": sha(args.adapter), "tokens_sha256": sha(data / "tokenized.jsonl"),
+    receipt = {"model_sha256": BASE_SHA256, "adapter_sha256": sha(args.adapter), "tokens_sha256": sha(data / "tokenized.jsonl"),
                "teacher_sha256": sha(out), "executable_sha256": sha("artifacts/bin/readout")}
     out.with_suffix(".json").write_text(json.dumps(receipt, indent=2) + "\n")
 
