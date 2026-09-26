@@ -286,7 +286,7 @@ def write_profile(directory, profile, train, dev, calibration, parent, extra=Non
 def build(args):
     fit, synthetic = PROFILES[args.profile]
     if None in synthetic.values():
-        raise SystemExit(f"{args.profile}: synthetic family counts are not set yet (TODO #11)")
+        raise SystemExit(f"{args.profile}: synthetic family counts are not set")
     v31 = args.profile == "v3.1"
     licenses_path = args.licenses or Path(f"results/data-{args.profile}/licenses.json")
     licenses = json.loads(licenses_path.read_text())

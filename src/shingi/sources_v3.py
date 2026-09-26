@@ -61,12 +61,12 @@ FIT_V31 = {**FIT, "helpsteer2_helpfulness": ("jev", 700), "helpsteer2_verbosity"
            "helpsteer2_correctness": ("helpsteer2", 300), "helpsteer2_coherence": ("helpsteer2", 300),
            "helpsteer2_complexity": ("helpsteer2", 300), "helpsteer": ("helpsteer", 500),
            "gsm8k_judge": ("gsm8k", 1500)}
-# TODO(#11): set counts when the v3.1 synthetic generators are frozen. Expected families:
-# synth_policy, synth_routing, synth_taxonomy, synth_state, synth_rubric, and the new
-# synth_judge (strict pass/fail), synth_severity (holistic ordinal scales) and
-# synth_arithmetic (numeric and date rules). The v3.1 build refuses to run while any is None.
-SYNTHETIC_V31 = dict.fromkeys(("synth_policy", "synth_routing", "synth_taxonomy", "synth_state", "synth_rubric",
-                               "synth_judge", "synth_severity", "synth_arithmetic"))
+# Synthetic generator v1.1 (kortexa-ai/shingi-synthetic at 2a46d571). The proposal (judge 1,500,
+# severity 1,000, arithmetic 1,000, policy 1,300, routing 900, taxonomy 700, state 1,300, rubric 400)
+# measured 41% of exact Bonsai tokens; every family was scaled by 0.78 and rounded to 50s.
+# Predicted from the probe tokenization: 35.15% full, 34.95% pilot.
+SYNTHETIC_V31 = {"synth_policy": 1000, "synth_routing": 700, "synth_taxonomy": 550, "synth_state": 1000,
+                 "synth_rubric": 300, "synth_judge": 1150, "synth_severity": 800, "synth_arithmetic": 800}
 PROFILES = {"v3": (FIT, SYNTHETIC), "v3.1": (FIT_V31, SYNTHETIC_V31)}
 
 TEST_PER_SOURCE = 200

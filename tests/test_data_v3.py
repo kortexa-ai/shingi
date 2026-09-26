@@ -129,11 +129,13 @@ def test_v31_evaluation_count_exceptions_name_real_sources():
     assert EVAL_COUNTS_V31['helpsteer2_helpfulness', 'test'] + EVAL_COUNTS_V31['helpsteer2_verbosity', 'test'] == 200
 
 
-def test_v31_build_refuses_until_synthetic_counts_are_set(tmp_path):
+def test_v31_synthetic_counts_keep_the_proposed_proportions(monkeypatch):
     from argparse import Namespace
-    assert None in SYNTHETIC_V31.values()
-    with pytest.raises(SystemExit, match='TODO #11'):
-        build(Namespace(profile='v3.1', licenses=None, output=tmp_path / 'out'))
+    assert sum(SYNTHETIC_V31.values()) == 6300 and all(count % 50 == 0 for count in SYNTHETIC_V31.values())
+    assert SYNTHETIC_V31['synth_judge'] > SYNTHETIC_V31['synth_severity'] == SYNTHETIC_V31['synth_arithmetic']
+    monkeypatch.setitem(SYNTHETIC_V31, 'synth_judge', None)
+    with pytest.raises(SystemExit, match='counts are not set'):
+        build(Namespace(profile='v3.1', licenses=None, output=None))
 
 
 PROBLEM = 'Tom has 3 boxes with 4 apples each. He buys 5 more apples. How many apples does he have?'
