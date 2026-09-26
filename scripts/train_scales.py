@@ -90,7 +90,7 @@ def pq2_targets(model_path, prism):
     """GGUF PQ2_0 tensor name -> (module path, row permutation) for every scaled matmul."""
     reader = gguf(prism, model_path)
     f = {k: v.contents() for k, v in reader.fields.items() if not k.startswith("tokenizer.")}
-    tensors = [(t.name, t.tensor_type.name, int(t.shape[1])) for t in reader.tensors]
+    tensors = [(t.name, t.tensor_type.name, int(t.shape[1])) for t in reader.tensors if t.tensor_type.name == "PQ2_0"]
     return target_map(tensors, f), int(f["prism.hadamard.block_size"])
 
 
