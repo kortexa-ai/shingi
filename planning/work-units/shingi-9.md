@@ -35,6 +35,16 @@ The plan is in [docs/data-v3.md](../../docs/data-v3.md). Stage 1 results are in
   and a scale-only projection reaches cosine 0.088; QAT is the expected path.
   The published F16 Bonsai file is dequantized ternary and is not used.
 
+- **FP16 scale resolution.** PQ2_0 scales are FP16 (about 0.05–0.1% relative
+  steps), so scale-only training rounds the effective scale to FP16 in the
+  forward pass with a straight-through gradient; the trained model then equals
+  the exported file. Canary block 01 found this: one step at lr 2e-4 changed
+  190M factors in FP32 and zero scale bytes on export. Since each stored weight
+  is code × scale with code in {−1, 0, 1}, fp16(w × f) = code × fp16(scale × f).
+- **Data v3.1 evaluation.** v3.1 draws a fresh locked test and OOD split; v0.2,
+  stage 1 and v3.1 are all evaluated on them. Old synthetic families are
+  byte-identical to v1, so their evaluation records equal v3's.
+
 ## Validation facts
 
 - Full run: 25,597 prompts, stopped at update 2,560 after two checks without
@@ -52,6 +62,11 @@ The plan is in [docs/data-v3.md](../../docs/data-v3.md). Stage 1 results are in
   temporal items lose three, gain none.
 - Gates not met as measured: DecisionBench hard, public JevBench, and
   locked-test ECE (0.040 against 0.035, with better NLL and Brier).
+- Stage 2 canary block 01: 401 PQ2_0 tensors and 199,987,200 factors wrapped;
+  1,186 sampled rows match stored bytes; unit-factor parity RMSE 8.8e-7; one
+  2,048-token step 13.8 s; peak reserved 58.1 GiB with 36.1 GiB free.
+- Stage 2 teacher: full-2048 adapter, 8,532 pilot prompts; teacher on v3
+  development 76.3%, NLL 0.617.
 
 ## Incidents
 
