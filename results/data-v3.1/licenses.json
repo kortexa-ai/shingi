@@ -1,0 +1,406 @@
+{
+  "audited_at": "2026-09-26T00:49:32+00:00",
+  "policy": "Fit only on explicit CC BY, CC0, MIT or Apache-2.0 sources. Share-alike and unclear licenses are evaluation-only; restricted or disputed sources are excluded. Raw data is not redistributed.",
+  "transformation": {
+    "repository": "Praveenrajus/jev-bench",
+    "revision": "002ad22de8db2df5e0eb898b3da8072dbd4af4de",
+    "card_sha256": "d146973ad2368aa80df9772ac3f327af966815950e95cdf331017d48d8fa7318",
+    "terms": "Repackaging under upstream source licenses."
+  },
+  "synthetic": {
+    "repository": "kortexa-ai/shingi-synthetic",
+    "terms": "Proprietary to Kortexa AI; private."
+  },
+  "sources": {
+    "banking77": {
+      "role": "fit",
+      "note": "via jev-bench",
+      "repository": "PolyAI/banking77",
+      "revision": "90d4e2ee5521c04fc1488f065b8b083658768c57",
+      "card_url": "https://huggingface.co/datasets/PolyAI/banking77/raw/90d4e2ee5521c04fc1488f065b8b083658768c57/README.md",
+      "card_sha256": "b494ae99274ad98adfedfefcb504469197a8732f9726f678320f4aaafc5502bf",
+      "stated_license": [
+        "cc-by-4.0"
+      ],
+      "evidence": [],
+      "cleared": true
+    },
+    "clinc150": {
+      "role": "fit",
+      "note": "via jev-bench",
+      "repository": "clinc/clinc_oos",
+      "revision": "155b9c710419136e17307b80d0a13e68cd46b4ec",
+      "card_url": "https://huggingface.co/datasets/clinc/clinc_oos/raw/155b9c710419136e17307b80d0a13e68cd46b4ec/README.md",
+      "card_sha256": "e28704a3c04f6b05c286ca2a8891bbf32c69c000dedfc5825d6e1713369b7a89",
+      "stated_license": [
+        "cc-by-3.0"
+      ],
+      "evidence": [],
+      "cleared": true
+    },
+    "mmlu": {
+      "role": "fit",
+      "note": "via jev-bench",
+      "repository": "cais/mmlu",
+      "revision": "c30699e8356da336a370243923dbaf21066bb9fe",
+      "card_url": "https://huggingface.co/datasets/cais/mmlu/raw/c30699e8356da336a370243923dbaf21066bb9fe/README.md",
+      "card_sha256": "665eef35ecd8a89037c1e4f1e1a0d7fd4c154edc04c81cea5634ace2d3e96953",
+      "stated_license": [
+        "mit"
+      ],
+      "evidence": [
+        {
+          "url": "https://raw.githubusercontent.com/hendrycks/test/4450500f923c49f1fb1dd3d99108a0bd9717b660/LICENSE",
+          "sha256": "5d841b9eee8bf0d721359b79fbae956a8b426d3139bfefee32149c7d4f2a1a9c",
+          "pattern": "MIT License",
+          "found": true
+        }
+      ],
+      "cleared": true
+    },
+    "helpsteer2": {
+      "role": "fit",
+      "note": "helpfulness and verbosity via jev-bench; correctness, coherence and complexity converted here",
+      "repository": "nvidia/HelpSteer2",
+      "revision": "990b2711a36180dd19d9c94b8627844866f8982a",
+      "card_url": "https://huggingface.co/datasets/nvidia/HelpSteer2/raw/990b2711a36180dd19d9c94b8627844866f8982a/README.md",
+      "card_sha256": "835effb9e7d9cd0e8b7b8c1816d1d97a8961a036543108e4a0b6a5e22712ff7b",
+      "stated_license": [
+        "cc-by-4.0"
+      ],
+      "evidence": [],
+      "cleared": true
+    },
+    "measuring_hate_speech": {
+      "role": "fit",
+      "note": "via jev-bench",
+      "repository": "ucberkeley-dlab/measuring-hate-speech",
+      "revision": "5468f6e118396646b02a2f691e771f6b6d9502ea",
+      "card_url": "https://huggingface.co/datasets/ucberkeley-dlab/measuring-hate-speech/raw/5468f6e118396646b02a2f691e771f6b6d9502ea/README.md",
+      "card_sha256": "310b4713d2aa78d239664f4613328a532483ace32525f17860fca02daf29aa8c",
+      "stated_license": [
+        "cc-by-4.0"
+      ],
+      "evidence": [],
+      "cleared": true
+    },
+    "civil_comments": {
+      "role": "fit",
+      "note": "via jev-bench",
+      "repository": "google/civil_comments",
+      "revision": "f2970eb3a55777454c94069077cc8d9b5866312d",
+      "card_url": "https://huggingface.co/datasets/google/civil_comments/raw/f2970eb3a55777454c94069077cc8d9b5866312d/README.md",
+      "card_sha256": "8ce0fee0cce0d54ddd5daaad7ba7cd5ed31d78b8e8f2d5cd2345b0dd015932c6",
+      "stated_license": [
+        "cc0-1.0"
+      ],
+      "evidence": [],
+      "cleared": true
+    },
+    "go_emotions": {
+      "role": "fit",
+      "note": "via jev-bench; moved from holdout",
+      "repository": "google-research-datasets/go_emotions",
+      "revision": "add492243ff905527e67aeb8b80c082af02207c3",
+      "card_url": "https://huggingface.co/datasets/google-research-datasets/go_emotions/raw/add492243ff905527e67aeb8b80c082af02207c3/README.md",
+      "card_sha256": "0a5a9f3a949cce822f6d7453b91433b9fac739187f51ecc665fc5b8a6ec291ba",
+      "stated_license": [
+        "apache-2.0"
+      ],
+      "evidence": [],
+      "cleared": true
+    },
+    "ledgar": {
+      "role": "fit",
+      "note": "via jev-bench; moved from holdout; license stated for LexGLUE as a whole",
+      "repository": "coastalcph/lex_glue",
+      "revision": "c23fdff1a6bf74e0e1a71cb86f1e781d37da888c",
+      "card_url": "https://huggingface.co/datasets/coastalcph/lex_glue/raw/c23fdff1a6bf74e0e1a71cb86f1e781d37da888c/README.md",
+      "card_sha256": "132da3adf6de8e30e4f3d6f4f305e7ae37c11060bcaa1462fe2c589aa910d1fa",
+      "stated_license": [
+        "cc-by-4.0"
+      ],
+      "evidence": [],
+      "cleared": true
+    },
+    "massive": {
+      "role": "fit",
+      "note": "via jev-bench from the mteb/amazon_massive_intent mirror",
+      "repository": "AmazonScience/massive",
+      "revision": "ff6bd8e4b27c3543e4f8fe2108f32bb95a6f8740",
+      "card_url": "https://huggingface.co/datasets/AmazonScience/massive/raw/ff6bd8e4b27c3543e4f8fe2108f32bb95a6f8740/README.md",
+      "card_sha256": "9a74b2298db2cb509eb39725612ef5d5b9eb99d59ef7c960ab01f58526051e3d",
+      "stated_license": [
+        "cc-by-4.0"
+      ],
+      "evidence": [],
+      "cleared": true
+    },
+    "helpsteer": {
+      "role": "fit",
+      "note": "converted here",
+      "repository": "nvidia/HelpSteer",
+      "revision": "3ca5d59c1bc1080af195b4254e7407db60b6f450",
+      "card_url": "https://huggingface.co/datasets/nvidia/HelpSteer/raw/3ca5d59c1bc1080af195b4254e7407db60b6f450/README.md",
+      "card_sha256": "1780b67ca4c9aafc102f6e3298da8fe5089d2bc9bf633601c9c687263fb7e835",
+      "stated_license": [
+        "cc-by-4.0"
+      ],
+      "evidence": [],
+      "cleared": true
+    },
+    "commonsense_qa": {
+      "role": "fit",
+      "note": "converted here; questions are crowd-written around ConceptNet (CC BY-SA) concepts",
+      "repository": "tau/commonsense_qa",
+      "revision": "94630fe30dad47192a8546eb75f094926d47e155",
+      "card_url": "https://huggingface.co/datasets/tau/commonsense_qa/raw/94630fe30dad47192a8546eb75f094926d47e155/README.md",
+      "card_sha256": "172917e887dcc013fe0f0bd6aa8c810aea1e2be67d3bc7ff63e9b9d92075cc34",
+      "stated_license": [
+        "mit"
+      ],
+      "evidence": [],
+      "cleared": true
+    },
+    "winogrande": {
+      "role": "fit",
+      "note": "converted here; the Hub card has no license field, upstream README states CC-BY",
+      "repository": "allenai/winogrande",
+      "revision": "01e74176c63542e6b0bcb004dcdea22d94fb67b5",
+      "card_url": "https://huggingface.co/datasets/allenai/winogrande/raw/01e74176c63542e6b0bcb004dcdea22d94fb67b5/README.md",
+      "card_sha256": "fd653689cc77706672b40cd040156ad57f4969656d25a14be645cffa8ef55176",
+      "stated_license": [],
+      "evidence": [
+        {
+          "url": "https://raw.githubusercontent.com/allenai/winogrande/727e837f77521ef38bcc56df3b275c8da43f45af/README.md",
+          "sha256": "6dc5ec952a9e5d6e553e2800c24b43b1fa8add70d998e60b76262e2195413efe",
+          "pattern": "The dataset is licensed under CC-BY",
+          "found": true
+        }
+      ],
+      "cleared": true
+    },
+    "gsm8k": {
+      "role": "fit",
+      "note": "data v3.1; converted here into strict judging records with computed labels",
+      "repository": "openai/gsm8k",
+      "revision": "740312add88f781978c0658806c59bc2815b9866",
+      "card_url": "https://huggingface.co/datasets/openai/gsm8k/raw/740312add88f781978c0658806c59bc2815b9866/README.md",
+      "card_sha256": "a17e882503578c9e324560630e31017617714ee025c87cf4fea6fd916895f3c1",
+      "stated_license": [
+        "mit"
+      ],
+      "evidence": [],
+      "cleared": true
+    },
+    "mnli": {
+      "role": "ood",
+      "note": "mixed incl. share-alike",
+      "repository": "nyu-mll/multi_nli",
+      "revision": "da70db2af9d09693783c3320c4249840212ee221",
+      "card_url": "https://huggingface.co/datasets/nyu-mll/multi_nli/raw/da70db2af9d09693783c3320c4249840212ee221/README.md",
+      "card_sha256": "e9bafc4de652caab3fb991ef3f1eded3b2385b7e1b2d1df2fd70523c376566fe",
+      "stated_license": [
+        "cc-by-3.0",
+        "cc-by-sa-3.0",
+        "mit",
+        "other"
+      ],
+      "evidence": []
+    },
+    "chaosnli": {
+      "role": "ood",
+      "note": "CC BY-SA 4.0 per jev-bench manifest",
+      "repository": null,
+      "revision": null,
+      "evidence": []
+    },
+    "sst5": {
+      "role": "ood",
+      "note": "no stated license",
+      "repository": "SetFit/sst5",
+      "revision": "e51bdcd8cd3a30da231967c1a249ba59361279a3",
+      "card_url": "https://huggingface.co/datasets/SetFit/sst5/raw/e51bdcd8cd3a30da231967c1a249ba59361279a3/README.md",
+      "card_sha256": "8fb6d394783212981c77f3642084d1f1e938bc9f19cce8576e44a8aa29b5bbe8",
+      "stated_license": [],
+      "evidence": []
+    },
+    "sms_spam": {
+      "role": "ood",
+      "note": "unknown license",
+      "repository": "ucirvine/sms_spam",
+      "revision": "cae486f927c250fe1d4a5b55f11357964ed1646c",
+      "card_url": "https://huggingface.co/datasets/ucirvine/sms_spam/raw/cae486f927c250fe1d4a5b55f11357964ed1646c/README.md",
+      "card_sha256": "5e97518746f7e8e69aab20d744171c954751df62e3b833bf8dd41ca32841c84d",
+      "stated_license": [
+        "unknown"
+      ],
+      "evidence": []
+    },
+    "boolq": {
+      "role": "ood",
+      "note": "share-alike",
+      "repository": "google/boolq",
+      "revision": "35b264d03638db9f4ce671b711558bf7ff0f80d5",
+      "card_url": "https://huggingface.co/datasets/google/boolq/raw/35b264d03638db9f4ce671b711558bf7ff0f80d5/README.md",
+      "card_sha256": "07447668f46c7c1e62e24b650ea2a73f1ab34f2b3759b1587c7b7a81b4bf1cf4",
+      "stated_license": [
+        "cc-by-sa-3.0"
+      ],
+      "evidence": []
+    },
+    "fever_evidence": {
+      "role": "ood",
+      "note": "share-alike",
+      "repository": "fever/fever",
+      "revision": "2a74f2909caf2b8656343aeb8203e50bf84dcb56",
+      "card_url": "https://huggingface.co/datasets/fever/fever/raw/2a74f2909caf2b8656343aeb8203e50bf84dcb56/README.md",
+      "card_sha256": "961d19d57aed24618b7f92db75f7fbf237262becea67bff7b9a42d94591522e2",
+      "stated_license": [
+        "cc-by-sa-3.0",
+        "gpl-3.0"
+      ],
+      "evidence": []
+    },
+    "arc_challenge": {
+      "role": "ood",
+      "note": "share-alike",
+      "repository": "allenai/ai2_arc",
+      "revision": "210d026faf9955653af8916fad021475a3f00453",
+      "card_url": "https://huggingface.co/datasets/allenai/ai2_arc/raw/210d026faf9955653af8916fad021475a3f00453/README.md",
+      "card_sha256": "4a293e352253d771604725c978adcea71ee6504e89ed40e1cb0024ecafa9b37e",
+      "stated_license": [
+        "cc-by-sa-4.0"
+      ],
+      "evidence": []
+    },
+    "paws": {
+      "role": "ood",
+      "note": "permissive per jev-bench; kept out of distribution by design",
+      "repository": "google-research-datasets/paws",
+      "revision": "161ece9501cf0a11f3e48bd356eaa82de46d6a09",
+      "card_url": "https://huggingface.co/datasets/google-research-datasets/paws/raw/161ece9501cf0a11f3e48bd356eaa82de46d6a09/README.md",
+      "card_sha256": "f281c5c5099f08da86c25f83419eedb01eaafaf0bb29b8eb14036249cfc97e89",
+      "stated_license": [
+        "other"
+      ],
+      "evidence": []
+    },
+    "stsb": {
+      "role": "ood",
+      "note": "CC BY-SA 4.0 per jev-bench manifest",
+      "repository": null,
+      "revision": null,
+      "evidence": []
+    },
+    "strategyqa": {
+      "role": "ood",
+      "note": "MIT; closed and grounded variants kept out of distribution by design",
+      "repository": "ChilleD/StrategyQA",
+      "revision": "705562638fe1d8ca6bb98c66fc8f94d45fda8c83",
+      "card_url": "https://huggingface.co/datasets/ChilleD/StrategyQA/raw/705562638fe1d8ca6bb98c66fc8f94d45fda8c83/README.md",
+      "card_sha256": "8ed281e79b7d4c181973ac2a8163b35ce81ed63ea180b0aeca1e33e6a77645f8",
+      "stated_license": [
+        "mit"
+      ],
+      "evidence": []
+    },
+    "hellaswag": {
+      "role": "excluded",
+      "note": "contexts from wikiHow; upstream repository blocked by a wikiHow DMCA notice on 2026-09-14",
+      "repository": "Rowan/hellaswag",
+      "revision": "218ec52e09a7e7462a5400043bb9a69a41d06b76",
+      "card_url": "https://huggingface.co/datasets/Rowan/hellaswag/raw/218ec52e09a7e7462a5400043bb9a69a41d06b76/README.md",
+      "card_sha256": "cfe6e26e7e936a447a12f7eee50f2bffb0355c3b97459496d8c7296f65c5b353",
+      "stated_license": [],
+      "evidence": [
+        {
+          "url": "https://raw.githubusercontent.com/github/dmca/master/2026/09/2026-09-14-wikihow.md",
+          "sha256": "b84250d575ea95dae39b6f824b82fdad210f7063bc18927fcb2d06558cceffee",
+          "pattern": "rowanz/hellaswag",
+          "found": true
+        }
+      ],
+      "cleared": true
+    },
+    "wanli": {
+      "role": "excluded",
+      "note": "generated from MNLI seed examples; would contaminate MNLI and ChaosNLI out-of-distribution evaluation",
+      "repository": "alisawuffles/WANLI",
+      "revision": "61c95318fd71c55b6ba355d76253254615f387ec",
+      "card_url": "https://huggingface.co/datasets/alisawuffles/WANLI/raw/61c95318fd71c55b6ba355d76253254615f387ec/README.md",
+      "card_sha256": "63d95359bdd0c572c6196da6aff031593b1bc9d63c6d16d823a5f270b5ff0f9c",
+      "stated_license": [
+        "cc-by-4.0"
+      ],
+      "evidence": []
+    },
+    "ultrafeedback": {
+      "role": "excluded",
+      "note": "labels generated by GPT-4; provider terms risk",
+      "repository": "openbmb/UltraFeedback",
+      "revision": "40b436560ca83a8dba36114c22ab3c66e43f6d5e",
+      "card_url": "https://huggingface.co/datasets/openbmb/UltraFeedback/raw/40b436560ca83a8dba36114c22ab3c66e43f6d5e/README.md",
+      "card_sha256": "70a22b5659215ab738b9dfd0dc6bd40d3bb040bf846b4e34955358f30625a4f7",
+      "stated_license": [
+        "mit"
+      ],
+      "evidence": []
+    },
+    "openbookqa": {
+      "role": "excluded",
+      "note": "card license unknown; repository code license does not clearly cover data",
+      "repository": "allenai/openbookqa",
+      "revision": "388097ea7776314e93a529163e0fea805b8a6454",
+      "card_url": "https://huggingface.co/datasets/allenai/openbookqa/raw/388097ea7776314e93a529163e0fea805b8a6454/README.md",
+      "card_sha256": "a58e68a31e20e7cbac02f80f44f3282ffbb8a40aeb20488670e5ffa975687960",
+      "stated_license": [
+        "unknown"
+      ],
+      "evidence": []
+    },
+    "piqa": {
+      "role": "excluded",
+      "note": "card license unknown",
+      "repository": "ybisk/piqa",
+      "revision": "2e8ac2dffd59bac8c3c6714948f4c551a0848bb0",
+      "card_url": "https://huggingface.co/datasets/ybisk/piqa/raw/2e8ac2dffd59bac8c3c6714948f4c551a0848bb0/README.md",
+      "card_sha256": "d5a6f84b724972fa2d3591d86196426c24d75da764fe4516d7e64147090ad5a0",
+      "stated_license": [
+        "unknown"
+      ],
+      "evidence": []
+    },
+    "ag_news": {
+      "role": "excluded",
+      "note": "card license unknown",
+      "repository": "fancyzhx/ag_news",
+      "revision": "eb185aade064a813bc0b7f42de02595523103ca4",
+      "card_url": "https://huggingface.co/datasets/fancyzhx/ag_news/raw/eb185aade064a813bc0b7f42de02595523103ca4/README.md",
+      "card_sha256": "0ae9549054c5eca6a2284b1a6e8505b1ec92a39613aca402336429762b544a62",
+      "stated_license": [
+        "unknown"
+      ],
+      "evidence": []
+    },
+    "yelp5": {
+      "role": "excluded",
+      "note": "Yelp dataset license restricts use; excluded from evaluation too",
+      "repository": null,
+      "revision": null,
+      "evidence": []
+    },
+    "super_glue": {
+      "role": "excluded",
+      "note": "mixed per-task licenses",
+      "repository": "aps/super_glue",
+      "revision": "3de24cf8022e94f4ee4b9d55a6f539891524d646",
+      "card_url": "https://huggingface.co/datasets/aps/super_glue/raw/3de24cf8022e94f4ee4b9d55a6f539891524d646/README.md",
+      "card_sha256": "da05060933491c5d3472f494ce22847d4247e928a39d59d94dff9555a4858df9",
+      "stated_license": [
+        "other"
+      ],
+      "evidence": []
+    }
+  }
+}
