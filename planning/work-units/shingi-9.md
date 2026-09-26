@@ -1,0 +1,55 @@
+# Program v0.3: expanded data and a self-contained ternary model
+
+Owning issue: https://github.com/kortexa-ai/shingi/issues/9
+Data preparation: https://github.com/kortexa-ai/shingi/issues/10
+
+The plan is in [docs/data-v3.md](../../docs/data-v3.md). Stage 1 results are in
+[results/stage1/REPORT.md](../../results/stage1/REPORT.md).
+
+## Decisions
+
+- **GPU authority.** Franci hands over the RTX PRO 6000 for a block; that
+  includes stopping and restoring its six production services. The 4090 is never
+  touched. Every block records the initial service set and restores exactly it.
+- **Model path.** Scripts pin the base to snapshot `6ed5e12`. A second Hugging
+  Face snapshot of the same blob appeared on 2026-09-24 and broke a path glob.
+- **Pilot gate.** Passed on 2026-09-25: the pilot reached 74.6% on the v3
+  development set against 67.4% for v0.2 (matched native evaluation). The
+  "still improving" condition was borderline and accepted.
+- **Checkpoint selection.** Minimum development NLL over all 1,050 records.
+  For the full run this chose update 2,048, which is also the minimum over the
+  800 natural records alone, so selection was not pulled by synthetic data.
+- **Calibration policy.** Temperature only; the yes/no bias stays 0. The bias fit
+  used a 73-record yes/no pool (50 Civil Comments, 20% gold-yes) and produced
+  −0.5, which helped JevBench yes/no items and hurt StrategyQA. A global prior
+  shift is wrong for request-defined decisions whose base rates differ. The
+  temperature-only fit selects the identity. This policy was chosen after the
+  out-of-distribution result was seen; the report discloses that.
+- **Stage 2 path.** The merge check shows a naive merge loses the whole adapter
+  and a scale-only projection reaches cosine 0.088; QAT is the expected path.
+  The published F16 Bonsai file is dequantized ternary and is not used.
+
+## Validation facts
+
+- Full run: 25,597 prompts, stopped at update 2,560 after two checks without
+  improvement; selected update 2,048 (native adapter SHA-256 `d22a1075…8a4e3a`).
+- Matched locked test: +5.3 points [+4.1, +6.6] under temperature-only
+  calibration; no source regresses. Out-of-distribution: +0.0 [−1.3, +1.4].
+  Held-out synthetic families: +22.9.
+- External: This/That +15.0 [+13.5, +16.4]; DecisionBench medium +2.7
+  [−1.4, +6.8]; DecisionBench hard −4.1 [−8.2, 0.0]; public JevBench −3.0
+  [−6.9, +0.9]. Raw input-order flips fall on every suite (18→10, 9→6, 28→19
+  of 100 pairs).
+- Item-level flips: four of fourteen JevBench losses are strict pass/fail
+  judging items answered leniently; nine of ten DecisionBench-hard ordinal
+  losses are under-scores; long-document items churn both ways; numeric and
+  temporal items lose three, gain none.
+- Gates not met as measured: DecisionBench hard, public JevBench, and
+  locked-test ECE (0.040 against 0.035, with better NLL and Brier).
+
+## Incidents
+
+- After block 01 the first evaluation launch failed on the snapshot glob and went
+  unnoticed for about 3.5 hours; the claim lease lapsed.
+- The candidate external run was reported finished while its order diagnostic
+  was still running; the GPU claim was released early and re-acquired.

@@ -319,7 +319,69 @@ option keys; the raw-order diagnostic bypasses the sort.
 
 ## Interpretation
 
-_To be written by the operator._
+**What the training clearly did.** It taught the targeted tasks. The locked test
+gains are large where the data was added (GoEmotions +26, HelpSteer2 complexity
++20, HelpSteer +11, LEDGAR +10) and no source regresses. The synthetic state
+family transferred to a different benchmark: This/That gains 15 points, with the
+largest gains in formats the generator never produced (snake, stochastic, plan
+survival). Raw option-order flips fall on every external suite, so the one
+random order per record made the model more order-stable. The candidate's raw
+probabilities need no calibration: the fitted temperatures are 1.0.
+
+**What it did not do.** It did not make Shingi a better general judge. The
+out-of-distribution sources are flat, and the two judgment suites move against
+the candidate: DecisionBench hard −4.1 points and public JevBench −3.0. Both
+intervals reach zero, so neither is a proven regression, but the item-level
+flips show two systematic shifts rather than pure noise:
+
+- **Lenient pass/fail judging.** Four of the fourteen JevBench losses are
+  "does the response fully and correctly satisfy the request" items where the
+  candidate now says yes to responses with substantive errors; v0.2 was confident
+  on three of them. One gain is the same item type where leniency happened to be
+  right. Two DecisionBench-hard yes/no losses judge an agent's or a flow's
+  handling as adequate when it was not. The plausible cause is the 4,000
+  HelpSteer records, where a response with a small error still scores 3 of 4;
+  strict any-error judging is a different skill and no training source teaches
+  it.
+- **Conservative ordinal scores.** On DecisionBench, nine of the ten hard-subset
+  ordinal losses are under-scores, and seven of the eight ordinal gains are also
+  lower predictions than v0.2 that happened to be right. The same downward shift
+  produces most of the medium-subset gain (+6 on score items) and most of the
+  hard-subset loss. On the locked test the candidate's HelpSteer scores are
+  centred (expected score minus gold within ±0.07), so the shift appears on
+  holistic severity, urgency and fault judgments, not on rubric-like quality
+  scales. The plausible cause is the rubric family, which teaches "the highest
+  level whose requirements are all met": a conservative rule that does not fit
+  holistic scales.
+
+Two smaller patterns: numeric and temporal items lose three on JevBench and
+gain none, plus two procedural filtering items on DecisionBench hard; and long
+multi-hop documents churn both ways (five losses, three gains, including one
+0.16 → 0.99 correction), which reads as changed behaviour with no net direction.
+One DecisionBench loss is a Spanish-language item; training is English only.
+
+**Calibration.** The bias fit is not trustworthy: it saw 73 yes/no records,
+50 of them Civil Comments with a 12% yes-rate, and produced a −0.5 bias that
+helped JevBench (where the candidate over-answers yes) and hurt StrategyQA
+(where it under-answers yes). No global bias can serve request-defined decisions
+with different base rates, so temperature-only is the right policy, and the
+calibration split should balance yes/no sources and gold rates in the next data
+version. Under temperature-only calibration the out-of-distribution gate passes
+and no source regresses. The ECE miss (0.040 against 0.035) is small for a
+ten-bin statistic on 3,200 items, and NLL, Brier and out-of-distribution ECE
+all improve.
+
+**Assessment.** The adapter is a clear improvement on the trained task families
+and on spatial state reasoning, and a wash to slightly negative on general
+judgment. It is not the teacher to distil into a ternary model yet: distillation
+would preserve the leniency and the conservative scoring. The data, not the
+recipe, is the limiting factor. The next data version should add a strict
+pass/fail judging family with planted errors and computed labels, diversify the
+rubric family beyond cumulative criteria toward holistic severity and urgency
+scales, add numeric and date arithmetic under stated rules, and reconsider the
+HelpSteer share. Stage 2 method work (scale-only tuning, then QAT) can proceed
+on this teacher to measure how much of a LoRA a ternary file can hold; that
+measurement does not depend on which teacher is final.
 
 ## Reproduction
 
